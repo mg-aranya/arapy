@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arapy"
+version = "1.0.0"
+description = "ClearPass API client"
+authors = [{ name = "Mathias Granlund", email = "mathias.granlund@aranya.se" }]
+requires-python = ">=3.10"
+dependencies = [
+    "requests",
+]
+
+[project.optional-dependencies]
+gui = []
+
+[project.scripts]
+arapy = "arapy.main:main"
+arapy-gui = "arapy.gui:run_gui"
