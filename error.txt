@@ -1,0 +1,56 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.0.2, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /mnt/c/Users/mgranlund/OneDrive - Aranya AB/Ubuntu/Desktop/Scripts/arapy
+configfile: pyproject.toml
+collecting ... collected 1 item / 5 errors
+
+==================================== ERRORS ====================================
+______________________ ERROR collecting tests/test_cli.py ______________________
+tests/test_cli.py:2: in <module>
+    from arapy.main import parse_cli
+arapy/main.py:21: in <module>
+    from . import commands
+arapy/commands.py:7: in <module>
+    from .io_utils import log_to_file, load_payload_file
+arapy/io_utils.py:231: in <module>
+    def mode_is_overwrite_or_empty(tee: Tee) -> bool:
+E   NameError: name 'Tee' is not defined
+___________________ ERROR collecting tests/test_handlers.py ____________________
+tests/test_handlers.py:3: in <module>
+    from arapy.commands import handle_endpoint_add
+arapy/commands.py:7: in <module>
+    from .io_utils import log_to_file, load_payload_file
+arapy/io_utils.py:231: in <module>
+    def mode_is_overwrite_or_empty(tee: Tee) -> bool:
+E   NameError: name 'Tee' is not defined
+________________ ERROR collecting tests/test_handlers_extra.py _________________
+tests/test_handlers_extra.py:3: in <module>
+    from arapy.commands import handle_endpoint_add, handle_endpoint_list, handle_network_device_get
+arapy/commands.py:7: in <module>
+    from .io_utils import log_to_file, load_payload_file
+arapy/io_utils.py:231: in <module>
+    def mode_is_overwrite_or_empty(tee: Tee) -> bool:
+E   NameError: name 'Tee' is not defined
+_________ ERROR collecting tests/test_handlers_network_device_group.py _________
+tests/test_handlers_network_device_group.py:3: in <module>
+    from arapy.commands import handle_network_device_group_get, handle_network_device_group_list
+arapy/commands.py:7: in <module>
+    from .io_utils import log_to_file, load_payload_file
+arapy/io_utils.py:231: in <module>
+    def mode_is_overwrite_or_empty(tee: Tee) -> bool:
+E   NameError: name 'Tee' is not defined
+___________________ ERROR collecting tests/test_io_utils.py ____________________
+tests/test_io_utils.py:9: in <module>
+    from arapy.io_utils import log_to_file
+arapy/io_utils.py:231: in <module>
+    def mode_is_overwrite_or_empty(tee: Tee) -> bool:
+E   NameError: name 'Tee' is not defined
+=========================== short test summary info ============================
+ERROR tests/test_cli.py - NameError: name 'Tee' is not defined
+ERROR tests/test_handlers.py - NameError: name 'Tee' is not defined
+ERROR tests/test_handlers_extra.py - NameError: name 'Tee' is not defined
+ERROR tests/test_handlers_network_device_group.py - NameError: name 'Tee' is ...
+ERROR tests/test_io_utils.py - NameError: name 'Tee' is not defined
+!!!!!!!!!!!!!!!!!!! Interrupted: 5 errors during collection !!!!!!!!!!!!!!!!!!!!
+============================== 5 errors in 1.23s ===============================

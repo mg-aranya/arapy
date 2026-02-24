@@ -1,6 +1,6 @@
 # arapy
 
-[![Version](https://img.shields.io/badge/version-1.1.2-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.1.3-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 [![License](https://img.shields.io/badge/license-Internal-orange.svg)]()
@@ -20,9 +20,9 @@ A modular Python CLI and GUI tool for interacting with the
 - 📂 Structured logging with configurable output
 - 🔎 Clear and detailed API error reporting
 
-Version: **1.1.2**
+Version: **1.1.3**
 
-### What's New in v1.1.2
+### What's New in v1.1.3
 
 **Patch release** — Added missing `network-device get` action help text to `print_help()`. All features and functionality from v1.1.1 remain intact.
 
@@ -42,7 +42,7 @@ All services support:
 
 ---
 
-# ✨ Features (v1.1.2)
+# ✨ Features (v1.1.3)
 
 ## 🔧 Modular Command Architecture
 
@@ -678,5 +678,5 @@ Internal / Custom Use
 
 ---
 
-**arapy v1.1.2**  
+**arapy v1.1.3**  
 A clean, modular ClearPass API toolkit built for automation and operators alike.

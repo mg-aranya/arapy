@@ -1,59 +1,19 @@
 #io_utils.py
 
 #---- standard libs
-import sys
 import json
 import csv
 import os
-
-DEFAULT_FILENAME = "out.log"
-
-class Tee:
-    def __init__(self, filename, mode="w", also_console=False):
-        # newline="" is important for CSV correctness on Windows too
-        self.file = open(filename, mode, encoding="utf-8", newline="")
-        self.original_stdout = sys.stdout
-        self.also_console = also_console
-
-        # Used to avoid writing CSV header twice when appending.
-        # In overwrite mode ("w") the file will be empty by definition.
-        # In append mode ("a") check the underlying file size on disk
-        # which is more reliable across platforms than file.tell().
-        try:
-            if mode == "w":
-                self.is_empty = True
-            else:
-                try:
-                    self.is_empty = (os.path.getsize(filename) == 0)
-                except OSError:
-                    # If the file doesn't exist or is inaccessible, assume empty
-                    self.is_empty = True
-        except Exception:
-            self.is_empty = False
-
-    def write(self, message):
-        if self.also_console:
-            self.original_stdout.write(message)
-        self.file.write(message)
-
-    def flush(self):
-        if self.also_console:
-            self.original_stdout.flush()
-        self.file.flush()
-
-    def close(self):
-        self.file.close()
-
-
+from pathlib import Path
 def log_to_file(
     thing,
-    filename=DEFAULT_FILENAME,
+    filename: str | Path | None = None,
     *args,
-    also_console=False,
-    mode="w",                    
-    data_format="json",          # "json" (default) or "csv"
-    csv_fieldnames=None,         # optional list of columns
-    csv_include_header=True,     # header for CSV
+    also_console: bool = False,
+    mode: str = "w",
+    data_format: str = "json",  # "json" (default) or "csv" or "raw"
+    csv_fieldnames=None,  # optional list of columns
+    csv_include_header: bool = True,  # header for CSV
     items_path=("_embedded", "items"),  # v5: configurable path for list extraction
     **kwargs
 ):
@@ -63,58 +23,101 @@ def log_to_file(
     - items_path: tuple path used to extract rows when data is a dict container
       default: ("_embedded", "items") for ClearPass list endpoints
     """
-    ensure_parent_dir(filename)
-
     if mode not in ("a", "w"):
         raise ValueError("mode must be 'a' or 'w'")
     if data_format not in ("json", "csv", "raw"):
         raise ValueError("data_format must be 'json', 'csv', or 'raw'")
 
-    tee = Tee(filename, mode=mode, also_console=also_console)
-    sys.stdout = tee
+    # If filename is not provided, caller should have obtained one from config
+    if filename is None:
+        raise ValueError("filename must be provided")
 
-    try:
-        if callable(thing):
-            result = thing(*args, **kwargs)
-            if result is not None:
-                _write_value(result, data_format, tee, csv_fieldnames, csv_include_header, items_path)
-            return result
+    path = Path(filename)
+    ensure_parent_dir(str(path))
 
-        _write_value(thing, data_format, tee, csv_fieldnames, csv_include_header, items_path)
-        return thing
+    # If thing is callable, call it to obtain value to write
+    if callable(thing):
+        result = thing(*args, **kwargs)
+        if result is not None:
+            _write_value_to_file(result, path, mode, data_format, csv_fieldnames, csv_include_header, items_path, also_console)
+        return result
 
-    finally:
-        sys.stdout = tee.original_stdout
-        tee.close()
+    _write_value_to_file(thing, path, mode, data_format, csv_fieldnames, csv_include_header, items_path, also_console)
+    return thing
 
 
-def _write_value(value, data_format, tee, csv_fieldnames, csv_include_header, items_path):
+def _write_value_to_file(value, path: Path, mode: str, data_format: str, csv_fieldnames, csv_include_header, items_path, also_console: bool):
+    # Ensure parent dir exists
+    path.parent.mkdir(parents=True, exist_ok=True)
+
     if data_format == "json":
-        _write_json(value)
-    elif data_format == "csv":
-        _write_csv(value, tee, csv_fieldnames, csv_include_header, items_path)
+        # For JSON we simply write the representation
+        with path.open(mode, encoding="utf-8") as f:
+            if isinstance(value, (dict, list)):
+                json.dump(value, f, indent=2, ensure_ascii=False)
+                f.write("\n")
+            else:
+                f.write(str(value) + "\n")
+            if also_console:
+                print(json.dumps(value, indent=2, ensure_ascii=False))
+
     elif data_format == "raw":
-        _write_raw(value)
+        with path.open(mode, encoding="utf-8") as f:
+            if isinstance(value, bytes):
+                try:
+                    s = value.decode("utf-8")
+                except Exception:
+                    s = str(value)
+            else:
+                s = str(value)
+            f.write(s)
+            if also_console:
+                print(s)
 
+    elif data_format == "csv":
+        # Determine rows via same logic as previous implementation
+        rows = None
+        if isinstance(value, dict) and items_path:
+            extracted = _extract_by_path(value, items_path)
+            if isinstance(extracted, list):
+                rows = extracted
 
-def _write_json(value):
-    if isinstance(value, (dict, list)):
-        print(json.dumps(value, indent=2, ensure_ascii=False))
-    else:
-        print(str(value))
+        if rows is None and isinstance(value, list):
+            rows = value
 
+        if rows is None and isinstance(value, dict):
+            rows = [value]
 
-def _write_raw(value):
-    if isinstance(value, bytes):
-        # decode safely if needed
-        try:
-            value = value.decode("utf-8")
-        except Exception:
-            value = str(value)
+        if rows is None:
+            rows = [{"value": value}]
 
-    # Write exactly as-is
-    print(str(value))
+        if not rows:
+            return
 
+        file_exists = path.exists()
+        append_mode = mode == "a"
+
+        # Write CSV rows
+        with path.open(mode, encoding="utf-8", newline="") as f:
+            if isinstance(rows[0], dict):
+                fieldnames = csv_fieldnames or list(rows[0].keys())
+                writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n", extrasaction="ignore")
+                write_header = csv_include_header and (not append_mode or (append_mode and path.stat().st_size == 0))
+                if write_header:
+                    writer.writeheader()
+                for r in rows:
+                    writer.writerow(r)
+            else:
+                writer = csv.writer(f, lineterminator="\n")
+                write_header = csv_include_header and (not append_mode or (append_mode and path.stat().st_size == 0))
+                if write_header:
+                    writer.writerow(["value"])
+                for r in rows:
+                    writer.writerow([r])
+
+        if also_console:
+            # Print a short message to console to indicate where written
+            print(f"Wrote CSV to {path}")
 
 def _extract_by_path(data, path):
     """
@@ -170,36 +173,9 @@ def _write_csv(value, tee, fieldnames, include_header, items_path):
         if fieldnames is None:
             fieldnames = list(rows[0].keys())
 
-        writer = csv.DictWriter(
-            sys.stdout,
-            fieldnames=fieldnames,
-            lineterminator="\n",
-            extrasaction="ignore",
-        )
-
-        # Write header if requested; if appending, only write if file is empty
-        if include_header and (mode_is_overwrite_or_empty(tee)):
-            writer.writeheader()
-
-        for r in rows:
-            writer.writerow(r)
-
-    else:
-        # Non-dict rows -> one column
-        writer = csv.writer(sys.stdout, lineterminator="\n")
-        if include_header and (mode_is_overwrite_or_empty(tee)):
-            writer.writerow(["value"])
-        for r in rows:
-            writer.writerow([r])
-
-
-def mode_is_overwrite_or_empty(tee: Tee) -> bool:
-    """
-    In overwrite mode ("w"), file starts empty.
-    In append mode ("a"), only write header if file was empty.
-    We can detect emptiness via tee.is_empty.
-    """
-    return tee.is_empty
+        # This function is no longer using stdout-based writers; kept as a
+        # compatibility placeholder but should not be called.
+        raise RuntimeError("_write_csv is deprecated; use _write_value_to_file instead")
 
 def ensure_parent_dir(path: str) -> None:
     parent = os.path.dirname(path)

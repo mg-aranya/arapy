@@ -275,3 +275,45 @@ class ClearPassClient:
 
     def enforcement_profile_get(self, api_paths: dict, token: str, profile_id: int):
         return self.request(api_paths, "GET", "enforcement_profile", token=token, path_suffix=f"/{profile_id}")
+
+    # ---- Network Device Group (Policy Elements > Network Device Groups) ----
+
+    def network_device_group_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25, sort: str = "+id", filter: str | None = None, calculate_count: bool | None = None):
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "sort": sort,
+        }
+        if calculate_count is not None:
+            params["calculate_count"] = calculate_count
+        if filter is not None:
+            params["filter"] = filter
+
+        return self.request(api_paths, "GET", "network_device_group", token=token, params=params)
+
+    def network_device_group_create(self, api_paths: dict, token: str, payload: dict):
+        return self.request(api_paths, "POST", "network_device_group", token=token, json_body=payload)
+
+    def network_device_group_get(self, api_paths: dict, token: str, *, group_id: int):
+        return self.request(api_paths, "GET", "network_device_group", token=token, path_suffix=f"/{group_id}")
+
+    def network_device_group_update(self, api_paths: dict, token: str, group_id: int, payload: dict):
+        return self.request(api_paths, "PATCH", "network_device_group", token=token, path_suffix=f"/{group_id}", json_body=payload)
+
+    def network_device_group_replace(self, api_paths: dict, token: str, group_id: int, payload: dict):
+        return self.request(api_paths, "PUT", "network_device_group", token=token, path_suffix=f"/{group_id}", json_body=payload)
+
+    def network_device_group_delete(self, api_paths: dict, token: str, group_id: int):
+        return self.request(api_paths, "DELETE", "network_device_group", token=token, path_suffix=f"/{group_id}")
+
+    def network_device_group_get_by_name(self, api_paths: dict, token: str, name: str):
+        return self.request(api_paths, "GET", "network_device_group", token=token, path_suffix=f"/name/{name}")
+
+    def network_device_group_update_by_name(self, api_paths: dict, token: str, name: str, payload: dict):
+        return self.request(api_paths, "PATCH", "network_device_group", token=token, path_suffix=f"/name/{name}", json_body=payload)
+
+    def network_device_group_replace_by_name(self, api_paths: dict, token: str, name: str, payload: dict):
+        return self.request(api_paths, "PUT", "network_device_group", token=token, path_suffix=f"/name/{name}", json_body=payload)
+
+    def network_device_group_delete_by_name(self, api_paths: dict, token: str, name: str):
+        return self.request(api_paths, "DELETE", "network_device_group", token=token, path_suffix=f"/name/{name}")

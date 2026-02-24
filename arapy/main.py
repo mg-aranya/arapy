@@ -4,7 +4,7 @@
 # description       :
 # author            :Mathias Granlund [mathias.granlund@aranya.se]
 # date              :2026-02-20
-# script version    :1.1.2
+# script version    :1.1.3
 # clearpass version :6.11.13
 # python_version    :3.10.12
 # ======================================================================
@@ -67,6 +67,7 @@ def print_help(args=None):
         "  - Use --filter=JSON to provide a server-side JSON filter expression (URL-encoded).\n"
         "  - Use --calculate_count=true|false to request a total count from the server.\n"
         "  - Note: --limit must be between 1 and 1000 per API constraints.\n"
+        "  - Set ARAPY_OUT_DIR to override the default output directory for logs.\n"
     )
 
     # ---- TOP LEVEL HELP ----

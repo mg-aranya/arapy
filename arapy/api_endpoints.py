@@ -8,6 +8,7 @@ API_ENDPOINTS = {
     "oauth": "/api/oauth",
     # Policy Elements
     "network_device": "/api/network-device",
+    "network_device_group": "/api/network-device-group",
     "auth_method": "/api/auth-method",
     "enforcement_profile": "/api/enforcement-profile",
     "authorization_profile": "/api/authorization-profile",
