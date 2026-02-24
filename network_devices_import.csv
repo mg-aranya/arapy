@@ -1,5 +1,0 @@
-name,description,ip_address,radius_secret,tacacs_secret,vendor_name,coa_capable,coa_port,radsec_enabled
-TEST-NET-1,loopbacks,127.0.0.0/8,fortiPSK,fortiPSK,Fortinet,false,3799,false
-TEST-NET-2,RFC 3927,169.254.0.0/16,admin,admin,Hewlett-Packard-Enterprise,true,3799,false
-TEST-NET-3,RFC 6598,100.64.0.0/10,ciscodisco,ciscodisco,Cisco,true,3799,false
-TEST-NET-4,RFC 1918,10.0.0.0/8,aruba321,aruba321,Aruba,true,3799,false

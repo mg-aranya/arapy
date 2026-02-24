@@ -1,21 +1,19 @@
-import unittest
-from main import parse_cli
+import pytest
+from arapy.main import parse_cli
 
-class TestCLIParsing(unittest.TestCase):
-    def test_parse_module_service_action(self):
-        argv = ["main.py", "identities", "endpoint", "list", "-vvv", "--limit=5", "--out=./x.csv"]
-        args = parse_cli(argv)
-        self.assertEqual(args["module"], "identities")
-        self.assertEqual(args["service"], "endpoint")
-        self.assertEqual(args["action"], "list")
-        self.assertTrue(args["verbose"])
-        self.assertEqual(args["limit"], "5")
-        self.assertEqual(args["out"], "./x.csv")
 
-    def test_unknown_flag_raises(self):
-        argv = ["main.py", "identities", "endpoint", "list", "-x"]
-        with self.assertRaises(ValueError):
-            parse_cli(argv)
+def test_parse_module_service_action():
+    argv = ["main.py", "identities", "endpoint", "list", "-vvv", "--limit=5", "--out=./x.csv"]
+    args = parse_cli(argv)
+    assert args["module"] == "identities"
+    assert args["service"] == "endpoint"
+    assert args["action"] == "list"
+    assert args["verbose"]
+    assert args["limit"] == "5"
+    assert args["out"] == "./x.csv"
 
-if __name__ == "__main__":
-    unittest.main()
+
+def test_unknown_flag_raises():
+    argv = ["main.py", "identities", "endpoint", "list", "-x"]
+    with pytest.raises(ValueError):
+        parse_cli(argv)

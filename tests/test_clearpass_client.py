@@ -1,30 +1,27 @@
-import unittest
+import pytest
 from unittest.mock import MagicMock
-from clearpass import ClearPassClient
+from arapy.clearpass import ClearPassClient
 
 API = {"endpoint": "/api/endpoint"}
 
-class TestClearPassClient(unittest.TestCase):
-    def test_endpoint_get_by_id_url(self):
-        cp = ClearPassClient("example:443")
-        cp.session.request = MagicMock()
 
-        # fake response
-        resp = MagicMock()
-        resp.raise_for_status.return_value = None
-        resp.status_code = 200
-        resp.content = b'{"ok": true}'
-        resp.json.return_value = {"ok": True}
-        cp.session.request.return_value = resp
+def test_endpoint_get_by_id_url():
+    cp = ClearPassClient("example:443")
+    cp.session.request = MagicMock()
 
-        cp.endpoint_get(API, "tok", endpoint_id=123)
+    # fake response
+    resp = MagicMock()
+    resp.raise_for_status.return_value = None
+    resp.status_code = 200
+    resp.content = b'{"ok": true}'
+    resp.json.return_value = {"ok": True}
+    cp.session.request.return_value = resp
 
-        cp.session.request.assert_called_once()
-        kwargs = cp.session.request.call_args.kwargs
-        self.assertEqual(kwargs["method"], "GET")
-        self.assertEqual(kwargs["url"], "https://example:443/api/endpoint/123")
-        self.assertIn("Authorization", kwargs["headers"])
-        self.assertEqual(kwargs["headers"]["Authorization"], "Bearer tok")
+    cp.endpoint_get(API, "tok", endpoint_id=123)
 
-if __name__ == "__main__":
-    unittest.main()
+    cp.session.request.assert_called_once()
+    kwargs = cp.session.request.call_args.kwargs
+    assert kwargs["method"] == "GET"
+    assert kwargs["url"] == "https://example:443/api/endpoint/123"
+    assert "Authorization" in kwargs["headers"]
+    assert kwargs["headers"]["Authorization"] == "Bearer tok"
