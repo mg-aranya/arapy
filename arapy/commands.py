@@ -11,7 +11,8 @@ def build_payload_from_args(args, reserved_keys):
 # ---- NAD handlers ----
 def handle_nad_list(cp, token, APIPath, args):
     verbose = args.get("verbose", False)
-    out_path = args.get("out", config.DEFAULT_NAD_CSV)
+    out_path = args.get("out", config.DEFAULT_NAD)
+    data_format = args.get("data_format", config.DEFAULT_FORMAT)
 
     offset = int(args.get("offset", 0))
     limit = int(args.get("limit", 25))
@@ -30,8 +31,8 @@ def handle_nad_list(cp, token, APIPath, args):
 
     log_to_file(
         devices,
-        filename=out_path,
-        data_format="csv",
+        filename=out_path + data_format,
+        data_format=data_format,
         csv_fieldnames=csv_fieldnames,
         items_path=("_embedded", "items"),
         also_console=verbose,
@@ -39,7 +40,8 @@ def handle_nad_list(cp, token, APIPath, args):
 
 def handle_nad_add(cp, token, APIPath, args):
     verbose = args.get("verbose", False)
-    out_path = args.get("out", config.DEFAULT_NAD_CREATED_JSON)
+    out_path = args.get("out", config.DEFAULT_NAD_CREATED)
+    data_format = args.get("data_format", config.DEFAULT_FORMAT)
 
     # File-based payload
     if "file" in args:
@@ -47,7 +49,11 @@ def handle_nad_add(cp, token, APIPath, args):
 
         if isinstance(payload, list):
             results = [cp.nad_create(APIPath, token, p) for p in payload]
-            log_to_file(results, filename=out_path, data_format="json", also_console=verbose)
+            log_to_file(
+                results,
+                filename=out_path + data_format,
+                data_format=data_format,
+                also_console=verbose)
             return
 
     else:
@@ -68,14 +74,15 @@ def handle_nad_add(cp, token, APIPath, args):
 
     log_to_file(
         created,
-        filename=out_path,
-        data_format="json",
+        filename=out_path + data_format,
+        data_format=data_format,
         also_console=verbose,
     )
 
 def handle_nad_delete(cp, token, APIPath, args):
     verbose = args.get("verbose", False)
-    out_path = args.get("out", config.DEFAULT_NAD_DELETED_JSON)
+    out_path = args.get("out", config.DEFAULT_NAD_DELETED)
+    data_format = args.get("data_format", config.DEFAULT_FORMAT)
 
     device_id = args.get("id")
     if not device_id:
@@ -93,7 +100,7 @@ def handle_nad_delete(cp, token, APIPath, args):
 
     log_to_file(
         result,
-        filename=out_path,
+        filename=out_path + data_format,
         data_format="json",
         also_console=verbose,
     )

@@ -27,9 +27,9 @@ CREDENTIALS = {
 }
 
 # ---- NAD files ----
-DEFAULT_NAD_CSV = str(LOG_DIR / "network_devices.csv")
-DEFAULT_NAD_CREATED_JSON = str(LOG_DIR / "nad_created.json")
-DEFAULT_NAD_DELETED_JSON = str(LOG_DIR / "nad_deleted.json")
+DEFAULT_NAD = str(LOG_DIR / "network_devices.")
+DEFAULT_NAD_CREATED = str(LOG_DIR / "nad_created.")
+DEFAULT_NAD_DELETED = str(LOG_DIR / "nad_deleted.")
 
 # ---- Endpoint files ----
 DEFAULT_ENDPOINT_CSV = str(LOG_DIR / "endpoints.csv")
@@ -37,6 +37,7 @@ DEFAULT_ENDPOINT_CREATED_JSON = str(LOG_DIR / "endpoint_created.json")
 DEFAULT_ENDPOINT_DELETED_JSON = str(LOG_DIR / "endpoint_deleted.json")
 
 DEFAULT_CSV_FIELDNAMES = None
+DEFAULT_FORMAT = "csv"
 
 
 PROFILES = {
