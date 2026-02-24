@@ -15,9 +15,19 @@ class Tee:
         self.original_stdout = sys.stdout
         self.also_console = also_console
 
-        # Used to avoid writing CSV header twice when appending
+        # Used to avoid writing CSV header twice when appending.
+        # In overwrite mode ("w") the file will be empty by definition.
+        # In append mode ("a") check the underlying file size on disk
+        # which is more reliable across platforms than file.tell().
         try:
-            self.is_empty = (self.file.tell() == 0)
+            if mode == "w":
+                self.is_empty = True
+            else:
+                try:
+                    self.is_empty = (os.path.getsize(filename) == 0)
+                except OSError:
+                    # If the file doesn't exist or is inaccessible, assume empty
+                    self.is_empty = True
         except Exception:
             self.is_empty = False
 
