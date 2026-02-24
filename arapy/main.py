@@ -198,6 +198,142 @@ def print_help(args=None):
             "  arapy identities endpoint delete --mac_address=aa:bb:cc:dd:ee:ff [--out=FILE] [-vvv]\n"
         )
 
+    elif (module, service, action) == ("identities", "device", "list"):
+        action_help = (
+            "Device Account list\n"
+            "Usage:\n"
+            "  arapy identities device list [--limit=N] [--offset=N] [--sort=-id] [--filter=JSON] [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("identities", "device", "add"):
+        action_help = (
+            "Device Account add\n"
+            "Usage:\n"
+            "  arapy identities device add --mac=MACADDR [--enabled=true|false] [--role_id=N] [--out=FILE] [-vvv]\n"
+            "  Or from file:\n"
+            "  arapy identities device add --file=devices.json [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("identities", "device", "delete"):
+        action_help = (
+            "Device Account delete\n"
+            "Usage:\n"
+            "  arapy identities device delete --id=DEVID [--out=FILE] [-vvv]\n"
+            "  arapy identities device delete --mac_address=MACADDR [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("identities", "device", "get"):
+        action_help = (
+            "Device Account get\n"
+            "Usage:\n"
+            "  arapy identities device get --id=DEVID [--out=FILE] [-vvv]\n"
+            "  arapy identities device get --mac_address=MACADDR [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("identities", "user", "list"):
+        action_help = (
+            "Guest User list\n"
+            "Usage:\n"
+            "  arapy identities user list [--limit=N] [--filter=JSON] [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("identities", "user", "add"):
+        action_help = (
+            "Guest User add\n"
+            "Usage:\n"
+            "  arapy identities user add --username=USERNAME [--password=PASSWORD] [--out=FILE] [-vvv]\n"
+            "  Or from file:\n"
+            "  arapy identities user add --file=users.json [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("identities", "user", "delete"):
+        action_help = (
+            "Guest User delete\n"
+            "Usage:\n"
+            "  arapy identities user delete --id=USERID [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("identities", "user", "get"):
+        action_help = (
+            "Guest User get\n"
+            "Usage:\n"
+            "  arapy identities user get --id=USERID [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("identities", "api-client", "list"):
+        action_help = (
+            "API Client list\n"
+            "Usage:\n"
+            "  arapy identities api-client list [--limit=N] [--filter=JSON] [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("identities", "api-client", "add"):
+        action_help = (
+            "API Client add\n"
+            "Usage:\n"
+            "  arapy identities api-client add --client_id=ID [--client_secret=SECRET] [--out=FILE] [-vvv]\n"
+            "  Or from file:\n"
+            "  arapy identities api-client add --file=clients.json [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("identities", "api-client", "delete"):
+        action_help = (
+            "API Client delete\n"
+            "Usage:\n"
+            "  arapy identities api-client delete --id=CLIENT_ID [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("identities", "api-client", "get"):
+        action_help = (
+            "API Client get\n"
+            "Usage:\n"
+            "  arapy identities api-client get --id=CLIENT_ID [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("policy-elements", "auth-method", "list"):
+        action_help = (
+            "Authentication Method list\n"
+            "Usage:\n"
+            "  arapy policy-elements auth-method list [--limit=N] [--filter=JSON] [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("policy-elements", "auth-method", "add"):
+        action_help = (
+            "Authentication Method add\n"
+            "Usage:\n"
+            "  arapy policy-elements auth-method add --name=NAME --method_type=TYPE [--out=FILE] [-vvv]\n"
+            "  Or from file:\n"
+            "  arapy policy-elements auth-method add --file=methods.json [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("policy-elements", "auth-method", "delete"):
+        action_help = (
+            "Authentication Method delete\n"
+            "Usage:\n"
+            "  arapy policy-elements auth-method delete --id=METHOD_ID [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("policy-elements", "auth-method", "get"):
+        action_help = (
+            "Authentication Method get\n"
+            "Usage:\n"
+            "  arapy policy-elements auth-method get --id=METHOD_ID [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("policy-elements", "enforcement-profile", "list"):
+        action_help = (
+            "Enforcement Profile list\n"
+            "Usage:\n"
+            "  arapy policy-elements enforcement-profile list [--limit=N] [--filter=JSON] [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("policy-elements", "enforcement-profile", "get"):
+        action_help = (
+            "Enforcement Profile get\n"
+            "Usage:\n"
+            "  arapy policy-elements enforcement-profile get --id=PROFILE_ID [--out=FILE] [-vvv]\n"
+        )
+
     else:
         action_help = (
             f"Help for: {module} {service} {action}\n"

@@ -53,6 +53,17 @@ Internally powered by a centralized `DISPATCH` routing table.
 - `list`
 - `add`
 - `delete`
+- `get`
+
+#### auth-method
+- `list`
+- `add`
+- `delete`
+- `get`
+
+#### enforcement-profile
+- `list`
+- `get`
 
 ---
 
@@ -60,9 +71,27 @@ Internally powered by a centralized `DISPATCH` routing table.
 
 #### endpoint
 - `list`
-- `get`
+- `get`  
 - `add`
 - `delete`
+
+#### device
+- `list`
+- `add`
+- `delete`
+- `get`
+
+#### user (Guest Users)
+- `list`
+- `add`
+- `delete`
+- `get`
+
+#### api-client
+- `list`
+- `add`
+- `delete`
+- `get`
 
 ---
 
@@ -139,6 +168,125 @@ arapy identities endpoint add --mac_address=aa:bb:cc:dd:ee:ff --status=Known --r
 ### Delete
 ```bash
 arapy identities endpoint delete --id=1234
+```
+
+---
+
+## Device Accounts (Identities > Device)
+
+### List
+```bash
+arapy identities device list --limit=10
+```
+
+### Add
+```bash
+arapy identities device add --mac=aa:bb:cc:dd:ee:ff --role_id=1
+arapy identities device add --file=devices.json
+```
+
+### Delete
+```bash
+arapy identities device delete --id=123
+arapy identities device delete --mac_address=aa:bb:cc:dd:ee:ff
+```
+
+### Get
+```bash
+arapy identities device get --id=123
+arapy identities device get --mac_address=aa:bb:cc:dd:ee:ff
+```
+
+---
+
+## Guest Users (Identities > User)
+
+### List
+```bash
+arapy identities user list --limit=25
+arapy identities user list --filter='{"role_id":2}'
+```
+
+### Add
+```bash
+arapy identities user add --username=guest1 --password=secret123
+arapy identities user add --file=users.json
+```
+
+### Delete
+```bash
+arapy identities user delete --id=5001
+```
+
+### Get
+```bash
+arapy identities user get --id=5001
+```
+
+---
+
+## API Clients (Identities > API Clients)
+
+### List
+```bash
+arapy identities api-client list --limit=10
+```
+
+### Add
+```bash
+arapy identities api-client add --client_id=MyClient --client_secret=secret
+arapy identities api-client add --file=api_clients.json
+```
+
+### Delete
+```bash
+arapy identities api-client delete --id=MyClient
+```
+
+### Get
+```bash
+arapy identities api-client get --id=MyClient
+```
+
+---
+
+## Authentication Methods (Policy Elements > Auth Method)
+
+### List
+```bash
+arapy policy-elements auth-method list
+arapy policy-elements auth-method list --filter='{"method_type":"Internal"}'
+```
+
+### Add
+```bash
+arapy policy-elements auth-method add --name=MyAuthMethod --method_type=Internal
+arapy policy-elements auth-method add --file=auth_methods.json
+```
+
+### Delete
+```bash
+arapy policy-elements auth-method delete --id=123
+```
+
+### Get
+```bash
+arapy policy-elements auth-method get --id=123
+```
+
+---
+
+## Enforcement Profiles (Policy Elements > Enforcement Profile)
+
+### List
+```bash
+arapy policy-elements enforcement-profile list
+arapy policy-elements enforcement-profile list --limit=50
+```
+
+### Get
+```bash
+arapy policy-elements enforcement-profile get --id=1001
 ```
 
 ---

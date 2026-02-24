@@ -140,3 +140,138 @@ class ClearPassClient:
             return self.request(api_paths, "DELETE", "endpoint", token=token, path_suffix=f"/mac-address/{mac_address}")
 
         raise ValueError("endpoint_delete requires either endpoint_id or mac_address")
+
+    # ---- Device (Identities > Device Accounts) ----
+
+    def device_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25, sort: str = "-id", filter: str | None = None, calculate_count: bool | None = None):
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "sort": sort,
+        }
+        if calculate_count is not None:
+            params["calculate_count"] = calculate_count
+        if filter is not None:
+            params["filter"] = filter
+
+        return self.request(api_paths, "GET", "device", token=token, params=params)
+
+    def device_create(self, api_paths: dict, token: str, payload: dict):
+        return self.request(api_paths, "POST", "device", token=token, json_body=payload)
+
+    def device_get(self, api_paths: dict, token: str, *, device_id: int):
+        return self.request(api_paths, "GET", "device", token=token, path_suffix=f"/{device_id}")
+
+    def device_update(self, api_paths: dict, token: str, device_id: int, payload: dict):
+        return self.request(api_paths, "PATCH", "device", token=token, path_suffix=f"/{device_id}", json_body=payload)
+
+    def device_delete(self, api_paths: dict, token: str, device_id: int):
+        return self.request(api_paths, "DELETE", "device", token=token, path_suffix=f"/{device_id}")
+
+    def device_get_by_mac(self, api_paths: dict, token: str, mac_address: str):
+        return self.request(api_paths, "GET", "device", token=token, path_suffix=f"/mac/{mac_address}")
+
+    def device_update_by_mac(self, api_paths: dict, token: str, mac_address: str, payload: dict):
+        return self.request(api_paths, "PATCH", "device", token=token, path_suffix=f"/mac/{mac_address}", json_body=payload)
+
+    def device_delete_by_mac(self, api_paths: dict, token: str, mac_address: str):
+        return self.request(api_paths, "DELETE", "device", token=token, path_suffix=f"/mac/{mac_address}")
+
+    # ---- User (Identities > User Accounts) ----
+
+    def user_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25, sort: str = "+id", filter: str | None = None, calculate_count: bool | None = None):
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "sort": sort,
+        }
+        if calculate_count is not None:
+            params["calculate_count"] = calculate_count
+        if filter is not None:
+            params["filter"] = filter
+
+        return self.request(api_paths, "GET", "guest-user", token=token, params=params)
+
+    def user_create(self, api_paths: dict, token: str, payload: dict):
+        return self.request(api_paths, "POST", "guest-user", token=token, json_body=payload)
+
+    def user_get(self, api_paths: dict, token: str, user_id: int):
+        return self.request(api_paths, "GET", "guest-user", token=token, path_suffix=f"/{user_id}")
+
+    def user_update(self, api_paths: dict, token: str, user_id: int, payload: dict):
+        return self.request(api_paths, "PATCH", "guest-user", token=token, path_suffix=f"/{user_id}", json_body=payload)
+
+    def user_delete(self, api_paths: dict, token: str, user_id: int):
+        return self.request(api_paths, "DELETE", "guest-user", token=token, path_suffix=f"/{user_id}")
+
+    # ---- API Client (Identities > API Clients) ----
+
+    def api_client_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25, sort: str = "+id", filter: str | None = None, calculate_count: bool | None = None):
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "sort": sort,
+        }
+        if calculate_count is not None:
+            params["calculate_count"] = calculate_count
+        if filter is not None:
+            params["filter"] = filter
+
+        return self.request(api_paths, "GET", "api_client", token=token, params=params)
+
+    def api_client_create(self, api_paths: dict, token: str, payload: dict):
+        return self.request(api_paths, "POST", "api_client", token=token, json_body=payload)
+
+    def api_client_get(self, api_paths: dict, token: str, client_id: str):
+        return self.request(api_paths, "GET", "api_client", token=token, path_suffix=f"/{client_id}")
+
+    def api_client_update(self, api_paths: dict, token: str, client_id: str, payload: dict):
+        return self.request(api_paths, "PATCH", "api_client", token=token, path_suffix=f"/{client_id}", json_body=payload)
+
+    def api_client_delete(self, api_paths: dict, token: str, client_id: str):
+        return self.request(api_paths, "DELETE", "api_client", token=token, path_suffix=f"/{client_id}")
+
+    # ---- Auth Method (Policy Elements > Authentication Methods) ----
+
+    def auth_method_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25, sort: str = "+id", filter: str | None = None, calculate_count: bool | None = None):
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "sort": sort,
+        }
+        if calculate_count is not None:
+            params["calculate_count"] = calculate_count
+        if filter is not None:
+            params["filter"] = filter
+
+        return self.request(api_paths, "GET", "auth_method", token=token, params=params)
+
+    def auth_method_create(self, api_paths: dict, token: str, payload: dict):
+        return self.request(api_paths, "POST", "auth_method", token=token, json_body=payload)
+
+    def auth_method_get(self, api_paths: dict, token: str, method_id: int):
+        return self.request(api_paths, "GET", "auth_method", token=token, path_suffix=f"/{method_id}")
+
+    def auth_method_update(self, api_paths: dict, token: str, method_id: int, payload: dict):
+        return self.request(api_paths, "PATCH", "auth_method", token=token, path_suffix=f"/{method_id}", json_body=payload)
+
+    def auth_method_delete(self, api_paths: dict, token: str, method_id: int):
+        return self.request(api_paths, "DELETE", "auth_method", token=token, path_suffix=f"/{method_id}")
+
+    # ---- Enforcement Profile (Policy Elements > Enforcement Profiles) ----
+
+    def enforcement_profile_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25, sort: str = "+id", filter: str | None = None, calculate_count: bool | None = None):
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "sort": sort,
+        }
+        if calculate_count is not None:
+            params["calculate_count"] = calculate_count
+        if filter is not None:
+            params["filter"] = filter
+
+        return self.request(api_paths, "GET", "enforcement_profile", token=token, params=params)
+
+    def enforcement_profile_get(self, api_paths: dict, token: str, profile_id: int):
+        return self.request(api_paths, "GET", "enforcement_profile", token=token, path_suffix=f"/{profile_id}")
