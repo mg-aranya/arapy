@@ -1,6 +1,6 @@
 # arapy
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.1.2-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 [![License](https://img.shields.io/badge/license-Internal-orange.svg)]()
@@ -20,11 +20,29 @@ A modular Python CLI and GUI tool for interacting with the
 - 📂 Structured logging with configurable output
 - 🔎 Clear and detailed API error reporting
 
-Version: **1.0.0**
+Version: **1.1.2**
+
+### What's New in v1.1.2
+
+**Patch release** — Added missing `network-device get` action help text to `print_help()`. All features and functionality from v1.1.1 remain intact.
+
+- **Device Accounts** — Manage device identities (MAC-based device registration)
+- **Guest Users** — Provision and manage guest user accounts
+- **API Clients** — Create OAuth clients for third-party integrations  
+- **Authentication Methods** — Configure authentication sources (LDAP, AD, radius, etc)
+- **Enforcement Profiles** — Query enforcement policy configurations
+
+All services support:
+- ✅ **CRUD operations** (Create, Read, Update, Delete)
+- ✅ **Pagination & filtering** (limit, offset, sort, filter)  
+- ✅ **Bulk imports** (JSON/CSV file uploads)
+- ✅ **CSV export** with custom column selection
+- ✅ **Structured logging** (JSON and CSV output formats)
+- ✅ **Context-aware help** (`arapy <module> <service> --help`)
 
 ---
 
-# ✨ Features (v1.0.0)
+# ✨ Features (v1.1.2)
 
 ## 🔧 Modular Command Architecture
 
@@ -97,77 +115,121 @@ Internally powered by a centralized `DISPATCH` routing table.
 
 # 🖥️ CLI Usage
 
-## Network Devices
+## Network Devices (Policy Elements > Network Device)
 
 ### List
 ```bash
-arapy policy-elements network-device list --limit=10
+# List all network devices
+arapy policy-elements network-device list
+
+# List with limit and custom sort
+arapy policy-elements network-device list --limit=10 --sort=+name
+
+# List with server-side filter
+arapy policy-elements network-device list --filter='{"vendor_name":"Aruba"}'
+
+# Export to CSV with specific columns
+arapy policy-elements network-device list --csv_fieldnames=id,name,ip_address,vendor_name
+
+# Get total count
+arapy policy-elements network-device list --calculate_count=true
 ```
 
 ### Add
 ```bash
+# Add single device with required parameters
 arapy policy-elements network-device add \
-    --name=nad1 \
-    --ip_address=1.2.3.4 \
-    --vendor_name=Aruba
-```
+    --name=border-router --ip_address=10.0.0.1 --vendor_name=Aruba
 
-### Add from file
-```bash
-arapy policy-elements network-device add --file=devices.csv
+# Add with optional RADIUS secret
+arapy policy-elements network-device add \
+    --name=switch-stack --ip_address=10.1.0.0 \
+    --vendor_name=Hewlett-Packard-Enterprise --radius_secret=PSK123
+
+# Bulk import from CSV
+arapy policy-elements network-device add --file=devices.csv --verbose
+
+# Bulk import from JSON
 arapy policy-elements network-device add --file=devices.json
 ```
 
 ### Delete
 ```bash
+# Delete by ID
 arapy policy-elements network-device delete --id=1234
-```
 
----
-
-## Endpoints
-
-### List
-```bash
-arapy identities endpoint list --limit=5
-```
-
-Filter examples:
-
-```bash
-# List endpoints that match a simple JSON filter (URL-encode when running in a shell)
-arapy identities endpoint list --filter='{"mac_address":"aa:bb:cc:dd:ee:ff"}' --limit=1
-
-# Request server to calculate total count (slower):
-arapy identities endpoint list --filter='{"status":"Known"}' --calculate_count=true --limit=25
+# Delete and log to JSON
+arapy policy-elements network-device delete --id=1234 --out=./deleted.json
 ```
 
 ### Get
 ```bash
+# Get single device details
+arapy policy-elements network-device get --id=1234
+
+# Get and export to JSON
+arapy policy-elements network-device get --id=1234 --out=./device_details.json
+```
+
+---
+
+## Endpoints (Identities > Endpoint)
+
+### List
+```bash
+# List all endpoints
+arapy identities endpoint list
+
+# List with pagination
+arapy identities endpoint list --limit=25 --offset=50
+
+# Filter by status
+arapy identities endpoint list --filter='{"status":"Known"}' --calculate_count=true
+
+# Export to CSV with custom columns
+arapy identities endpoint list --csv_fieldnames=id,mac_address,status,description --out=./endpoints.csv
+```
+
+### Get
+```bash
+# Get by endpoint ID
 arapy identities endpoint get --id=1234
+
+# Get by MAC address
 arapy identities endpoint get --mac_address=aa:bb:cc:dd:ee:ff
+
+# Export details
+arapy identities endpoint get --id=1234 --out=./endpoint_detail.json
 ```
 
 ### Add
 ```bash
+# Add endpoint with required fields
+arapy identities endpoint add --mac_address=aa:bb:cc:dd:ee:ff --status=Known
+
+# Add with description and tags  
 arapy identities endpoint add \
-    --mac_address=aa:bb:cc:dd:ee:ff \
-    --status=Known
-```
+    --mac_address=aa:bb:cc:dd:ee:ff --status=Known \
+    --description="Guest Printer" --device_insight_tags=printer,guest
 
-Additional examples:
+# Add with randomized MAC indicator
+arapy identities endpoint add \
+    --mac_address=aa:bb:cc:dd:ee:ff --status=Known --randomized_mac=true
 
-```bash
-# Add endpoint with device insight tags (comma-separated)
-arapy identities endpoint add --mac_address=aa:bb:cc:dd:ee:ff --status=Known --device_insight_tags=printer,office
+# Bulk import from CSV
+arapy identities endpoint add --file=endpoints.csv
 
-# Add endpoint with randomized_mac flag (true/false)
-arapy identities endpoint add --mac_address=aa:bb:cc:dd:ee:ff --status=Known --randomized_mac=true
+# Bulk import from JSON
+arapy identities endpoint add --file=endpoints.json
 ```
 
 ### Delete
 ```bash
+# Delete by endpoint ID
 arapy identities endpoint delete --id=1234
+
+# Delete by MAC address
+arapy identities endpoint delete --mac_address=aa:bb:cc:dd:ee:ff
 ```
 
 ---
@@ -176,24 +238,46 @@ arapy identities endpoint delete --id=1234
 
 ### List
 ```bash
-arapy identities device list --limit=10
+# List all device accounts
+arapy identities device list
+
+# List with pagination and sorting
+arapy identities device list --limit=25 --offset=0 --sort=-id
+
+# Filter by role  
+arapy identities device list --filter='{"role_id":2}'
+
+# Export to CSV
+arapy identities device list --csv_fieldnames=id,mac,enabled,role_id --out=./devices.csv
 ```
 
 ### Add
 ```bash
-arapy identities device add --mac=aa:bb:cc:dd:ee:ff --role_id=1
+# Add single device with required MAC
+arapy identities device add --mac=aa:bb:cc:dd:ee:ff
+
+# Add with role assignment
+arapy identities device add --mac=aa:bb:cc:dd:ee:ff --role_id=2 --enabled=true
+
+# Bulk import from JSON
 arapy identities device add --file=devices.json
 ```
 
 ### Delete
 ```bash
+# Delete by device ID
 arapy identities device delete --id=123
+
+# Delete by MAC address
 arapy identities device delete --mac_address=aa:bb:cc:dd:ee:ff
 ```
 
 ### Get
 ```bash
+# Get device details by ID
 arapy identities device get --id=123
+
+# Get device details by MAC
 arapy identities device get --mac_address=aa:bb:cc:dd:ee:ff
 ```
 
@@ -203,23 +287,42 @@ arapy identities device get --mac_address=aa:bb:cc:dd:ee:ff
 
 ### List
 ```bash
-arapy identities user list --limit=25
-arapy identities user list --filter='{"role_id":2}'
+# List all guest users
+arapy identities user list
+
+# List with pagination
+arapy identities user list --limit=25 --offset=0 --sort=+username
+
+# Filter by expiry status
+arapy identities user list --filter='{"enabled":true}'
+
+# Get total count
+arapy identities user list --calculate_count=true
 ```
 
 ### Add
 ```bash
+# Add single user with credentials
 arapy identities user add --username=guest1 --password=secret123
+
+# Add with additional details
+arapy identities user add \
+    --username=guest2 --password=temppass123 \
+    --role_id=101 --sponsor_name="John Doe"
+
+# Bulk import from JSON
 arapy identities user add --file=users.json
 ```
 
 ### Delete
 ```bash
+# Delete guest user
 arapy identities user delete --id=5001
 ```
 
 ### Get
 ```bash
+# Get user details
 arapy identities user get --id=5001
 ```
 
@@ -229,23 +332,41 @@ arapy identities user get --id=5001
 
 ### List
 ```bash
-arapy identities api-client list --limit=10
+# List all API clients
+arapy identities api-client list
+
+# List with pagination
+arapy identities api-client list --limit=10 --sort=+client_id
+
+# Filter by status
+arapy identities api-client list --filter='{"enabled":true}'
 ```
 
 ### Add
 ```bash
-arapy identities api-client add --client_id=MyClient --client_secret=secret
+# Create API client with client ID and secret
+arapy identities api-client add \
+    --client_id=automation-user --client_secret=RandomSecure123!
+
+# Create with additional OAuth settings
+arapy identities api-client add \
+    --client_id=portal-sync --client_secret=secret --enabled=true \
+    --client_public=false --client_refresh=true
+
+# Bulk import from JSON
 arapy identities api-client add --file=api_clients.json
 ```
 
 ### Delete
 ```bash
-arapy identities api-client delete --id=MyClient
+# Delete API client
+arapy identities api-client delete --id=automation-user
 ```
 
 ### Get
 ```bash
-arapy identities api-client get --id=MyClient
+# Get API client details
+arapy identities api-client get --id=automation-user
 ```
 
 ---
@@ -254,23 +375,39 @@ arapy identities api-client get --id=MyClient
 
 ### List
 ```bash
+# List all authentication methods
 arapy policy-elements auth-method list
-arapy policy-elements auth-method list --filter='{"method_type":"Internal"}'
+
+# List with pagination
+arapy policy-elements auth-method list --limit=20 --sort=+name
+
+# Filter by method type
+arapy policy-elements auth-method list --filter='{"method_type":"LDAP"}'
 ```
 
 ### Add
 ```bash
-arapy policy-elements auth-method add --name=MyAuthMethod --method_type=Internal
+# Create authentication method
+arapy policy-elements auth-method add --name=internal-ldap --method_type=LDAP
+
+# Create with details (JSON for details field)
+arapy policy-elements auth-method add \
+    --name=ad-auth --method_type=Active-Directory \
+    --description="Active Directory authentication"
+
+# Bulk import from JSON
 arapy policy-elements auth-method add --file=auth_methods.json
 ```
 
 ### Delete
 ```bash
+# Delete authentication method
 arapy policy-elements auth-method delete --id=123
 ```
 
 ### Get
 ```bash
+# Get authentication method details
 arapy policy-elements auth-method get --id=123
 ```
 
@@ -280,13 +417,26 @@ arapy policy-elements auth-method get --id=123
 
 ### List
 ```bash
+# List all enforcement profiles
 arapy policy-elements enforcement-profile list
-arapy policy-elements enforcement-profile list --limit=50
+
+# List with pagination
+arapy policy-elements enforcement-profile list --limit=50 --sort=+id
+
+# Filter by name or other criteria
+arapy policy-elements enforcement-profile list --filter='{"name":"Guest"}'
+
+# Get total count
+arapy policy-elements enforcement-profile list --calculate_count=true
 ```
 
 ### Get
 ```bash
+# Get enforcement profile details
 arapy policy-elements enforcement-profile get --id=1001
+
+# Get and export to JSON
+arapy policy-elements enforcement-profile get --id=1001 --out=./profile_details.json
 ```
 
 ---
@@ -295,21 +445,94 @@ arapy policy-elements enforcement-profile get --id=1001
 
 | Option | Description |
 |--------|------------|
-| `--limit=` | Limit API results |
-| `--offset=` | Pagination offset |
-| `--sort=` | Sorting (e.g. `+id`) |
-| `--out=` | Override output file |
-| `--file=` | Load payload from JSON or CSV |
-| `-vvv` | Verbose mode (print to console) |
-| `--help` | Context-aware help |
-| `--version` | Show version |
-| `--filter=` | Server-side JSON filter expression (URL-encoded) |
-| `--calculate_count=` | Request server to calculate total count (`true`/`false`) |
+| `--limit=N` | Limit results (1–1000, default 25) |
+| `--offset=N` | Pagination offset (default 0) |
+| `--sort=±id` | Sort ordering; prefix with `+` (ascending) or `-` (descending) |
+| `--out=FILE` | Override default log output path |
+| `--file=FILE` | Load bulk payload from JSON or CSV |
+| `--filter=JSON` | Server-side JSON filter expression |
+| `--calculate_count=yes/no` | Request total item count from server |
+| `--csv_fieldnames=...` | Custom CSV columns (comma-separated) |
+| `-vvv, --verbose` | Print output to console (plus log to file) |
+| `--help` | Context-aware help for module/service/action |
+| `--version` | Display installed version |
 
-Notes:
-- `--filter` accepts a JSON expression according to ClearPass API filter syntax. Example: `--filter='{"name":"edge"}'` (URL-encode when necessary).
-- `--calculate_count` requests the API to return the total item count; pass `true` or `false`.
-- `--limit` must be an integer between 1 and 1000 (per ClearPass API).
+### Filter Expressions
+
+`--filter` accepts ClearPass API JSON filter syntax:
+
+```bash
+# Simple equality
+arapy identities endpoint list --filter='{"status":"Known"}'
+
+# Multiple conditions (AND)
+arapy identities device list --filter='{"enabled":true,"role_id":2}'
+
+# With comparison operators
+arapy policy-elements network-device list --filter='{"name":{"$contains":"border"}}'
+```
+
+Check ClearPass API documentation for supported operators like `$contains`, `$gt`, `$gte`, `$lt`, etc.
+
+### Pagination & Limits
+
+- `--limit` must be an integer 1–1000 (per ClearPass API constraints)
+- Default limit: 25 items per request
+- Use `--offset` to skip results for pagination
+- Use `--calculate_count=true` to fetch total count (slower on large datasets)
+
+Example pagination:
+```bash
+# First 25 items
+arapy identities endpoint list --limit=25
+
+# Next 25 items
+arapy identities endpoint list --limit=25 --offset=25
+```
+
+### File Imports (Bulk Operations)
+
+`--file` supports JSON and CSV bulk imports for `add` operations:
+
+```bash
+# JSON format: single object or array of objects
+arapy identities endpoint add --file=endpoints.json
+
+# CSV format: DictReader with header row
+arapy policy-elements network-device add --file=devices.csv
+```
+
+Example CSV format:
+```csv
+name,ip_address,vendor_name
+border-1,10.0.0.1,Aruba
+border-2,10.0.0.2,Aruba
+```
+
+### CSV Export
+
+Export list results to CSV with custom columns:
+
+```bash
+# Export with selected columns
+arapy policy-elements network-device list \
+    --csv_fieldnames=id,name,ip_address,vendor_name \
+    --out=./devices_export.csv
+
+# Available columns vary by service; defaults include id, name, enabled, etc.
+```
+
+### Sorting
+
+Use `--sort=` with a plus (`+`) for ascending or minus (`-`) for descending:
+
+```bash
+# Sort by name (ascending)
+arapy identities device list --sort=+name
+
+# Sort by ID (descending)
+arapy identities user list --sort=-id
+```
 
 ---
 
@@ -455,5 +678,5 @@ Internal / Custom Use
 
 ---
 
-**arapy v1.0.0**  
+**arapy v1.1.2**  
 A clean, modular ClearPass API toolkit built for automation and operators alike.

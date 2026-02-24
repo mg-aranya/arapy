@@ -4,7 +4,7 @@
 # description       :
 # author            :Mathias Granlund [mathias.granlund@aranya.se]
 # date              :2026-02-20
-# script version    :0.8.0
+# script version    :1.1.2
 # clearpass version :6.11.13
 # python_version    :3.10.12
 # ======================================================================
@@ -134,7 +134,7 @@ def print_help(args=None):
 
     if (module, service, action) == ("policy-elements", "network-device", "list"):
         action_help = (
-            "Network Device (NAD) list\n"
+            "Network Device list\n"
             "Usage:\n"
             "  arapy policy-elements network-device list [--limit=N] [--offset=N] [--sort=+id] [--out=FILE] [-vvv]\n"
             "  Optional: --csv_fieldnames=id,name,ip_address\n"
@@ -142,7 +142,7 @@ def print_help(args=None):
 
     elif (module, service, action) == ("policy-elements", "network-device", "add"):
         action_help = (
-            "Network Device (NAD) add\n"
+            "Network Device add\n"
             "Usage:\n"
             "  arapy policy-elements network-device add --name=NAME --ip_address=IP --vendor_name=VENDOR "
             "[--radius_secret=SECRET] [--out=FILE] [-vvv]\n"
@@ -153,9 +153,16 @@ def print_help(args=None):
 
     elif (module, service, action) == ("policy-elements", "network-device", "delete"):
         action_help = (
-            "Network Device (NAD) delete\n"
+            "Network Device delete\n"
             "Usage:\n"
             "  arapy policy-elements network-device delete --id=1234 [--out=FILE] [-vvv]\n"
+        )
+
+    elif (module, service, action) == ("policy-elements", "network-device", "get"):
+        action_help = (
+            "Network Device get\n"
+            "Usage:\n"
+            "  arapy policy-elements network-device get --id=1234 [--out=FILE] [-vvv]\n"
         )
 
     elif (module, service, action) == ("identities", "endpoint", "list"):
