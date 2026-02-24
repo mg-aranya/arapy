@@ -68,7 +68,7 @@ Internally powered by a centralized `DISPATCH` routing table.
 
 # 🖥️ CLI Usage
 
-## Network Devices (NAD)
+## Network Devices
 
 ### List
 ```bash
@@ -103,6 +103,16 @@ arapy policy-elements network-device delete --id=1234
 arapy identities endpoint list --limit=5
 ```
 
+Filter examples:
+
+```bash
+# List endpoints that match a simple JSON filter (URL-encode when running in a shell)
+arapy identities endpoint list --filter='{"mac_address":"aa:bb:cc:dd:ee:ff"}' --limit=1
+
+# Request server to calculate total count (slower):
+arapy identities endpoint list --filter='{"status":"Known"}' --calculate_count=true --limit=25
+```
+
 ### Get
 ```bash
 arapy identities endpoint get --id=1234
@@ -114,6 +124,16 @@ arapy identities endpoint get --mac_address=aa:bb:cc:dd:ee:ff
 arapy identities endpoint add \
     --mac_address=aa:bb:cc:dd:ee:ff \
     --status=Known
+```
+
+Additional examples:
+
+```bash
+# Add endpoint with device insight tags (comma-separated)
+arapy identities endpoint add --mac_address=aa:bb:cc:dd:ee:ff --status=Known --device_insight_tags=printer,office
+
+# Add endpoint with randomized_mac flag (true/false)
+arapy identities endpoint add --mac_address=aa:bb:cc:dd:ee:ff --status=Known --randomized_mac=true
 ```
 
 ### Delete
@@ -135,6 +155,13 @@ arapy identities endpoint delete --id=1234
 | `-vvv` | Verbose mode (print to console) |
 | `--help` | Context-aware help |
 | `--version` | Show version |
+| `--filter=` | Server-side JSON filter expression (URL-encoded) |
+| `--calculate_count=` | Request server to calculate total count (`true`/`false`) |
+
+Notes:
+- `--filter` accepts a JSON expression according to ClearPass API filter syntax. Example: `--filter='{"name":"edge"}'` (URL-encode when necessary).
+- `--calculate_count` requests the API to return the total item count; pass `true` or `false`.
+- `--limit` must be an integer between 1 and 1000 (per ClearPass API).
 
 ---
 
@@ -185,7 +212,7 @@ arapy/arapy/logs/
 
 Examples:
 - `network_devices.csv`
-- `nad_created.json`
+- `network_device_created.json`
 - `endpoints.csv`
 - `endpoint_deleted.json`
 

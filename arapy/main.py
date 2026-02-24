@@ -64,6 +64,9 @@ def print_help(args=None):
         "Notes:\n"
         "  - Use -vvv / --verbose to also print output to console (otherwise logs to file only).\n"
         "  - Use --out=FILE to override default log output path.\n"
+        "  - Use --filter=JSON to provide a server-side JSON filter expression (URL-encoded).\n"
+        "  - Use --calculate_count=true|false to request a total count from the server.\n"
+        "  - Note: --limit must be between 1 and 1000 per API constraints.\n"
     )
 
     # ---- TOP LEVEL HELP ----
@@ -161,6 +164,8 @@ def print_help(args=None):
             "Usage:\n"
             "  arapy identities endpoint list [--limit=N] [--offset=N] [--sort=+id] [--out=FILE] [-vvv]\n"
             "  Optional: --csv_fieldnames=id,mac_address,description,status,device_insight_tags\n"
+            "  Optional: --filter=JSON (server-side filter expression)\n"
+            "  Optional: --calculate_count=true|false\n"
         )
 
     elif (module, service, action) == ("identities", "endpoint", "get"):
@@ -201,7 +206,6 @@ def print_help(args=None):
         )
 
     print(header + action_help)
-
 
 def parse_cli(argv):
     args = {}

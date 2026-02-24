@@ -26,10 +26,10 @@ CREDENTIALS = {
     "client_secret": "h6jXPUUZh/GzktMFw0Sr/Is1WeISEwAQF+k7bTFH7393"
 }
 
-# ---- NAD files ----
-DEFAULT_NAD = str(LOG_DIR / "network_devices.")
-DEFAULT_NAD_CREATED = str(LOG_DIR / "nad_created.")
-DEFAULT_NAD_DELETED = str(LOG_DIR / "nad_deleted.")
+# ---- Network device files ----
+DEFAULT_NETWORK_DEVICE = str(LOG_DIR / "network_devices.")
+DEFAULT_NETWORK_DEVICE_CREATED = str(LOG_DIR / "network_device_created.")
+DEFAULT_NETWORK_DEVICE_DELETED = str(LOG_DIR / "network_device_deleted.")
 
 # ---- Endpoint files ----
 DEFAULT_ENDPOINT_CSV = str(LOG_DIR / "endpoints.csv")

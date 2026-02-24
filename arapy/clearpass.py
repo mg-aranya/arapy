@@ -82,31 +82,42 @@ class ClearPassClient:
         }
         return self.request(api_paths, "POST", "oauth", json_body=payload)
 
-    def nad_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25, sort: str = "+id"):
+    def network_device_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25, sort: str = "+id", filter: str | None = None, calculate_count: bool | None = None):
         params = {
             "offset": offset,
             "limit": limit,
             "sort": sort,
-            "calculate_count": "false",
         }
-        return self.request(api_paths, "GET", "nad", token=token, params=params)
+        if calculate_count is not None:
+            params["calculate_count"] = calculate_count
+        if filter is not None:
+            params["filter"] = filter
 
-    def nad_create(self, api_paths: dict, token: str, payload: dict):
-        return self.request(api_paths, "POST", "nad", token=token, json_body=payload)
+        return self.request(api_paths, "GET", "network_device", token=token, params=params)
 
-    def nad_delete(self, api_paths: dict, token: str, device_id: int):
-        return self.request(api_paths, "DELETE", "nad", token=token, path_suffix=f"/{device_id}")
+    def network_device_create(self, api_paths: dict, token: str, payload: dict):
+        return self.request(api_paths, "POST", "network_device", token=token, json_body=payload)
+
+    def network_device_delete(self, api_paths: dict, token: str, device_id: int):
+        return self.request(api_paths, "DELETE", "network_device", token=token, path_suffix=f"/{device_id}")
+
+    def network_device_get(self, api_paths: dict, token: str, *, device_id: int):
+        return self.request(api_paths, "GET", "network_device", token=token, path_suffix=f"/{device_id}")
 
 
         # ---- Endpoint (Identities > Endpoint) ----
 
-    def endpoint_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25, sort: str = "+id"):
+    def endpoint_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25, sort: str = "+id", filter: str | None = None, calculate_count: bool | None = None):
         params = {
             "offset": offset,
             "limit": limit,
             "sort": sort,
-            "calculate_count": "false",
         }
+        if calculate_count is not None:
+            params["calculate_count"] = calculate_count
+        if filter is not None:
+            params["filter"] = filter
+
         return self.request(api_paths, "GET", "endpoint", token=token, params=params)
 
     def endpoint_get(self, api_paths: dict, token: str, *, endpoint_id: int | None = None, mac_address: str | None = None):
