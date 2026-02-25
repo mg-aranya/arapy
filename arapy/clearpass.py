@@ -82,6 +82,90 @@ class ClearPassClient:
         }
         return self.request(api_paths, "POST", "oauth", json_body=payload)
 
+    # ---- Platform Certificates ----
+
+    def cert_sign_request_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25):
+        params = {
+            "offset": offset,
+            "limit": limit,
+        }
+        return self.request(api_paths, "GET", "cert_sign_request", token=token, params=params)
+
+    def cert_sign_request_get(self, api_paths: dict, token: str, csr_id: int):
+        return self.request(api_paths, "GET", "cert_sign_request", token=token, path_suffix=f"/{csr_id}")
+
+    def cert_sign_request_create(self, api_paths: dict, token: str, payload: dict):
+        return self.request(api_paths, "POST", "cert_sign_request", token=token, json_body=payload)
+
+    def cert_sign_request_delete(self, api_paths: dict, token: str, csr_id: int):
+        return self.request(api_paths, "DELETE", "cert_sign_request", token=token, path_suffix=f"/{csr_id}")
+
+    def cert_trust_list_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25):
+        params = {
+            "offset": offset,
+            "limit": limit,
+        }
+        return self.request(api_paths, "GET", "cert_trust_list", token=token, params=params)
+
+    def cert_trust_list_get(self, api_paths: dict, token: str, trust_id: int):
+        return self.request(api_paths, "GET", "cert_trust_list", token=token, path_suffix=f"/{trust_id}")
+
+    def cert_trust_list_details_get(self, api_paths: dict, token: str, trust_id: int):
+        return self.request(api_paths, "GET", "cert_trust_list_details", token=token, path_suffix=f"/{trust_id}")
+
+    def client_cert_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25):
+        params = {
+            "offset": offset,
+            "limit": limit,
+        }
+        return self.request(api_paths, "GET", "client_cert", token=token, params=params)
+
+    def client_cert_get(self, api_paths: dict, token: str, cert_id: int):
+        return self.request(api_paths, "GET", "client_cert", token=token, path_suffix=f"/{cert_id}")
+
+    def client_cert_delete(self, api_paths: dict, token: str, cert_id: int):
+        return self.request(api_paths, "DELETE", "client_cert", token=token, path_suffix=f"/{cert_id}")
+
+    def revocation_list_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25):
+        params = {
+            "offset": offset,
+            "limit": limit,
+        }
+        return self.request(api_paths, "GET", "revocation_list", token=token, params=params)
+
+    def revocation_list_get(self, api_paths: dict, token: str, list_id: int):
+        return self.request(api_paths, "GET", "revocation_list", token=token, path_suffix=f"/{list_id}")
+
+    def self_signed_cert_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25):
+        params = {
+            "offset": offset,
+            "limit": limit,
+        }
+        return self.request(api_paths, "GET", "self_signed_cert", token=token, params=params)
+
+    def self_signed_cert_get(self, api_paths: dict, token: str, cert_id: int):
+        return self.request(api_paths, "GET", "self_signed_cert", token=token, path_suffix=f"/{cert_id}")
+
+    def server_cert_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25):
+        params = {
+            "offset": offset,
+            "limit": limit,
+        }
+        return self.request(api_paths, "GET", "server_cert", token=token, params=params)
+
+    def server_cert_get(self, api_paths: dict, token: str, cert_id: int):
+        return self.request(api_paths, "GET", "server_cert", token=token, path_suffix=f"/{cert_id}")
+
+    def service_cert_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25):
+        params = {
+            "offset": offset,
+            "limit": limit,
+        }
+        return self.request(api_paths, "GET", "service_cert", token=token, params=params)
+
+    def service_cert_get(self, api_paths: dict, token: str, cert_id: int):
+        return self.request(api_paths, "GET", "service_cert", token=token, path_suffix=f"/{cert_id}")
+
     def network_device_list(self, api_paths: dict, token: str, *, offset: int = 0, limit: int = 25, sort: str = "+id", filter: str | None = None, calculate_count: bool | None = None):
         params = {
             "offset": offset,

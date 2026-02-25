@@ -88,6 +88,15 @@ class OutputPaths:
         ("network-device-group", "add"): "network_device_group_created",
         ("network-device-group", "delete"): "network_device_group_deleted",
         ("network-device-group", "get"): "network_device_group",
+
+        # Platform certificates
+        ("cert-sign-request", "list"): "cert_sign_requests",
+        ("cert-trust-list", "list"): "cert_trust_list",
+        ("client-cert", "list"): "client_certs",
+        ("revocation-list", "list"): "revocation_lists",
+        ("self-signed-cert", "list"): "self_signed_certs",
+        ("server-cert", "list"): "server_certs",
+        ("service-cert", "list"): "service_certs",
     }
 
     def __init__(self, log_dir: Path = LOG_DIR):

@@ -1,8 +1,8 @@
 #commands.py
 
-#---- custom libs
+#---- standard libs
 import re
-
+#---- custom libs
 from . import config
 from .io_utils import log_to_file, load_payload_file
 
@@ -18,7 +18,135 @@ def build_payload_from_args(args, reserved_keys):
     payload = {k: v for k, v in args.items() if k not in reserved_keys}
     return payload
 
-# ---- Network-device handlers ----
+
+# ---- Platform Certificate handlers ----
+
+def handle_cert_sign_request_list(cp, token, APIPath, args):
+    verbose = args.get("verbose", False)
+    data_format = args.get("data_format", "json")
+    out_path = resolve_out_path(args, "cert-sign-request", "list", data_format)
+
+    offset = int(args.get("offset", 0))
+    limit = int(args.get("limit", 25))
+
+    csrs = cp.cert_sign_request_list(APIPath, token, offset=offset, limit=limit)
+
+    log_to_file(
+        csrs,
+        filename=out_path,
+        data_format=data_format,
+        also_console=verbose,
+    )
+
+
+def handle_cert_trust_list_list(cp, token, APIPath, args):
+    verbose = args.get("verbose", False)
+    data_format = args.get("data_format", "json")
+    out_path = resolve_out_path(args, "cert-trust-list", "list", data_format)
+
+    offset = int(args.get("offset", 0))
+    limit = int(args.get("limit", 25))
+
+    items = cp.cert_trust_list_list(APIPath, token, offset=offset, limit=limit)
+
+    log_to_file(
+        items,
+        filename=out_path,
+        data_format=data_format,
+        also_console=verbose,
+    )
+
+
+def handle_client_cert_list(cp, token, APIPath, args):
+    verbose = args.get("verbose", False)
+    data_format = args.get("data_format", "json")
+    out_path = resolve_out_path(args, "client-cert", "list", data_format)
+
+    offset = int(args.get("offset", 0))
+    limit = int(args.get("limit", 25))
+
+    items = cp.client_cert_list(APIPath, token, offset=offset, limit=limit)
+
+    log_to_file(
+        items,
+        filename=out_path,
+        data_format=data_format,
+        also_console=verbose,
+    )
+
+
+def handle_revocation_list_list(cp, token, APIPath, args):
+    verbose = args.get("verbose", False)
+    data_format = args.get("data_format", "json")
+    out_path = resolve_out_path(args, "revocation-list", "list", data_format)
+
+    offset = int(args.get("offset", 0))
+    limit = int(args.get("limit", 25))
+
+    items = cp.revocation_list_list(APIPath, token, offset=offset, limit=limit)
+
+    log_to_file(
+        items,
+        filename=out_path,
+        data_format=data_format,
+        also_console=verbose,
+    )
+
+
+def handle_self_signed_cert_list(cp, token, APIPath, args):
+    verbose = args.get("verbose", False)
+    data_format = args.get("data_format", "json")
+    out_path = resolve_out_path(args, "self-signed-cert", "list", data_format)
+
+    offset = int(args.get("offset", 0))
+    limit = int(args.get("limit", 25))
+
+    items = cp.self_signed_cert_list(APIPath, token, offset=offset, limit=limit)
+
+    log_to_file(
+        items,
+        filename=out_path,
+        data_format=data_format,
+        also_console=verbose,
+    )
+
+
+def handle_server_cert_list(cp, token, APIPath, args):
+    verbose = args.get("verbose", False)
+    data_format = args.get("data_format", "json")
+    out_path = resolve_out_path(args, "server-cert", "list", data_format)
+
+    offset = int(args.get("offset", 0))
+    limit = int(args.get("limit", 25))
+
+    items = cp.server_cert_list(APIPath, token, offset=offset, limit=limit)
+
+    log_to_file(
+        items,
+        filename=out_path,
+        data_format=data_format,
+        also_console=verbose,
+    )
+
+
+def handle_service_cert_list(cp, token, APIPath, args):
+    verbose = args.get("verbose", False)
+    data_format = args.get("data_format", "json")
+    out_path = resolve_out_path(args, "service-cert", "list", data_format)
+
+    offset = int(args.get("offset", 0))
+    limit = int(args.get("limit", 25))
+
+    items = cp.service_cert_list(APIPath, token, offset=offset, limit=limit)
+
+    log_to_file(
+        items,
+        filename=out_path,
+        data_format=data_format,
+        also_console=verbose,
+    )
+
+# ---- Network-device handlers (Policy Elements > Network Device---
 def handle_network_device_list(cp, token, APIPath, args):
     verbose = args.get("verbose", False)
     data_format = args.get("data_format", config.DEFAULT_FORMAT)
@@ -722,6 +850,29 @@ DISPATCH = {
         "enforcement-profile": {
             "list": handle_enforcement_profile_list,
             "get": handle_enforcement_profile_get,
+        },
+    },
+    "platform-certificates": {
+        "cert-sign-request": {
+            "list": handle_cert_sign_request_list,
+        },
+        "cert-trust-list": {
+            "list": handle_cert_trust_list_list,
+        },
+        "client-cert": {
+            "list": handle_client_cert_list,
+        },
+        "revocation-list": {
+            "list": handle_revocation_list_list,
+        },
+        "self-signed-cert": {
+            "list": handle_self_signed_cert_list,
+        },
+        "server-cert": {
+            "list": handle_server_cert_list,
+        },
+        "service-cert": {
+            "list": handle_service_cert_list,
         },
     },
     "identities": {
