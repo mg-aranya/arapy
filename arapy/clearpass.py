@@ -5,11 +5,7 @@
 import requests
 
 class ClearPassClient:
-    """
-    Minimal ClearPass API client
-    """
-
-    def __init__(self, server: str, *, https_prefix: str = "https://", verify_ssl: bool = False, timeout: int = 15):
+    def __init__(self, server: str, *, https_prefix: str, verify_ssl: bool = False, timeout: int = 15):
         self.server = server
         self.https_prefix = https_prefix
         self.verify_ssl = verify_ssl
@@ -401,3 +397,34 @@ class ClearPassClient:
 
     def network_device_group_delete_by_name(self, api_paths: dict, token: str, name: str):
         return self.request(api_paths, "DELETE", "network_device_group", token=token, path_suffix=f"/name/{name}")
+
+
+# The following methods are generic handlers for the list, get, add and delete actions.
+# They can be used for any endpoint that follows the standard REST patterns, and can be called from the command handlers in commands.py.
+# This way we can avoid writing separate methods for each endpoint when the logic is the same.
+
+#---- Generic method for [module] [service] [action]=list
+    def _list(self, api_paths: dict, token: str, args:dict, *, offset: int = 0, limit: int = 25, sort: str = "+id", filter: str | None = None, calculate_count: bool | None = None):
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "sort": sort,
+        }
+        if calculate_count is not None:
+            params["calculate_count"] = calculate_count
+        if filter is not None:
+            params["filter"] = filter
+
+        return self.request(api_paths, "GET", args["service"], token=token, params=params)
+
+#---- Generic method for [module] [service] [action]=add
+    def _add(self, api_paths: dict, token: str, args:dict, payload: dict):
+        return self.request(api_paths, "POST", args["service"], token=token, json_body=payload)
+
+#---- Generic method for [module] [service] [action]=get
+    def _get(self, api_paths: dict, token: str, args, entity):
+        return self.request(api_paths, "GET", args["service"], token=token, path_suffix=f"/{entity}")
+
+#---- Generic method for [module] [service] [action]=delete
+    def _delete(self, api_paths: dict, token: str, args, entity):
+        return self.request(api_paths, "DELETE", args["service"], token=token, path_suffix=f"/{entity}")

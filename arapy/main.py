@@ -26,8 +26,6 @@ from .gui import run_gui
 if not config.VERIFY_SSL:
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
-
 def print_help(args=None):
     """
     Context-aware help, driven by commands.DISPATCH.
@@ -420,6 +418,7 @@ def main():
 
     try:
         command = commands.DISPATCH[module][service][action]
+        print(args)
     except KeyError:
         print_help(args)
         print(f"\nUnknown command: {module} {service} {action}")

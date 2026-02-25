@@ -45,7 +45,6 @@ def log_to_file(
     _write_value_to_file(thing, path, mode, data_format, csv_fieldnames, csv_include_header, items_path, also_console)
     return thing
 
-
 def _write_value_to_file(value, path: Path, mode: str, data_format: str, csv_fieldnames, csv_include_header, items_path, also_console: bool):
     # Ensure parent dir exists
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -134,7 +133,6 @@ def _extract_by_path(data, path):
         except (KeyError, IndexError, TypeError):
             return None
     return cur
-
 
 def _write_csv(value, tee, fieldnames, include_header, items_path):
     """

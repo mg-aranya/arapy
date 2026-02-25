@@ -2,6 +2,7 @@
 
 #---- standard libs
 import re
+from unittest.mock import call
 #---- custom libs
 from . import config
 from .io_utils import log_to_file, load_payload_file
@@ -12,7 +13,8 @@ def resolve_out_path(args: dict, service: str, action: str, data_format: str) ->
     if out_arg:
         return out_arg
     # Use centralized output paths; pass ext so templates with trailing '.' get proper extension
-    return config.OUTPUT_PATHS.get(service, action, ext=data_format)
+    base = service.replace("-", "_")
+    return str(config.LOG_DIR / f"{base}_{action}.{data_format}")
 
 def build_payload_from_args(args, reserved_keys):
     payload = {k: v for k, v in args.items() if k not in reserved_keys}
@@ -179,11 +181,7 @@ def handle_network_device_list(cp, token, APIPath, args):
     else:
         csv_fieldnames = None
 
-    log_to_file(
-        devices,
-        filename=out_path,
-        data_format=data_format,
-        csv_fieldnames=csv_fieldnames,
+    log_to_file(devices,filename=out_path,data_format=data_format,csv_fieldnames=csv_fieldnames,
         items_path=("_embedded", "items"),
         also_console=verbose,
     )
@@ -273,6 +271,7 @@ def handle_network_device_get(cp, token, APIPath, args):
     )
 
 # ---- Network Device Group handlers (Policy Elements > Network Device Groups) ----
+'''
 def handle_network_device_group_list(cp, token, APIPath, args):
     verbose = args.get("verbose", False)
     data_format = args.get("data_format", config.DEFAULT_FORMAT)
@@ -310,7 +309,7 @@ def handle_network_device_group_list(cp, token, APIPath, args):
         items_path=("_embedded", "items"),
         also_console=verbose,
     )
-
+'''
 def handle_network_device_group_get(cp, token, APIPath, args):
     verbose = args.get("verbose", False)
     data_format = args.get("data_format", "json")
@@ -827,19 +826,122 @@ def handle_enforcement_profile_get(cp, token, APIPath, args):
     result = cp.enforcement_profile_get(APIPath, token, int(profile_id))
     log_to_file(result, filename=out_path, data_format=data_format, also_console=verbose)
 
+
+
+# ---- Generic handler for all add calls ----
+def _add_call(cp, token, APIPath, args):
+    verbose = args.get("verbose", False)
+    data_format = args.get("data_format", config.DEFAULT_FORMAT)
+    out_path = resolve_out_path(args, args["service"], args["action"], data_format)
+
+    # File-based payload
+    if "file" in args:
+        payload = load_payload_file(args["file"])
+
+        if isinstance(payload, list):
+            call = [cp._add(APIPath, token, args, p) for p in payload]
+            log_to_file(call, filename=out_path, data_format=data_format, also_console=verbose)
+            return
+
+    else:
+        reserved = {"help", "version", "verbose", "module", "service", "action", "out", "file", "csv_fieldnames", "id"}
+        payload = build_payload_from_args(args, reserved)
+
+    # Required fields depending on API [method] [service]
+    required = ("")
+    missing = [k for k in required if not payload.get(k)]
+    if missing:
+        raise ValueError(
+            f"{args['service']} {args['action']} requires: "
+            f"{', '.join(f'--{k}=...' for k in required)}. "
+            f"Missing: {', '.join(missing)}"
+    )
+
+    call = cp._add(APIPath, token, args, payload)
+
+    log_to_file(call,filename=out_path,data_format=data_format, also_console=verbose)
+
+# ---- Generic handler for all delete calls ----
+def _delete_call(cp, token, APIPath, args):
+    verbose = args.get("verbose", False)
+    data_format = args.get("data_format", config.DEFAULT_FORMAT)
+    out_path = resolve_out_path(args, args["service"], args["action"], data_format)
+
+    id = args.get("id")
+    name = args.get("name")
+    if id is not None:
+        try:
+            cp._delete(APIPath, token, args, id)
+            call = {"deleted": id, "status": "ok"}
+        except ValueError:
+            raise ValueError("--id must be numeric")
+    elif name is not None:
+        name = "name/" + name  # API expects name-based GETs to be in the format /name/{name}
+        cp._delete(APIPath, token, args, name)
+        call = {"deleted": args.get("name"), "status": "ok"}
+    else:
+        raise ValueError(f"{args['service']} delete requires --id=<id> or --name=<name>")
+    
+    log_to_file(call, filename=out_path, data_format=data_format, also_console=verbose)
+
+# ---- Generic handler for all get calls ----
+def _get_call(cp, token, APIPath, args):
+    verbose = args.get("verbose", False)
+    data_format = args.get("data_format", config.DEFAULT_FORMAT)
+    out_path = resolve_out_path(args, args["service"], args["action"], data_format)
+
+    id = args.get("id")
+    name = args.get("name")
+    if id is not None:
+        try:
+            call = cp._get(APIPath, token, args, id)
+        except ValueError:
+            raise ValueError("--id must be numeric")
+    elif name is not None:
+        name = "name/" + name  # API expects name-based GETs to be in the format /name/{name}
+        call = cp._get(APIPath, token, args, name)
+    else:
+        raise ValueError(f"{args['service']} get requires --id=<id> or --name=<name>")
+    
+    log_to_file(call, filename=out_path, data_format=data_format, also_console=verbose)
+
+# ---- Generic handler for all list calls ----
+def _list_call(cp, token, APIPath, args):
+    verbose = args.get("verbose", False)
+    data_format = args.get("data_format", config.DEFAULT_FORMAT)
+    print("args[service]:", args.get("service"), "args[action]:", args.get("action"))
+    print("file should be: ", args["service"] + "_" + args["action"] + "." + data_format)
+    out_path = resolve_out_path(args, args["service"], args["action"], data_format)
+
+    offset = int(args.get("offset", 0))
+    limit = int(args.get("limit", 25))
+    sort = args.get("sort", "+id")
+    filter_expr = args.get("filter")
+    calc_count_arg = args.get("calculate_count")
+    if isinstance(calc_count_arg, str):
+        calc_count = calc_count_arg.lower() in ("1", "true", "yes")
+    else:
+        calc_count = bool(calc_count_arg) if calc_count_arg is not None else None
+
+    if limit < 1 or limit > 1000:
+        raise ValueError("--limit must be between 1 and 1000")
+
+    call = cp._list(APIPath, token, args, offset=offset, limit=limit, sort=sort, filter=filter_expr, calculate_count=calc_count)
+    log_to_file(call, filename=out_path, data_format=data_format, also_console=verbose)
+
 DISPATCH = {
     "policy-elements": {
         "network-device": {
-            "list": handle_network_device_list,
-            "get": handle_network_device_get,
-            "add": handle_network_device_add,
-            "delete": handle_network_device_delete,
+            "list": _list_call,
+            "get": _get_call,
+            "add": _add_call,
+            "delete": _delete_call,
         },
         "network-device-group": {
-            "list": handle_network_device_group_list,
-            "get": handle_network_device_group_get,
-            "add": handle_network_device_group_add,
-            "delete": handle_network_device_group_delete,
+            "list": _list_call,
+            "get": _get_call,
+            "add": _add_call,
+            "delete": _delete_call,
         },
         "auth-method": {
             "list": handle_auth_method_list,
@@ -899,6 +1001,14 @@ DISPATCH = {
             "add": handle_api_client_add,
             "delete": handle_api_client_delete,
             "get": handle_api_client_get,
+        },
+    },
+    "dev": {
+        "test": {
+            "list": _list_call,
+            "add": _add_call,
+            "get": _get_call,
+            "delete": _delete_call,
         },
     },
 }
