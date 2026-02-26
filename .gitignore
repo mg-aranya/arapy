@@ -10,3 +10,4 @@ build/
 logs/
 *.log
 .pytest_cache/
+.backup/

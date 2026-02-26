@@ -5,12 +5,13 @@ import json
 import csv
 import os
 from pathlib import Path
+
 def log_to_file(
     thing,
     filename: str | Path | None = None,
     *args,
     also_console: bool = False,
-    mode: str = "w",
+    mode: str = "a",
     data_format: str = "json",  # "json" (default) or "csv" or "raw"
     csv_fieldnames=None,  # optional list of columns
     csv_include_header: bool = True,  # header for CSV
@@ -133,47 +134,6 @@ def _extract_by_path(data, path):
         except (KeyError, IndexError, TypeError):
             return None
     return cur
-
-def _write_csv(value, tee, fieldnames, include_header, items_path):
-    """
-    CSV rules:
-    - If value is a dict and items_path resolves to a list -> write that list
-    - If value is already a list -> write it
-    - If value is a dict -> write single row
-    - Otherwise -> write single column "value"
-    """
-
-    rows = None
-
-    # 1) Dict container with items_path (ClearPass default: _embedded.items)
-    if isinstance(value, dict) and items_path:
-        extracted = _extract_by_path(value, items_path)
-        if isinstance(extracted, list):
-            rows = extracted
-
-    # 2) If it's a list already
-    if rows is None and isinstance(value, list):
-        rows = value
-
-    # 3) Single dict -> single row
-    if rows is None and isinstance(value, dict):
-        rows = [value]
-
-    # 4) Fallback single value
-    if rows is None:
-        rows = [{"value": value}]
-
-    if not rows:
-        return
-
-    # Dict rows -> DictWriter
-    if isinstance(rows[0], dict):
-        if fieldnames is None:
-            fieldnames = list(rows[0].keys())
-
-        # This function is no longer using stdout-based writers; kept as a
-        # compatibility placeholder but should not be called.
-        raise RuntimeError("_write_csv is deprecated; use _write_value_to_file instead")
 
 def ensure_parent_dir(path: str) -> None:
     parent = os.path.dirname(path)

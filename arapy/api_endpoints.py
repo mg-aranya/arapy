@@ -164,7 +164,7 @@ API_ENDPOINTS = {
     #TODO later
 
     #----Enforcement Profile
-    #TODO later
+    "enforcement-profile": "/api/enforcement-profile",
 
     #----Insight
     #TODO later

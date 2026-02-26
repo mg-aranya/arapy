@@ -10,7 +10,9 @@
 # ======================================================================
 
 #---- standard libs
+from doctest import debug
 import sys
+from tabnanny import verbose
 import urllib3
 
 #---- custom libs start
@@ -21,6 +23,8 @@ from . import config
 from . import commands
 from . import get_version
 from .gui import run_gui
+from .logger import build_logger_from_env
+
 
 #---- globals start
 if not config.VERIFY_SSL:
@@ -131,6 +135,7 @@ def print_help(args=None):
     # You can expand this incrementally.
     action_help = ""
 
+    #### BAD STATIC HELP, REPLACE WITH DYNAMIC GENERATION BASED ON ARG SPECS IN COMMANDS.py LATER ####
     if (module, service, action) == ("policy-elements", "network-device", "list"):
         action_help = (
             "Network Device list\n"
@@ -356,10 +361,12 @@ def parse_cli(argv):
     for item in argv[1:]:
         if item in ("-h", "--help"):
             args["help"] = True
-        elif item in ("-v", "--version"):
-            args["version"] = True
-        elif item in ("-vvv", "--verbose"):
+        elif item in ("-v", "--verbose"):
             args["verbose"] = True
+        elif item in ("--version"):
+            args["version"] = True
+        elif item in ("-debug"):
+            args["debug"] = True
         elif item.startswith("--") and "=" in item:
             key, value = item[2:].split("=", 1)
             args[key] = value
@@ -379,11 +386,22 @@ def parse_cli(argv):
     return args
 
 def main():
+    log_mgr = build_logger_from_env(root_name=sys.argv[0])
+    log = log_mgr.get_logger(__name__)
+    log_mgr.set_debug_mode(config.DEBUG)
+
     args = parse_cli(sys.argv)
+
+    debug = args.get("debug", False)
+    verbose = args.get("verbose", config.VERBOSE)
+    if debug:
+        log_mgr.set_debug_mode(True)
+        log.debug("Debug mode enabled via CLI argument.")
+        log.debug(f"Parsed CLI arguments: {args}")
 
     # ---- VERSION FIRST ----
     if args.get("version"):
-        print(get_version())  # or config.VERSION
+        print(get_version())
         return
 
     # ---- HELP ----
@@ -399,7 +417,7 @@ def main():
     if args.get("module") == "gui":
         run_gui()
         return
-
+    
     module = args.get("module")
     service = args.get("service")
     action = args.get("action")
@@ -408,22 +426,23 @@ def main():
         print_help(args)   # contextual help
         return
 
+    try:
+        command = commands.FUNCTIONS[action]
+    except KeyError:
+        print_help(args)
+        print(f"\nUnknown command: {module} {service} {action}")
+        return
+    
     cp = ClearPassClient(
         config.SERVER,
         https_prefix=config.HTTPS,
         verify_ssl=config.VERIFY_SSL,
         timeout=config.DEFAULT_TIMEOUT,
     )
+    if verbose:
+        log.info(f"Connecting to ClearPass server: {config.SERVER} (SSL verify: {config.VERIFY_SSL})")
+
     token = cp.login(APIPath, config.CREDENTIALS)["access_token"]
-
-    try:
-        command = commands.DISPATCH[module][service][action]
-        print(args)
-    except KeyError:
-        print_help(args)
-        print(f"\nUnknown command: {module} {service} {action}")
-        return
-
     command(cp, token, APIPath, args)
 
 if __name__ == "__main__":
