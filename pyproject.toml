@@ -13,9 +13,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-gui = []
 test = ["pytest>=7.0"]
 
 [project.scripts]
 arapy = "arapy.main:main"
-arapy-gui = "arapy.gui:run_gui"
+
+[tool.setuptools.packages.find]
+include = ["arapy*"]
+exclude = ["cache*", "logs*", "tests*"]
