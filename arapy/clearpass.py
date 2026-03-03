@@ -24,6 +24,8 @@ class ClearPassClient:
     def request(self, api_paths: dict, method: str, endpoint_key: str, token: str | None = None,
                 *, path_suffix: str = "", params: dict | None = None, json_body: dict | None = None):
         base = self.https_prefix + self.server
+        if endpoint_key not in api_paths:
+            raise KeyError(f"Unknown service '{endpoint_key}'. Known services: {', '.join(sorted(api_paths.keys())[:50])} ...")
         path = api_paths[endpoint_key]
         url = base + path + (path_suffix or "")
 

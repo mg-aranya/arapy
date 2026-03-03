@@ -20,6 +20,8 @@ else:
     LOG_DIR = Path.cwd() / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
+CACHE_DIR = Path("cache")
+
 PROFILES = {
     "lab": {
         "SERVER": "192.168.100.30:443",

@@ -10,18 +10,15 @@
 # ======================================================================
 
 #---- standard libs
-from doctest import debug
 import sys
-from tabnanny import verbose
 import urllib3
 #---- custom libs start
-from .api_endpoints import API_ENDPOINTS as APIPath
 from .clearpass import ClearPassClient
 from . import config
 from . import commands
 from . import get_version
-from .gui import run_gui
 from .logger import build_logger_from_env
+from .api_catalog import OAUTH_ENDPOINTS, get_api_paths, clear_api_cache
 #---- globals start
 if not config.VERIFY_SSL:
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -54,6 +51,7 @@ def print_help(args=None):
         "Usage:\n"
         "  arapy <module> <service> <action> [--key=value] [--log_level=debug|info|warning|error|critical] [--console]\n"
         "  arapy [--help | --version]\n"
+        "  arapy cache clear\n"
         "\n"
         "Logging:\n"
         "  - Use --log_level=LEVEL to set log level (default: info).\n"
@@ -147,7 +145,7 @@ def parse_cli(argv):
         elif item.startswith("--_cur="):
             args["_cur"] = item.split("=", 1)[1]
 
-        elif item in ("-h", "--help"):
+        elif item in ("?", "-h", "--help"):
             args["help"] = True
 
         elif item == "--verbose":
@@ -263,9 +261,8 @@ def main():
             return
         log_mgr.set_level(level_map[log_level])
 
-
     log.debug("Debug mode enabled.")
-    log.debug(f"Parsed CLI arguments: {args}")
+    log.debug(f"Parsed arguments: {args}")
 
     # ---- VERSION FIRST ----
     if args.get("version"):
@@ -281,11 +278,23 @@ def main():
     if not args.get("module"):
         print_help({})
         return
-
-    if args.get("module") == "gui":
-        run_gui()
-        return
     
+    # --- CACHE COMMANDS (no ClearPass connection needed) ---
+    if args.get("module") == "cache":
+        service = args.get("service")
+
+        # supports: arapy cache clear
+        if service == "clear" and not args.get("action"):
+            removed = clear_api_cache()
+            if removed:
+                log.info("API endpoint cache cleared.")
+            else:
+                log.info("No API endpoint cache file found (already clear).")
+            return
+
+        print("Usage:\n  arapy cache clear")
+        return
+
     module = args.get("module")
     service = args.get("service")
     action = args.get("action")
@@ -309,8 +318,13 @@ def main():
     )
     log.info(f"Connecting to ClearPass server: {config.SERVER} (SSL verify: {config.VERIFY_SSL})")
 
-    token = cp.login(APIPath, config.CREDENTIALS)["access_token"]
-    command(cp, token, APIPath, args)
+    token = cp.login(OAUTH_ENDPOINTS, config.CREDENTIALS)["access_token"]
+    log.debug(f"Authorization: Bearer {token}")
+    
+    api_paths = get_api_paths(cp, token=token)
+    log.debug(f"Loaded {len(api_paths)} API endpoints. Example keys: {sorted(list(api_paths))[:20]}")
+
+    command(cp, token, api_paths, args)
 
 if __name__ == "__main__":
     main()

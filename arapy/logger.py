@@ -38,15 +38,20 @@ class LoggerConfig:
     datefmt: str = "%Y-%m-%d %H:%M:%S"
 
 class ColorFormatter(logging.Formatter):
-    BLUE = "\033[34m"
-    RED = "\033[31m"
+    BLUE = "\033[34m" 
+    RED = "\033[31m" 
     GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    ORANGE = "\033[38;5;214m"
     RESET = "\033[0m"
+    WHITE = "\033[37m"
 
     LEVEL_COLORS = {
         logging.INFO: GREEN,
         logging.DEBUG: BLUE,
-        logging.ERROR: RED,
+        logging.ERROR: ORANGE,
+        logging.WARNING: YELLOW,
+        logging.CRITICAL: RED
     }
 
     def format(self, record: logging.LogRecord) -> str:
