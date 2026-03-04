@@ -1,6 +1,6 @@
 # arapy
 
-[![Version](https://img.shields.io/badge/version-1.2.5-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.2.6-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 [![License](https://img.shields.io/badge/license-Internal-orange.svg)]()
@@ -20,7 +20,7 @@ A modern, modular CLI toolkit for interacting with\
 -   Reliable error diagnostics
 -   Native tab completion support
 
-Version: **1.2.5**
+Version: **1.2.6**
 
 ------------------------------------------------------------------------
 
@@ -136,10 +136,9 @@ Starting with **v1.2.4**, arapy discovers available ClearPass API modules and se
 - `/api-docs`
 - `/api/apigility/documentation/<Module-v1>`
 
-This removes the need for hardcoded endpoint maps and makes arapy more resilient to ClearPass upgrades.
+This removes the need for hardcoded endpoint maps and makes arapy version agnostic and should adapt to ClearPass upgrades automatically.
 
 **Help and tab completion are generated from the discovered API catalog.**
-If the cache is missing, run any authenticated command once to build it.
 
 ------------------------------------------------------------------------
 
@@ -189,6 +188,3 @@ Internal / Custom Use\
 © Mathias Granlund
 
 ------------------------------------------------------------------------
-
-**arapy v1.2.5**\
-Clean. Modular. Production-ready ClearPass automation.

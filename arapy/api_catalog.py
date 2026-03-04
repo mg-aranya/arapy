@@ -347,8 +347,26 @@ class ApiEndpointCache:
                             if not isinstance(sp, str):
                                 continue
 
-                            route = _clean_swagger_path(sp)
-                            service_key = route.strip("/").split("/")[-1].lower()
+                            # Swagger paths may include path params like:
+                            #   /certificate/{id}/export
+                            # Your current CLI only supports collection-style routes (list) and id-at-end item routes (get/delete).
+                            # If a path param is not the last segment, we skip it to avoid generating invalid/listable routes.
+                            raw_segments = [s for s in sp.strip("/").split("/") if s]
+                            param_idxs = [i for i, s in enumerate(raw_segments) if s.startswith("{") and s.endswith("}")]
+                            if param_idxs:
+                                # Only support params at the very end: /resource/{id}
+                                if param_idxs == [len(raw_segments) - 1] and len(raw_segments) >= 2:
+                                    # Convert to collection route: /resource
+                                    sp_base = "/" + "/".join(raw_segments[:-1])
+                                    route = _clean_swagger_path(sp_base)
+                                    service_key = raw_segments[-2].lower()
+                                else:
+                                    log.debug("[api_catalog] Skipping unsupported parameterized path: %s", sp)
+                                    continue
+                            else:
+                                route = _clean_swagger_path(sp)
+                                service_key = route.strip("/").split("/")[-1].lower()
+
                             if not service_key:
                                 continue
 

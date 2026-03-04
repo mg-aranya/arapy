@@ -132,7 +132,7 @@ def _write_value_to_file(value, path: Path, mode: str, data_format: str, csv_fie
                     writer.writerow([r])
                     if also_console:
                         print(r)
-    log.info(f"Wrote file to {path}")
+    log.debug(f"Wrote file to {path}")
 
 def _extract_by_path(data, path):
     """

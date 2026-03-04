@@ -128,7 +128,8 @@ class ClearPassClient:
         if filter is not None:
             params["filter"] = filter
 
-        log.info(f"Listing {args['service']} with filter='{filter}', sort='{sort}', offset={offset}, limit={limit}, calculate_count={calculate_count}")
+        log.info(f"Liststing /api/{args['module']}/{args['service']}")
+        log.debug(f"Liststing /api/{args['module']}/{args['service']} with filter='{filter}', sort='{sort}', offset={offset}, limit={limit}, calculate_count={calculate_count}")
 
         return self.request(api_paths, "GET", f'{args["module"]}:{args["service"]}', token=token, params=params)
 

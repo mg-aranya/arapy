@@ -6,6 +6,17 @@ The format loosely follows Keep a Changelog and Semantic Versioning
 principles.
 ------------------------------------------------------------------------
 
+## [1.2.6] - 2026-03-04
+
+### Changed
+- Added integration unit tests to for all `list` commands
+- Added `update` command to manually update the local cache
+
+### Notes
+- If the API cache is missing, run `arapy cache update`
+
+------------------------------------------------------------------------
+
 ## [1.2.5] - 2026-03-04
 
 ### Changed
