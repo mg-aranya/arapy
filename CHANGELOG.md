@@ -4,35 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format loosely follows Keep a Changelog and Semantic Versioning
 principles.
-
 ------------------------------------------------------------------------
 
-## [1.2.3] - 2026-03-03
+## [1.2.4] - 2026-03-04
 
 ### Added
-
-- Dynamic ClearPass API endpoint discovery via `/api-docs`
-- Full Swagger 1.2 (Apigility) documentation parsing
-- Automatic endpoint mapping (no more static endpoint file)
-- Endpoint caching under `cache/api_endpoints_cache.json`
-- `arapy cache clear` command for manual cache invalidation
-- Improved debug logging for API discovery process
+- Dynamic ClearPass API discovery via `/api-docs` (Swagger 1.2 / Apigility documentation)
+- Endpoint catalog caching in `cache/api_endpoints_cache.json`
+- Namespaced endpoint keys (`<module>:<service>`) to avoid collisions across modules
+- Dynamic `--help` and bash completion driven by the cached API catalog
+- `arapy cache clear` command to remove the endpoint cache
 
 ### Changed
+- Removed reliance on static endpoint tables for help and completion
+- Endpoint resolution now prefers `<module>:<service>` and falls back to `<service>` for compatibility
 
-- CLI now builds endpoint map dynamically at runtime
-- Cache directory moved from `logs/` to dedicated `cache/`
-- Improved error visibility during API discovery
-- Refactored startup flow to bootstrap OAuth before API discovery
-
-### Removed
-
-- Static `api_endpoints.py`
-- GUI mode
-- `--refresh-api-cache` flag
-- Hardcoded endpoint mappings
+### Fixed
+- Prevented endpoint key collisions (e.g. `endpoint`) that could route to the wrong module and cause HTTP 405 errors
 
 ------------------------------------------------------------------------
+
 ## \[1.2.0\] - 2024-01-Release
 
 ### Added

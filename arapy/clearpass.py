@@ -24,9 +24,12 @@ class ClearPassClient:
     def request(self, api_paths: dict, method: str, endpoint_key: str, token: str | None = None,
                 *, path_suffix: str = "", params: dict | None = None, json_body: dict | None = None):
         base = self.https_prefix + self.server
-        if endpoint_key not in api_paths:
-            raise KeyError(f"Unknown service '{endpoint_key}'. Known services: {', '.join(sorted(api_paths.keys())[:50])} ...")
-        path = api_paths[endpoint_key]
+        path = api_paths.get(endpoint_key)
+        if path is None and ':' in endpoint_key:
+            # fallback to un-namespaced key
+            path = api_paths.get(endpoint_key.split(':', 1)[1])
+        if path is None:
+            raise KeyError(endpoint_key)
         url = base + path + (path_suffix or "")
 
         headers = {}
@@ -127,7 +130,7 @@ class ClearPassClient:
 
         log.info(f"Listing {args['service']} with filter='{filter}', sort='{sort}', offset={offset}, limit={limit}, calculate_count={calculate_count}")
 
-        return self.request(api_paths, "GET", args["service"], token=token, params=params)
+        return self.request(api_paths, "GET", f'{args["module"]}:{args["service"]}', token=token, params=params)
 
 #---- Generic method for [module] [service] [action]=add
     def _add(self, api_paths: dict, token: str, args:dict, payload: dict):
@@ -135,18 +138,18 @@ class ClearPassClient:
         log.info(f"Adding {args['service']} name: {payload.get('name')}")
         log.debug(f"Adding {args['service']} with payload: {payload}")
 
-        return self.request(api_paths, "POST", args["service"], token=token, json_body=payload)
+        return self.request(api_paths, "POST", f'{args["module"]}:{args["service"]}', token=token, json_body=payload)
 
 #---- Generic method for [module] [service] [action]=get
     def _get(self, api_paths: dict, token: str, args, entity):
 
         log.info(f"Fetching {args['service']}: {entity}")
 
-        return self.request(api_paths, "GET", args["service"], token=token, path_suffix=f"/{entity}")
+        return self.request(api_paths, "GET", f'{args["module"]}:{args["service"]}', token=token, path_suffix=f"/{entity}")
 
 #---- Generic method for [module] [service] [action]=delete
     def _delete(self, api_paths: dict, token: str, args, entity):
 
         log.info(f"Deleting {args['service']}: {entity}")
 
-        return self.request(api_paths, "DELETE", args["service"], token=token, path_suffix=f"/{entity}")
+        return self.request(api_paths, "DELETE", f'{args["module"]}:{args["service"]}', token=token, path_suffix=f"/{entity}")

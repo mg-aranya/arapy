@@ -1,11 +1,11 @@
 # arapy
 
-[![Version](https://img.shields.io/badge/version-1.2.3-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.2.4-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 [![License](https://img.shields.io/badge/license-Internal-orange.svg)]()
 
-A modern, modular CLI toolkit for interacting with  
+A modern, modular CLI toolkit for interacting with\
 **Aruba ClearPass Policy Manager REST API**.
 
 ------------------------------------------------------------------------
@@ -14,61 +14,31 @@ A modern, modular CLI toolkit for interacting with
 
 **arapy** is designed for operators and automation engineers who need:
 
-- A powerful, script-friendly CLI
-- Dynamic ClearPass API discovery
-- Structured logging & diagnostics
-- Clean, extensible architecture
-- Native tab completion support
+-   A powerful, script-friendly CLI
+-   A clean, extensible architecture
+-   Clear, structured logging
+-   Reliable error diagnostics
+-   Native tab completion support
 
-Version: **1.2.3**
+Version: **1.2.4**
 
 ------------------------------------------------------------------------
 
 ## ✨ Key Features
 
-- ✅ Dynamic API discovery via `/api-docs`
-- ✅ Automatic Swagger 1.2 (Apigility) parsing
-- ✅ No static endpoint mapping required
-- ✅ Endpoint caching for performance
-- ✅ `arapy cache clear` command
-- ✅ Modular command architecture
-- ✅ Full CRUD support across services
-- ✅ Pagination, filtering & sorting
-- ✅ CSV import/export
-- ✅ Bulk operations
-- ✅ Structured logging with configurable levels
-- ✅ Context-aware help system
-- ✅ Bash tab-completion
+-   ✅ Dynamic API discovery via `/api-docs`
+-   ✅ Swagger 1.2 / Apigility documentation parsing
+-   ✅ Endpoint cache (`cache/api_endpoints_cache.json`)
+-   ✅ `arapy cache clear` for cache invalidation
+-   ✅ Modular command architecture
+-   ✅ Full CRUD support across services
+-   ✅ Pagination, filtering & sorting
+-   ✅ CSV import/export
+-   ✅ Bulk operations
+-   ✅ Structured logging with configurable levels
+-   ✅ Context-aware help system
+-   ✅ Bash tab-completion
 
-------------------------------------------------------------------------
-
-
-# 🔍 Dynamic API Discovery
-
-Starting from **v1.2.3**, arapy automatically discovers all available
-ClearPass API endpoints at runtime using:
-/api-docs
-/api/apigility/documentation/<Module-v1>
-
-This means:
-
-- No more hardcoded endpoint mappings
-- Full compatibility with ClearPass API updates
-- Automatic support for new modules/services
-
-------------------------------------------------------------------------
-
-# 🗂 Endpoint Cache
-
-Discovered endpoints are cached locally:
-cache/api_endpoints_cache.json
-
-To clear the cache manually:
-
-```bash
-arapy cache clear
-```
-The next command run will rebuild the cache automatically.
 ------------------------------------------------------------------------
 
 # 🛠 Installation
@@ -162,6 +132,52 @@ arapy policy-elements network-device get --id=1001
 
 ------------------------------------------------------------------------
 
+# 🪟 GUI Mode
+
+Launch:
+
+``` bash
+arapy gui
+```
+
+or
+
+``` bash
+arapy-gui
+```
+
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
+## 🔍 Dynamic API Discovery
+
+Starting with **v1.2.4**, arapy discovers available ClearPass API modules and services at runtime using the ClearPass API explorer:
+
+- `/api-docs`
+- `/api/apigility/documentation/<Module-v1>`
+
+This removes the need for hardcoded endpoint maps and makes arapy more resilient to ClearPass upgrades.
+
+------------------------------------------------------------------------
+
+## 🗂 Endpoint Cache
+
+Discovered endpoints are cached locally for faster startup:
+
+```
+cache/api_endpoints_cache.json
+```
+
+To clear the cache manually:
+
+```bash
+arapy cache clear
+```
+
+The next authenticated command will rebuild the cache automatically.
+
+
 # 🏗 Architecture
 
     arapy/
@@ -187,5 +203,5 @@ Internal / Custom Use\
 
 ------------------------------------------------------------------------
 
-**arapy v1.2.3**
-Dynamic. Modular. Self-discovering ClearPass automation.
+**arapy v1.2.0**\
+Clean. Modular. Production-ready ClearPass automation.

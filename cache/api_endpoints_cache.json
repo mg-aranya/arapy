@@ -1,122 +1,2028 @@
 {
-  "access-control": "/api/server/access-control",
-  "action-name": "/api/context-server-action//action-name",
-  "activate-offline": "/api/application-license/activate-offline",
-  "activate-online": "/api/application-license/activate-online",
-  "admin-privilege": "/api/admin-privilege",
-  "admin-user": "/api/admin-user",
-  "all-privileges": "/api/oauth/all-privileges",
-  "api-client": "/api/api-client",
-  "application-license": "/api/application-license",
-  "attribute": "/api/attribute",
-  "auth-method": "/api/auth-method",
-  "auth-source": "/api/auth-source",
-  "authentication": "/api/guest/authentication",
-  "cert-sign-request": "/api/cert-sign-request",
-  "cert-trust-list": "/api/cert-trust-list",
-  "cert-trust-list-details": "/api/cert-trust-list-details",
-  "certificate": "/api/certificate",
-  "chain": "/api/certificate//chain",
-  "clearpass-portal": "/api/clearpass-portal",
-  "client-cert": "/api/client-cert",
-  "coa": "/api/session-action/coa",
-  "config": "/api/extension/instance//config",
-  "context-server-action": "/api/context-server-action",
-  "cppm-version": "/api/cppm-version",
-  "db-sync": "/api/cluster/db-sync",
-  "device": "/api/device",
-  "device-fingerprint": "/api/device-profiler/device-fingerprint",
-  "device-insight": "/api/device-insight",
-  "disable": "/api/config/service/name//disable",
-  "disconnect": "/api/session-action/disconnect",
-  "enable": "/api/config/service/name//enable",
-  "endpoint": "/api/insight/endpoint",
-  "endpoint-context-server": "/api/endpoint-context-server",
-  "essaging-setup": "/api/messaging-setup",
-  "event-sources": "/api/event-sources",
-  "export": "/api/certificate//export",
-  "external-account": "/api/external-account",
-  "file-backup-server": "/api/file-backup-server",
-  "fingerprint": "/api/fingerprint",
-  "fips": "/api/server/fips",
-  "global-settings": "/api/onguard/global-settings",
-  "guest": "/api/guest",
-  "guestmanager": "/api/guestmanager",
-  "host-address": "/api/syslog-target/host-address",
-  "import": "/api/certificate/import",
-  "instance": "/api/extension/instance",
-  "ip": "/api/session-action/coa/ip",
-  "ip-range": "/api/insight/endpoint/ip-range",
-  "local-user": "/api/local-user",
-  "log": "/api/extension/instance//log",
-  "login-audit": "/api/login-audit",
-  "mac": "/api/session-action/coa/mac",
-  "mac-address": "/api/endpoint/mac-address",
-  "me": "/api/oauth/me",
-  "messaging-setup": "/api/messaging-setup",
-  "name": "/api/config/service/name",
-  "network": "/api/profiler-subnet-mapping//network",
-  "network-device": "/api/network-device",
-  "network-device-group": "/api/network-device-group",
-  "network-scan": "/api/config/network-scan",
-  "new": "/api/certificate/new",
-  "oauth": "/api/oauth",
-  "oauth-me": "/api/oauth/me",
-  "oauth-privileges": "/api/oauth/privileges",
-  "onguard-custom-script": "/api/onguard-custom-script",
-  "operator-profile": "/api/operator-profile",
-  "page-name": "/api/weblogin/page-name",
-  "parameters": "/api/cluster/parameters",
-  "pass": "/api/template/pass",
-  "password-policy": "/api/local-user/password-policy",
-  "policy-manager-zones": "/api/server/policy-manager-zones",
-  "print": "/api/template/print",
-  "privileges": "/api/oauth/privileges",
-  "profiler-subnet-mapping": "/api/profiler-subnet-mapping",
-  "proxy-target": "/api/proxy-target",
-  "random-mpsk": "/api/random-mpsk",
-  "random-password": "/api/random-password",
-  "reauthorize": "/api/session//reauthorize",
-  "receipt": "/api/guest//receipt",
-  "reinstall": "/api/extension/instance//reinstall",
-  "reject": "/api/certificate//reject",
-  "request": "/api/certificate/request",
-  "restart": "/api/extension/instance//restart",
-  "revocation-list": "/api/revocation-list",
-  "revoke": "/api/certificate//revoke",
-  "role": "/api/role",
-  "role-mapping": "/api/role-mapping",
-  "self-signed-cert": "/api/self-signed-cert",
-  "send": "/api/sms/send",
-  "server": "/api/cluster/server",
-  "server-cert": "/api/server-cert",
-  "server-name": "/api/endpoint-context-server/server-name",
-  "service": "/api/config/service",
-  "service-cert": "/api/service-cert",
-  "service-parameter": "/api/service-parameter",
-  "session": "/api/session",
-  "session-action": "/api/session-action",
-  "settings": "/api/onguard/settings",
-  "sign": "/api/certificate//sign",
-  "sms": "/api/guest//sendreceipt/sms",
-  "smtp": "/api/guest//sendreceipt/smtp",
-  "snmp": "/api/server/snmp",
-  "snmp-trap-receiver": "/api/snmp-trap-receiver",
-  "sponsor": "/api/guest//sponsor",
-  "start": "/api/server/service///start",
-  "static-host-list": "/api/static-host-list",
-  "stop": "/api/server/service///stop",
-  "store": "/api/extension/store",
-  "subnet-mapping": "/api/agentless-onguard/subnet-mapping",
-  "summary": "/api/application-license/summary",
-  "syslog-export-filter": "/api/syslog-export-filter",
-  "syslog-target": "/api/syslog-target",
-  "system-event": "/api/system-event",
-  "time-range": "/api/insight/endpoint/time-range",
-  "trigger-poll": "/api/endpoint-context-server/server-name//trigger-poll",
-  "user": "/api/user",
-  "user-id": "/api/local-user/user-id",
-  "username": "/api/session-action/coa/username",
-  "version": "/api/server/version",
-  "weblogin": "/api/weblogin"
+  "flat": {
+    "access-control": "/api/server/access-control",
+    "action-name": "/api/context-server-action//action-name",
+    "activate-offline": "/api/application-license/activate-offline",
+    "activate-online": "/api/application-license/activate-online",
+    "admin-privilege": "/api/admin-privilege",
+    "admin-user": "/api/admin-user",
+    "all-privileges": "/api/oauth/all-privileges",
+    "api-client": "/api/api-client",
+    "apioperations:me": "/api/oauth/me",
+    "apioperations:oauth": "/api/oauth",
+    "apioperations:privileges": "/api/oauth/privileges",
+    "application-license": "/api/application-license",
+    "attribute": "/api/attribute",
+    "auth-method": "/api/auth-method",
+    "auth-source": "/api/auth-source",
+    "authentication": "/api/guest/authentication",
+    "cert-sign-request": "/api/cert-sign-request",
+    "cert-trust-list": "/api/cert-trust-list",
+    "cert-trust-list-details": "/api/cert-trust-list-details",
+    "certificate": "/api/certificate",
+    "certificateauthority:certificate": "/api/certificate",
+    "certificateauthority:chain": "/api/certificate//chain",
+    "certificateauthority:device": "/api/onboard/device",
+    "certificateauthority:export": "/api/certificate//export",
+    "certificateauthority:import": "/api/certificate/import",
+    "certificateauthority:new": "/api/certificate/new",
+    "certificateauthority:reject": "/api/certificate//reject",
+    "certificateauthority:request": "/api/certificate/request",
+    "certificateauthority:revoke": "/api/certificate//revoke",
+    "certificateauthority:sign": "/api/certificate//sign",
+    "certificateauthority:user": "/api/user",
+    "chain": "/api/certificate//chain",
+    "clearpass-portal": "/api/clearpass-portal",
+    "client-cert": "/api/client-cert",
+    "coa": "/api/session-action/coa",
+    "config": "/api/extension/instance//config",
+    "context-server-action": "/api/context-server-action",
+    "cppm-version": "/api/cppm-version",
+    "db-sync": "/api/cluster/db-sync",
+    "device": "/api/device",
+    "device-fingerprint": "/api/device-profiler/device-fingerprint",
+    "device-insight": "/api/device-insight",
+    "disable": "/api/config/service/name//disable",
+    "disconnect": "/api/session-action/disconnect",
+    "enable": "/api/config/service/name//enable",
+    "endpoint": "/api/insight/endpoint",
+    "endpoint-context-server": "/api/endpoint-context-server",
+    "endpointvisibility:device-fingerprint": "/api/device-profiler/device-fingerprint",
+    "endpointvisibility:disable": "/api/config/network-scan//disable",
+    "endpointvisibility:enable": "/api/config/network-scan//enable",
+    "endpointvisibility:fingerprint": "/api/fingerprint",
+    "endpointvisibility:global-settings": "/api/onguard/global-settings",
+    "endpointvisibility:name": "/api/onguard/policy-manager-zones/name",
+    "endpointvisibility:network": "/api/profiler-subnet-mapping//network",
+    "endpointvisibility:network-scan": "/api/config/network-scan",
+    "endpointvisibility:onguard-custom-script": "/api/onguard-custom-script",
+    "endpointvisibility:policy-manager-zones": "/api/onguard/policy-manager-zones",
+    "endpointvisibility:profiler-subnet-mapping": "/api/profiler-subnet-mapping",
+    "endpointvisibility:settings": "/api/onguard/settings",
+    "endpointvisibility:subnet-mapping": "/api/agentless-onguard/subnet-mapping",
+    "essaging-setup": "/api/messaging-setup",
+    "event-sources": "/api/event-sources",
+    "export": "/api/certificate//export",
+    "external-account": "/api/external-account",
+    "file-backup-server": "/api/file-backup-server",
+    "fingerprint": "/api/fingerprint",
+    "fips": "/api/server/fips",
+    "global-settings": "/api/onguard/global-settings",
+    "globalserverconfiguration:activate-offline": "/api/application-license/activate-offline",
+    "globalserverconfiguration:activate-online": "/api/application-license/activate-online",
+    "globalserverconfiguration:admin-privilege": "/api/admin-privilege",
+    "globalserverconfiguration:admin-user": "/api/admin-user",
+    "globalserverconfiguration:all-privileges": "/api/oauth/all-privileges",
+    "globalserverconfiguration:application-license": "/api/application-license",
+    "globalserverconfiguration:attribute": "/api/attribute",
+    "globalserverconfiguration:clearpass-portal": "/api/clearpass-portal",
+    "globalserverconfiguration:db-sync": "/api/cluster/db-sync",
+    "globalserverconfiguration:file-backup-server": "/api/file-backup-server",
+    "globalserverconfiguration:host-address": "/api/file-backup-server/host-address",
+    "globalserverconfiguration:messaging-setup": "/api/messaging-setup",
+    "globalserverconfiguration:name": "/api/snmp-trap-receiver/name",
+    "globalserverconfiguration:operator-profile": "/api/operator-profile",
+    "globalserverconfiguration:parameters": "/api/cluster/parameters",
+    "globalserverconfiguration:password-policy": "/api/local-user/password-policy",
+    "globalserverconfiguration:policy-manager-zones": "/api/server/policy-manager-zones",
+    "globalserverconfiguration:snmp-trap-receiver": "/api/snmp-trap-receiver",
+    "globalserverconfiguration:summary": "/api/application-license/summary",
+    "globalserverconfiguration:user-id": "/api/admin-user/user-id",
+    "guest": "/api/guest",
+    "guestactions:pass": "/api/guest//pass",
+    "guestactions:receipt": "/api/guest//receipt",
+    "guestactions:sms": "/api/guest//sendreceipt/sms",
+    "guestactions:smtp": "/api/guest//sendreceipt/smtp",
+    "guestactions:sponsor": "/api/guest//sponsor",
+    "guestconfiguration:authentication": "/api/guest/authentication",
+    "guestconfiguration:guestmanager": "/api/guestmanager",
+    "guestconfiguration:page-name": "/api/weblogin/page-name",
+    "guestconfiguration:pass": "/api/template/pass",
+    "guestconfiguration:print": "/api/template/print",
+    "guestconfiguration:weblogin": "/api/weblogin",
+    "guestmanager": "/api/guestmanager",
+    "host-address": "/api/syslog-target/host-address",
+    "identities:api-client": "/api/api-client",
+    "identities:device": "/api/device",
+    "identities:endpoint": "/api/endpoint",
+    "identities:external-account": "/api/external-account",
+    "identities:guest": "/api/guest",
+    "identities:local-user": "/api/local-user",
+    "identities:mac": "/api/device/mac",
+    "identities:mac-address": "/api/endpoint/mac-address",
+    "identities:name": "/api/static-host-list/name",
+    "identities:static-host-list": "/api/static-host-list",
+    "identities:user-id": "/api/local-user/user-id",
+    "identities:username": "/api/guest/username",
+    "import": "/api/certificate/import",
+    "instance": "/api/extension/instance",
+    "integrations:action-name": "/api/context-server-action//action-name",
+    "integrations:config": "/api/extension/instance//config",
+    "integrations:context-server-action": "/api/context-server-action",
+    "integrations:device-insight": "/api/device-insight",
+    "integrations:endpoint-context-server": "/api/endpoint-context-server",
+    "integrations:event-sources": "/api/event-sources",
+    "integrations:host-address": "/api/syslog-target/host-address",
+    "integrations:instance": "/api/extension/instance",
+    "integrations:log": "/api/extension/instance//log",
+    "integrations:name": "/api/syslog-export-filter/name",
+    "integrations:reinstall": "/api/extension/instance//reinstall",
+    "integrations:restart": "/api/extension/instance//restart",
+    "integrations:server-name": "/api/endpoint-context-server/server-name",
+    "integrations:start": "/api/extension/instance//start",
+    "integrations:stop": "/api/extension/instance//stop",
+    "integrations:store": "/api/extension/store",
+    "integrations:syslog-export-filter": "/api/syslog-export-filter",
+    "integrations:syslog-target": "/api/syslog-target",
+    "integrations:trigger-poll": "/api/endpoint-context-server/server-name//trigger-poll",
+    "ip": "/api/session-action/coa/ip",
+    "ip-range": "/api/insight/endpoint/ip-range",
+    "local-user": "/api/local-user",
+    "localserverconfiguration:access-control": "/api/server/access-control",
+    "localserverconfiguration:cppm-version": "/api/cppm-version",
+    "localserverconfiguration:fips": "/api/server/fips",
+    "localserverconfiguration:server": "/api/cluster/server",
+    "localserverconfiguration:service": "/api/server/service",
+    "localserverconfiguration:service-parameter": "/api/service-parameter",
+    "localserverconfiguration:snmp": "/api/server/snmp",
+    "localserverconfiguration:start": "/api/server/service///start",
+    "localserverconfiguration:stop": "/api/server/service///stop",
+    "localserverconfiguration:version": "/api/server/version",
+    "log": "/api/extension/instance//log",
+    "login-audit": "/api/login-audit",
+    "logs:endpoint": "/api/insight/endpoint",
+    "logs:ip": "/api/insight/endpoint/ip",
+    "logs:ip-range": "/api/insight/endpoint/ip-range",
+    "logs:login-audit": "/api/login-audit",
+    "logs:mac": "/api/insight/endpoint/mac",
+    "logs:system-event": "/api/system-event",
+    "logs:time-range": "/api/insight/endpoint/time-range",
+    "mac": "/api/session-action/coa/mac",
+    "mac-address": "/api/endpoint/mac-address",
+    "me": "/api/oauth/me",
+    "messaging-setup": "/api/messaging-setup",
+    "name": "/api/config/service/name",
+    "network": "/api/profiler-subnet-mapping//network",
+    "network-device": "/api/network-device",
+    "network-device-group": "/api/network-device-group",
+    "network-scan": "/api/config/network-scan",
+    "new": "/api/certificate/new",
+    "oauth": "/api/oauth",
+    "oauth-me": "/api/oauth/me",
+    "oauth-privileges": "/api/oauth/privileges",
+    "onguard-custom-script": "/api/onguard-custom-script",
+    "operator-profile": "/api/operator-profile",
+    "page-name": "/api/weblogin/page-name",
+    "parameters": "/api/cluster/parameters",
+    "pass": "/api/template/pass",
+    "password-policy": "/api/local-user/password-policy",
+    "platformcertificates:cert-sign-request": "/api/cert-sign-request",
+    "platformcertificates:cert-trust-list": "/api/cert-trust-list",
+    "platformcertificates:cert-trust-list-details": "/api/cert-trust-list-details",
+    "platformcertificates:client-cert": "/api/client-cert",
+    "platformcertificates:disable": "/api/server-cert/name///disable",
+    "platformcertificates:enable": "/api/server-cert/name///enable",
+    "platformcertificates:name": "/api/server-cert/name",
+    "platformcertificates:revocation-list": "/api/revocation-list",
+    "platformcertificates:self-signed-cert": "/api/self-signed-cert",
+    "platformcertificates:server-cert": "/api/server-cert",
+    "platformcertificates:service-cert": "/api/service-cert",
+    "policy-manager-zones": "/api/server/policy-manager-zones",
+    "policyelements:auth-method": "/api/auth-method",
+    "policyelements:auth-source": "/api/auth-source",
+    "policyelements:disable": "/api/config/service/name//disable",
+    "policyelements:enable": "/api/config/service/name//enable",
+    "policyelements:name": "/api/config/service/name",
+    "policyelements:network-device": "/api/network-device",
+    "policyelements:network-device-group": "/api/network-device-group",
+    "policyelements:proxy-target": "/api/proxy-target",
+    "policyelements:role": "/api/role",
+    "policyelements:role-mapping": "/api/role-mapping",
+    "policyelements:service": "/api/config/service",
+    "print": "/api/template/print",
+    "privileges": "/api/oauth/privileges",
+    "profiler-subnet-mapping": "/api/profiler-subnet-mapping",
+    "proxy-target": "/api/proxy-target",
+    "random-mpsk": "/api/random-mpsk",
+    "random-password": "/api/random-password",
+    "reauthorize": "/api/session//reauthorize",
+    "receipt": "/api/guest//receipt",
+    "reinstall": "/api/extension/instance//reinstall",
+    "reject": "/api/certificate//reject",
+    "request": "/api/certificate/request",
+    "restart": "/api/extension/instance//restart",
+    "revocation-list": "/api/revocation-list",
+    "revoke": "/api/certificate//revoke",
+    "role": "/api/role",
+    "role-mapping": "/api/role-mapping",
+    "self-signed-cert": "/api/self-signed-cert",
+    "send": "/api/sms/send",
+    "server": "/api/cluster/server",
+    "server-cert": "/api/server-cert",
+    "server-name": "/api/endpoint-context-server/server-name",
+    "service": "/api/config/service",
+    "service-cert": "/api/service-cert",
+    "service-parameter": "/api/service-parameter",
+    "session": "/api/session",
+    "session-action": "/api/session-action",
+    "sessioncontrol:coa": "/api/session-action/coa",
+    "sessioncontrol:disconnect": "/api/session-action/disconnect",
+    "sessioncontrol:ip": "/api/session-action/coa/ip",
+    "sessioncontrol:mac": "/api/session-action/coa/mac",
+    "sessioncontrol:reauthorize": "/api/session//reauthorize",
+    "sessioncontrol:session": "/api/session",
+    "sessioncontrol:session-action": "/api/session-action",
+    "sessioncontrol:username": "/api/session-action/coa/username",
+    "settings": "/api/onguard/settings",
+    "sign": "/api/certificate//sign",
+    "sms": "/api/guest//sendreceipt/sms",
+    "smtp": "/api/guest//sendreceipt/smtp",
+    "snmp": "/api/server/snmp",
+    "snmp-trap-receiver": "/api/snmp-trap-receiver",
+    "sponsor": "/api/guest//sponsor",
+    "start": "/api/server/service///start",
+    "static-host-list": "/api/static-host-list",
+    "stop": "/api/server/service///stop",
+    "store": "/api/extension/store",
+    "subnet-mapping": "/api/agentless-onguard/subnet-mapping",
+    "summary": "/api/application-license/summary",
+    "syslog-export-filter": "/api/syslog-export-filter",
+    "syslog-target": "/api/syslog-target",
+    "system-event": "/api/system-event",
+    "time-range": "/api/insight/endpoint/time-range",
+    "toolsandutilities:random-mpsk": "/api/random-mpsk",
+    "toolsandutilities:random-password": "/api/random-password",
+    "toolsandutilities:send": "/api/sms/send",
+    "trigger-poll": "/api/endpoint-context-server/server-name//trigger-poll",
+    "user": "/api/user",
+    "user-id": "/api/local-user/user-id",
+    "username": "/api/session-action/coa/username",
+    "version": "/api/server/version",
+    "weblogin": "/api/weblogin"
+  },
+  "generated_at": "2026-03-04T11:29:41Z",
+  "modules": {
+    "apioperations": {
+      "me": {
+        "actions": [
+          "list",
+          "get",
+          "add"
+        ],
+        "methods": [
+          "GET",
+          "POST"
+        ],
+        "route": "/api/oauth/me"
+      },
+      "oauth": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/oauth"
+      },
+      "privileges": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/oauth/privileges"
+      }
+    },
+    "certificateauthority": {
+      "certificate": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET"
+        ],
+        "route": "/api/certificate"
+      },
+      "chain": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/certificate//chain"
+      },
+      "device": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH"
+        ],
+        "route": "/api/onboard/device"
+      },
+      "export": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/certificate//export"
+      },
+      "import": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/certificate/import"
+      },
+      "new": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/certificate/new"
+      },
+      "reject": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/certificate//reject"
+      },
+      "request": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/certificate/request"
+      },
+      "revoke": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/certificate//revoke"
+      },
+      "sign": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/certificate//sign"
+      },
+      "user": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH"
+        ],
+        "route": "/api/user"
+      }
+    },
+    "endpointvisibility": {
+      "device-fingerprint": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "POST"
+        ],
+        "route": "/api/device-profiler/device-fingerprint"
+      },
+      "disable": {
+        "actions": [],
+        "methods": [
+          "PATCH"
+        ],
+        "route": "/api/config/network-scan//disable"
+      },
+      "enable": {
+        "actions": [],
+        "methods": [
+          "PATCH"
+        ],
+        "route": "/api/config/network-scan//enable"
+      },
+      "fingerprint": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/fingerprint"
+      },
+      "global-settings": {
+        "actions": [
+          "list",
+          "get",
+          "add"
+        ],
+        "methods": [
+          "GET",
+          "POST"
+        ],
+        "route": "/api/onguard/global-settings"
+      },
+      "name": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/onguard/policy-manager-zones/name"
+      },
+      "network": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/profiler-subnet-mapping//network"
+      },
+      "network-scan": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/config/network-scan"
+      },
+      "onguard-custom-script": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/onguard-custom-script"
+      },
+      "policy-manager-zones": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/onguard/policy-manager-zones"
+      },
+      "profiler-subnet-mapping": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/profiler-subnet-mapping"
+      },
+      "settings": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/onguard/settings"
+      },
+      "subnet-mapping": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/agentless-onguard/subnet-mapping"
+      }
+    },
+    "globalserverconfiguration": {
+      "activate-offline": {
+        "actions": [],
+        "methods": [
+          "PATCH"
+        ],
+        "route": "/api/application-license/activate-offline"
+      },
+      "activate-online": {
+        "actions": [],
+        "methods": [
+          "PATCH"
+        ],
+        "route": "/api/application-license/activate-online"
+      },
+      "admin-privilege": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/admin-privilege"
+      },
+      "admin-user": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/admin-user"
+      },
+      "all-privileges": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/oauth/all-privileges"
+      },
+      "application-license": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/application-license"
+      },
+      "attribute": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/attribute"
+      },
+      "clearpass-portal": {
+        "actions": [
+          "list",
+          "get",
+          "add"
+        ],
+        "methods": [
+          "GET",
+          "POST"
+        ],
+        "route": "/api/clearpass-portal"
+      },
+      "db-sync": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/cluster/db-sync"
+      },
+      "essaging-setup": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "POST"
+        ],
+        "route": "/api/messaging-setup"
+      },
+      "file-backup-server": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/file-backup-server"
+      },
+      "host-address": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/file-backup-server/host-address"
+      },
+      "messaging-setup": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "POST"
+        ],
+        "route": "/api/messaging-setup"
+      },
+      "name": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/snmp-trap-receiver/name"
+      },
+      "operator-profile": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/operator-profile"
+      },
+      "parameters": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/cluster/parameters"
+      },
+      "password-policy": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/local-user/password-policy"
+      },
+      "policy-manager-zones": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/server/policy-manager-zones"
+      },
+      "snmp-trap-receiver": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/snmp-trap-receiver"
+      },
+      "summary": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/application-license/summary"
+      },
+      "user-id": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/admin-user/user-id"
+      }
+    },
+    "guestactions": {
+      "pass": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/guest//pass"
+      },
+      "receipt": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/guest//receipt"
+      },
+      "sms": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/guest//sendreceipt/sms"
+      },
+      "smtp": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/guest//sendreceipt/smtp"
+      },
+      "sponsor": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/guest//sponsor"
+      }
+    },
+    "guestconfiguration": {
+      "authentication": {
+        "actions": [
+          "list",
+          "get",
+          "add"
+        ],
+        "methods": [
+          "GET",
+          "PATCH",
+          "POST"
+        ],
+        "route": "/api/guest/authentication"
+      },
+      "guestmanager": {
+        "actions": [
+          "list",
+          "get",
+          "add"
+        ],
+        "methods": [
+          "GET",
+          "PATCH",
+          "POST"
+        ],
+        "route": "/api/guestmanager"
+      },
+      "page-name": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/weblogin/page-name"
+      },
+      "pass": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/template/pass"
+      },
+      "print": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/template/print"
+      },
+      "weblogin": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/weblogin"
+      }
+    },
+    "identities": {
+      "api-client": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/api-client"
+      },
+      "device": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/device"
+      },
+      "endpoint": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/endpoint"
+      },
+      "external-account": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/external-account"
+      },
+      "guest": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/guest"
+      },
+      "local-user": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/local-user"
+      },
+      "mac": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/device/mac"
+      },
+      "mac-address": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/endpoint/mac-address"
+      },
+      "name": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/static-host-list/name"
+      },
+      "static-host-list": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/static-host-list"
+      },
+      "user-id": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/local-user/user-id"
+      },
+      "username": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/guest/username"
+      }
+    },
+    "integrations": {
+      "action-name": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/context-server-action//action-name"
+      },
+      "config": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET",
+          "PUT"
+        ],
+        "route": "/api/extension/instance//config"
+      },
+      "context-server-action": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/context-server-action"
+      },
+      "device-insight": {
+        "actions": [
+          "list",
+          "get",
+          "add"
+        ],
+        "methods": [
+          "GET",
+          "POST"
+        ],
+        "route": "/api/device-insight"
+      },
+      "endpoint-context-server": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/endpoint-context-server"
+      },
+      "event-sources": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/event-sources"
+      },
+      "host-address": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/syslog-target/host-address"
+      },
+      "instance": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST"
+        ],
+        "route": "/api/extension/instance"
+      },
+      "log": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/extension/instance//log"
+      },
+      "name": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/syslog-export-filter/name"
+      },
+      "reinstall": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/extension/instance//reinstall"
+      },
+      "restart": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/extension/instance//restart"
+      },
+      "server-name": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/endpoint-context-server/server-name"
+      },
+      "start": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/extension/instance//start"
+      },
+      "stop": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/extension/instance//stop"
+      },
+      "store": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/extension/store"
+      },
+      "syslog-export-filter": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/syslog-export-filter"
+      },
+      "syslog-target": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/syslog-target"
+      },
+      "trigger-poll": {
+        "actions": [],
+        "methods": [
+          "PATCH"
+        ],
+        "route": "/api/endpoint-context-server/server-name//trigger-poll"
+      }
+    },
+    "localserverconfiguration": {
+      "access-control": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PUT"
+        ],
+        "route": "/api/server/access-control"
+      },
+      "cppm-version": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/cppm-version"
+      },
+      "fips": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/server/fips"
+      },
+      "server": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET",
+          "PATCH"
+        ],
+        "route": "/api/cluster/server"
+      },
+      "service": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/server/service"
+      },
+      "service-parameter": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET",
+          "PATCH"
+        ],
+        "route": "/api/service-parameter"
+      },
+      "snmp": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/server/snmp"
+      },
+      "start": {
+        "actions": [],
+        "methods": [
+          "PATCH"
+        ],
+        "route": "/api/server/service///start"
+      },
+      "stop": {
+        "actions": [],
+        "methods": [
+          "PATCH"
+        ],
+        "route": "/api/server/service///stop"
+      },
+      "version": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/server/version"
+      }
+    },
+    "logs": {
+      "endpoint": {
+        "actions": [],
+        "methods": [],
+        "route": "/api/insight/endpoint"
+      },
+      "ip": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/insight/endpoint/ip"
+      },
+      "ip-range": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/insight/endpoint/ip-range"
+      },
+      "login-audit": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/login-audit"
+      },
+      "mac": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/insight/endpoint/mac"
+      },
+      "system-event": {
+        "actions": [
+          "list",
+          "get",
+          "add"
+        ],
+        "methods": [
+          "GET",
+          "POST"
+        ],
+        "route": "/api/system-event"
+      },
+      "time-range": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/insight/endpoint/time-range"
+      }
+    },
+    "oauth": {
+      "oauth": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [],
+        "route": "/api/oauth"
+      },
+      "oauth-me": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [],
+        "route": "/api/oauth/me"
+      },
+      "oauth-privileges": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [],
+        "route": "/api/oauth/privileges"
+      }
+    },
+    "platformcertificates": {
+      "cert-sign-request": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/cert-sign-request"
+      },
+      "cert-trust-list": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST"
+        ],
+        "route": "/api/cert-trust-list"
+      },
+      "cert-trust-list-details": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/cert-trust-list-details"
+      },
+      "client-cert": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "POST"
+        ],
+        "route": "/api/client-cert"
+      },
+      "disable": {
+        "actions": [],
+        "methods": [
+          "PATCH"
+        ],
+        "route": "/api/server-cert/name///disable"
+      },
+      "enable": {
+        "actions": [],
+        "methods": [
+          "PATCH"
+        ],
+        "route": "/api/server-cert/name///enable"
+      },
+      "name": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET",
+          "PUT"
+        ],
+        "route": "/api/server-cert/name"
+      },
+      "revocation-list": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST"
+        ],
+        "route": "/api/revocation-list"
+      },
+      "self-signed-cert": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/self-signed-cert"
+      },
+      "server-cert": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/server-cert"
+      },
+      "service-cert": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "POST"
+        ],
+        "route": "/api/service-cert"
+      }
+    },
+    "policyelements": {
+      "auth-method": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/auth-method"
+      },
+      "auth-source": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/auth-source"
+      },
+      "disable": {
+        "actions": [],
+        "methods": [
+          "PATCH"
+        ],
+        "route": "/api/config/service/name//disable"
+      },
+      "enable": {
+        "actions": [],
+        "methods": [
+          "PATCH"
+        ],
+        "route": "/api/config/service/name//enable"
+      },
+      "name": {
+        "actions": [
+          "list",
+          "get",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "PUT"
+        ],
+        "route": "/api/config/service/name"
+      },
+      "network-device": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/network-device"
+      },
+      "network-device-group": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/network-device-group"
+      },
+      "proxy-target": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/proxy-target"
+      },
+      "role": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/role"
+      },
+      "role-mapping": {
+        "actions": [
+          "list",
+          "get",
+          "add",
+          "delete"
+        ],
+        "methods": [
+          "DELETE",
+          "GET",
+          "PATCH",
+          "POST",
+          "PUT"
+        ],
+        "route": "/api/role-mapping"
+      },
+      "service": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/config/service"
+      }
+    },
+    "sessioncontrol": {
+      "coa": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/session-action/coa"
+      },
+      "disconnect": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/session-action/disconnect"
+      },
+      "ip": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/session-action/coa/ip"
+      },
+      "mac": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/session-action/coa/mac"
+      },
+      "reauthorize": {
+        "actions": [
+          "list",
+          "get",
+          "add"
+        ],
+        "methods": [
+          "GET",
+          "POST"
+        ],
+        "route": "/api/session//reauthorize"
+      },
+      "session": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/session"
+      },
+      "session-action": {
+        "actions": [
+          "list",
+          "get"
+        ],
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/session-action"
+      },
+      "username": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/session-action/coa/username"
+      }
+    },
+    "toolsandutilities": {
+      "random-mpsk": {
+        "actions": [
+          "list",
+          "get",
+          "add"
+        ],
+        "methods": [
+          "GET",
+          "POST"
+        ],
+        "route": "/api/random-mpsk"
+      },
+      "random-password": {
+        "actions": [
+          "list",
+          "get",
+          "add"
+        ],
+        "methods": [
+          "GET",
+          "POST"
+        ],
+        "route": "/api/random-password"
+      },
+      "send": {
+        "actions": [
+          "add"
+        ],
+        "methods": [
+          "POST"
+        ],
+        "route": "/api/sms/send"
+      }
+    }
+  },
+  "server": "192.168.100.30:443",
+  "version": 1
 }
