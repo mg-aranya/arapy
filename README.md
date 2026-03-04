@@ -151,14 +151,18 @@ Discovered endpoints are cached locally for faster startup:
 cache/api_endpoints_cache.json
 ```
 
-To clear the cache manually:
+To clear the cache run:
 
 ```bash
 arapy cache clear
 ```
 
-The next authenticated command will rebuild the cache automatically.
+To update the cache run:
 
+```bash
+arapy cache update
+```
+------------------------------------------------------------------------
 
 # 🏗 Architecture
 
