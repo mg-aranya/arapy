@@ -163,6 +163,15 @@ Run once per session:
 source /path/to/your/repo/scripts/arapy-completion.bash
 ```
 
+Or to enable permanently, add to `~/.bashrc` then reload terminal:
+
+```bash
+for f in ~/.bash_completion.d/*; do
+  [ -r "$f" ] && source "$f"
+done
+
+```
+
 For zsh:
 
 ```zsh
