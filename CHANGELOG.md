@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.1 - 2026-03-09
+
+### Changed
+- removed transitional top-level compatibility wrapper modules
+- moved command handlers into `arapy.cli.commands` so the package layout is now fully aligned with the `cli/core/io/logging` split
+- cleaned the source release to exclude `.git`, `.env`, cache directories, Python bytecode, and `*.egg-info` artifacts
+- updated tests and documentation to target only the v1.4.x module layout
+
 ## 1.4.0 - 2026-03-09
 
 ### Added

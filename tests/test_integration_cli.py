@@ -1,8 +1,8 @@
 import sys
 import types
 
-import arapy.config as config
-import arapy.main as main
+import arapy.cli.main as main
+from arapy.core.config import AppPaths, Settings
 
 
 class FakeLogger:
@@ -40,10 +40,30 @@ class FakeLogMgr:
         self.levels.append(level)
 
 
-def test_main_end_to_end_calls_login_and_action(monkeypatch):
+def make_settings(tmp_path):
+    paths = AppPaths(
+        cache_dir=tmp_path / "cache",
+        state_dir=tmp_path / "state",
+        response_dir=tmp_path / "responses",
+        app_log_dir=tmp_path / "logs",
+    ).ensure()
+    return Settings(
+        server="example:443",
+        https_prefix="https://",
+        verify_ssl=False,
+        timeout=1,
+        client_id="x",
+        client_secret="y",
+        paths=paths,
+    )
+
+
+def test_main_end_to_end_calls_login_and_action(monkeypatch, tmp_path):
     calls = {}
     mgr = FakeLogMgr()
-    monkeypatch.setattr(main, "build_logger_from_env", lambda root_name: mgr)
+    settings = make_settings(tmp_path)
+    monkeypatch.setattr(main, "configure_logging", lambda settings, root_name: mgr)
+    monkeypatch.setattr(main, "load_settings", lambda: settings)
 
     class FakeCP:
         def __init__(self, server, https_prefix, verify_ssl, timeout):
@@ -59,21 +79,16 @@ def test_main_end_to_end_calls_login_and_action(monkeypatch):
             return {"access_token": "TOKEN"}
 
     monkeypatch.setattr(main, "ClearPassClient", FakeCP)
-    monkeypatch.setattr(config, "SERVER", "example:443", raising=False)
-    monkeypatch.setattr(config, "HTTPS", "https://", raising=False)
-    monkeypatch.setattr(config, "VERIFY_SSL", False, raising=False)
-    monkeypatch.setattr(config, "DEFAULT_TIMEOUT", 1, raising=False)
     monkeypatch.setattr(
-        config,
-        "CREDENTIALS",
-        {"client_id": "x", "client_secret": "y"},
-        raising=False,
+        main, "get_api_catalog", lambda cp, token, settings: {"modules": {}}
     )
 
-    def fake_action(cp, token, api_paths, args):
-        calls["action"] = dict(cp=cp, token=token, api_paths=api_paths, args=args)
+    def fake_action(cp, token, api_paths, args, settings=None):
+        calls["action"] = dict(
+            cp=cp, token=token, api_paths=api_paths, args=args, settings=settings
+        )
 
-    monkeypatch.setitem(main.commands.ACTIONS, "list", fake_action)
+    monkeypatch.setitem(main.ACTIONS, "list", fake_action)
 
     monkeypatch.setattr(
         sys,
@@ -83,7 +98,7 @@ def test_main_end_to_end_calls_login_and_action(monkeypatch):
     main.main()
 
     assert calls["cp_init"]["server"] == "example:443"
-    assert calls["login"]["credentials"] == {"client_id": "x", "client_secret": "y"}
+    assert calls["login"]["credentials"]["client_id"] == "x"
     assert calls["action"]["token"] == "TOKEN"
     assert calls["action"]["args"]["module"] == "identities"
     assert calls["action"]["args"]["service"] == "endpoint"
@@ -91,9 +106,11 @@ def test_main_end_to_end_calls_login_and_action(monkeypatch):
     assert calls["action"]["args"]["limit"] == "1"
 
 
-def test_main_invalid_log_level_exits_early(monkeypatch, capsys):
+def test_main_invalid_log_level_exits_early(monkeypatch, tmp_path):
     mgr = FakeLogMgr()
-    monkeypatch.setattr(main, "build_logger_from_env", lambda root_name: mgr)
+    settings = make_settings(tmp_path)
+    monkeypatch.setattr(main, "configure_logging", lambda settings, root_name: mgr)
+    monkeypatch.setattr(main, "load_settings", lambda: settings)
     monkeypatch.setattr(
         main,
         "ClearPassClient",
@@ -113,9 +130,11 @@ def test_main_invalid_log_level_exits_early(monkeypatch, capsys):
     assert "Invalid log level" in mgr.logger.errors[0]
 
 
-def test_main_version_prints_and_exits(monkeypatch, capsys):
+def test_main_version_prints_and_exits(monkeypatch, capsys, tmp_path):
     mgr = FakeLogMgr()
-    monkeypatch.setattr(main, "build_logger_from_env", lambda root_name: mgr)
+    settings = make_settings(tmp_path)
+    monkeypatch.setattr(main, "configure_logging", lambda settings, root_name: mgr)
+    monkeypatch.setattr(main, "load_settings", lambda: settings)
     monkeypatch.setattr(main, "get_version", lambda: "9.9.9")
 
     monkeypatch.setattr(sys, "argv", ["arapy", "--version"])
@@ -124,13 +143,13 @@ def test_main_version_prints_and_exits(monkeypatch, capsys):
     assert capsys.readouterr().out.strip() == "9.9.9"
 
 
-def test_main_help_prints_and_exits(monkeypatch, capsys):
+def test_main_help_prints_and_exits(monkeypatch, capsys, tmp_path):
     mgr = FakeLogMgr()
-    monkeypatch.setattr(main, "build_logger_from_env", lambda root_name: mgr)
+    settings = make_settings(tmp_path)
+    monkeypatch.setattr(main, "configure_logging", lambda settings, root_name: mgr)
+    monkeypatch.setattr(main, "load_settings", lambda: settings)
     monkeypatch.setattr(
-        main,
-        "_print_help",
-        lambda args=None: print("Usage:\n  arapy ..."),
+        main, "print_help", lambda args=None: print("Usage:\n  arapy ...")
     )
 
     monkeypatch.setattr(sys, "argv", ["arapy", "--help"])
@@ -139,17 +158,17 @@ def test_main_help_prints_and_exits(monkeypatch, capsys):
     assert "Usage:" in out
 
 
-def test_main_unknown_action_prints_help_and_message(monkeypatch, capsys):
+def test_main_unknown_action_prints_help_and_message(monkeypatch, capsys, tmp_path):
     mgr = FakeLogMgr()
-    monkeypatch.setattr(main, "build_logger_from_env", lambda root_name: mgr)
+    settings = make_settings(tmp_path)
+    monkeypatch.setattr(main, "configure_logging", lambda settings, root_name: mgr)
+    monkeypatch.setattr(main, "load_settings", lambda: settings)
     monkeypatch.setattr(
-        main,
-        "_print_help",
-        lambda args=None: print("Usage:\n  arapy ..."),
+        main, "print_help", lambda args=None: print("Usage:\n  arapy ...")
     )
 
-    if "doesnotexist" in main.commands.ACTIONS:
-        monkeypatch.delitem(main.commands.ACTIONS, "doesnotexist", raising=False)
+    if "doesnotexist" in main.ACTIONS:
+        monkeypatch.delitem(main.ACTIONS, "doesnotexist", raising=False)
 
     monkeypatch.setattr(
         sys,
@@ -162,10 +181,12 @@ def test_main_unknown_action_prints_help_and_message(monkeypatch, capsys):
     assert "Unknown command:" in out
 
 
-def test_main_complete_mode_outputs_and_exits(monkeypatch, capsys):
+def test_main_complete_mode_outputs_and_exits(monkeypatch, capsys, tmp_path):
+    settings = make_settings(tmp_path)
+    monkeypatch.setattr(main, "load_settings", lambda: settings)
     monkeypatch.setattr(
         main,
-        "build_logger_from_env",
+        "configure_logging",
         lambda *a, **k: (_ for _ in ()).throw(
             AssertionError("should not build logger")
         ),
@@ -176,6 +197,11 @@ def test_main_complete_mode_outputs_and_exits(monkeypatch, capsys):
         lambda *a, **k: (_ for _ in ()).throw(
             AssertionError("should not create client")
         ),
+    )
+    monkeypatch.setattr(
+        main,
+        "load_cached_catalog",
+        lambda settings=None: {"modules": {"identities": {}}},
     )
 
     monkeypatch.setattr(sys, "argv", ["arapy", "--_complete", "--_cur="])

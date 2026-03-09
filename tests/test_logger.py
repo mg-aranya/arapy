@@ -1,16 +1,17 @@
 import logging
 
-from arapy.logging.setup import AppLogger, LoggerConfig, build_logger_from_env
+from arapy.core.config import Settings
+from arapy.logging.setup import LoggerConfig, LoggingManager, configure_logging
 
 
-def test_applogger_is_not_singleton():
-    a = AppLogger(LoggerConfig(root_name="t1", console=False))
-    b = AppLogger(LoggerConfig(root_name="t2", console=False))
+def test_logging_manager_is_not_singleton():
+    a = LoggingManager(LoggerConfig(root_name="t1", console=False))
+    b = LoggingManager(LoggerConfig(root_name="t2", console=False))
     assert a is not b
 
 
 def test_get_logger_prefix_and_inheritance():
-    mgr = AppLogger(LoggerConfig(root_name="arapytest", console=False))
+    mgr = LoggingManager(LoggerConfig(root_name="arapytest", console=False))
     child = mgr.get_logger("module")
     assert child.name == "arapytest.module"
     assert child.level == logging.NOTSET
@@ -18,7 +19,7 @@ def test_get_logger_prefix_and_inheritance():
 
 
 def test_set_level_updates_handlers():
-    mgr = AppLogger(LoggerConfig(root_name="arapytest2", console=True))
+    mgr = LoggingManager(LoggerConfig(root_name="arapytest2", console=True))
     assert any(
         isinstance(handler, logging.StreamHandler) for handler in mgr.root.handlers
     )
@@ -28,12 +29,13 @@ def test_set_level_updates_handlers():
         assert handler.level == logging.DEBUG
 
 
-def test_build_logger_from_env_debug_and_file(tmp_path, monkeypatch):
-    monkeypatch.setenv("DEBUG", "1")
-    log_file = tmp_path / "app.log"
-    monkeypatch.setenv("LOG_FILE", str(log_file))
-
-    mgr = build_logger_from_env(root_name="envtest")
+def test_configure_logging_with_file(tmp_path):
+    settings = Settings(
+        log_level="DEBUG",
+        log_to_file=True,
+        log_file=tmp_path / "app.log",
+    )
+    mgr = configure_logging(settings, root_name="envtest")
     assert mgr.root.level == logging.DEBUG
     assert any(
         isinstance(handler, logging.FileHandler) for handler in mgr.root.handlers

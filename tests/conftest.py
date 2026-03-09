@@ -10,8 +10,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from arapy.api_catalog import OAUTH_ENDPOINTS, get_api_catalog, load_cached_catalog
-from arapy.clearpass import ClearPassClient
+from arapy.core.catalog import OAUTH_ENDPOINTS, get_api_catalog, load_cached_catalog
+from arapy.core.client import ClearPassClient
 
 
 def pytest_addoption(parser):
@@ -57,13 +57,17 @@ def token(clearpass_client):
     if token:
         return token
 
-    user = os.environ.get("ARAPY_USERNAME")
-    pw = os.environ.get("ARAPY_PASSWORD")
-    if not user or not pw:
-        pytest.skip("Set ARAPY_TOKEN or (ARAPY_USERNAME + ARAPY_PASSWORD)")
+    client_id = os.environ.get("ARAPY_CLIENT_ID")
+    client_secret = os.environ.get("ARAPY_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        pytest.skip("Set ARAPY_TOKEN or (ARAPY_CLIENT_ID + ARAPY_CLIENT_SECRET)")
 
     grant_type = os.environ.get("ARAPY_GRANT_TYPE", "client_credentials")
-    creds = {"grant_type": grant_type, "client_id": user, "client_secret": pw}
+    creds = {
+        "grant_type": grant_type,
+        "client_id": client_id,
+        "client_secret": client_secret,
+    }
     return clearpass_client.login(OAUTH_ENDPOINTS, creds)["access_token"]
 
 

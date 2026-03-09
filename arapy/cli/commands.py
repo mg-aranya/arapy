@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import arapy.config as legacy_config
 from arapy.core.config import Settings, load_settings
 from arapy.core.resolver import (
     output_settings,
@@ -16,8 +15,8 @@ from arapy.core.resolver import (
 from arapy.io.output import log_to_file, should_mask_secrets
 
 
-def _legacy_settings() -> Settings:
-    return load_settings()
+def _settings_or_default(settings: Settings | None) -> Settings:
+    return settings or load_settings()
 
 
 def resolve_out_path(
@@ -29,35 +28,16 @@ def resolve_out_path(
 ) -> str:
     if args.get("out"):
         return str(Path(args["out"]))
-
-    if settings is not None:
-        return _resolve_out_path(args, service, action, data_format, settings)
-
-    log_dir = getattr(legacy_config, "LOG_DIR", None)
-    if log_dir is not None:
-        base = service.replace("-", "_")
-        return str(Path(log_dir) / f"{base}_{action}.{data_format}")
-
-    active_settings = _legacy_settings()
+    active_settings = _settings_or_default(settings)
     return _resolve_out_path(args, service, action, data_format, active_settings)
 
 
-def _payload_from_args(args: dict, excluded_keys: set[str]) -> dict:
+def payload_from_cli_args(args: dict, excluded_keys: set[str]) -> dict:
     return payload_from_args(args, excluded_keys)
 
 
-def _call_client_action(cp, action_name: str, *call_args, **call_kwargs):
-    modern = getattr(cp, action_name, None)
-    if callable(modern):
-        return modern(*call_args, **call_kwargs)
-    legacy = getattr(cp, f"_{action_name}", None)
-    if callable(legacy):
-        return legacy(*call_args, **call_kwargs)
-    raise AttributeError(f"Client does not implement action '{action_name}'")
-
-
 def add_handler(cp, token, api_catalog, args, settings: Settings | None = None):
-    active_settings = settings or _legacy_settings()
+    active_settings = _settings_or_default(settings)
     console, data_format, out_path, csv_fieldnames = output_settings(
         args, active_settings
     )
@@ -66,11 +46,10 @@ def add_handler(cp, token, api_catalog, args, settings: Settings | None = None):
 
     if isinstance(payload, list):
         result = [
-            _call_client_action(cp, "add", api_catalog, token, {**args, **item}, item)
-            for item in payload
+            cp.add(api_catalog, token, {**args, **item}, item) for item in payload
         ]
     else:
-        result = _call_client_action(cp, "add", api_catalog, token, args, payload)
+        result = cp.add(api_catalog, token, args, payload)
 
     return log_to_file(
         result,
@@ -83,12 +62,13 @@ def add_handler(cp, token, api_catalog, args, settings: Settings | None = None):
 
 
 def delete_handler(cp, token, api_catalog, args, settings: Settings | None = None):
-    active_settings = settings or _legacy_settings()
+    active_settings = _settings_or_default(settings)
     console, data_format, out_path, csv_fieldnames = output_settings(
         args, active_settings
     )
     mask_secrets = should_mask_secrets(args, active_settings)
-    result = _call_client_action(cp, "delete", api_catalog, token, args)
+    params = query_params_for_action(cp, api_catalog, args, "delete")
+    result = cp.delete(api_catalog, token, args, params=params or None)
     return log_to_file(
         result,
         filename=out_path,
@@ -100,7 +80,7 @@ def delete_handler(cp, token, api_catalog, args, settings: Settings | None = Non
 
 
 def get_handler(cp, token, api_catalog, args, settings: Settings | None = None):
-    active_settings = settings or _legacy_settings()
+    active_settings = settings or load_settings()
     console, data_format, out_path, csv_fieldnames = output_settings(
         args, active_settings
     )
@@ -108,12 +88,10 @@ def get_handler(cp, token, api_catalog, args, settings: Settings | None = None):
 
     if args.get("all"):
         params = query_params_for_action(cp, api_catalog, args, "list")
-        result = _call_client_action(
-            cp, "list", api_catalog, token, args, params=params
-        )
+        result = cp.list(api_catalog, token, args, params=params or None)
     else:
         params = query_params_for_action(cp, api_catalog, args, "get")
-        result = _call_client_action(cp, "get", api_catalog, token, args, params=params)
+        result = cp.get(api_catalog, token, args, params=params or None)
 
     return log_to_file(
         result,
@@ -133,7 +111,7 @@ def list_handler(cp, token, api_catalog, args, settings: Settings | None = None)
 
 
 def replace_handler(cp, token, api_catalog, args, settings: Settings | None = None):
-    active_settings = settings or _legacy_settings()
+    active_settings = _settings_or_default(settings)
     console, data_format, out_path, csv_fieldnames = output_settings(
         args, active_settings
     )
@@ -142,13 +120,10 @@ def replace_handler(cp, token, api_catalog, args, settings: Settings | None = No
 
     if isinstance(payload, list):
         result = [
-            _call_client_action(
-                cp, "replace", api_catalog, token, {**args, **item}, item
-            )
-            for item in payload
+            cp.replace(api_catalog, token, {**args, **item}, item) for item in payload
         ]
     else:
-        result = _call_client_action(cp, "replace", api_catalog, token, args, payload)
+        result = cp.replace(api_catalog, token, args, payload)
 
     return log_to_file(
         result,
@@ -161,7 +136,7 @@ def replace_handler(cp, token, api_catalog, args, settings: Settings | None = No
 
 
 def update_handler(cp, token, api_catalog, args, settings: Settings | None = None):
-    active_settings = settings or _legacy_settings()
+    active_settings = _settings_or_default(settings)
     console, data_format, out_path, csv_fieldnames = output_settings(
         args, active_settings
     )
@@ -170,13 +145,10 @@ def update_handler(cp, token, api_catalog, args, settings: Settings | None = Non
 
     if isinstance(payload, list):
         result = [
-            _call_client_action(
-                cp, "update", api_catalog, token, {**args, **item}, item
-            )
-            for item in payload
+            cp.update(api_catalog, token, {**args, **item}, item) for item in payload
         ]
     else:
-        result = _call_client_action(cp, "update", api_catalog, token, args, payload)
+        result = cp.update(api_catalog, token, args, payload)
 
     return log_to_file(
         result,
@@ -199,12 +171,12 @@ ACTIONS = {
 
 __all__ = [
     "ACTIONS",
-    "_payload_from_args",
     "add_handler",
     "delete_handler",
     "get_handler",
     "list_handler",
     "payload_from_args",
+    "payload_from_cli_args",
     "query_params_for_action",
     "replace_handler",
     "resolve_out_path",

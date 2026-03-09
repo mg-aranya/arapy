@@ -1,7 +1,9 @@
+from pathlib import Path
+
 import pytest
 
-import arapy.commands as commands
-import arapy.config as config
+import arapy.cli.commands as commands
+from arapy.core.config import AppPaths, Settings
 
 
 @pytest.fixture
@@ -36,6 +38,7 @@ def api_catalog():
                                 "/api/endpoint/{id}",
                                 "/api/endpoint/name/{name}",
                             ],
+                            "params": ["id", "name"],
                         },
                         "add": {
                             "method": "POST",
@@ -49,34 +52,44 @@ def api_catalog():
     }
 
 
-def test_resolve_out_path_uses_out_arg(tmp_path):
+@pytest.fixture
+def settings(tmp_path):
+    paths = AppPaths(
+        cache_dir=tmp_path / "cache",
+        state_dir=tmp_path / "state",
+        response_dir=tmp_path / "responses",
+        app_log_dir=tmp_path / "logs",
+    ).ensure()
+    return Settings(paths=paths)
+
+
+def test_resolve_out_path_uses_out_arg(tmp_path, settings):
     args = {"out": str(tmp_path / "custom.json")}
-    assert commands.resolve_out_path(args, "svc", "list", "json") == str(
+    assert commands.resolve_out_path(args, "svc", "list", "json", settings) == str(
         tmp_path / "custom.json"
     )
 
 
-def test_resolve_out_path_default_uses_log_dir_and_normalizes_service(
-    tmp_path, monkeypatch
-):
-    monkeypatch.setattr(config, "LOG_DIR", tmp_path)
+def test_resolve_out_path_default_uses_response_dir_and_normalizes_service(settings):
     args = {}
-    out = commands.resolve_out_path(args, "network-device", "list", "json")
-    assert out == str(tmp_path / "network_device_list.json")
+    out = commands.resolve_out_path(
+        args, "network-device", "list", "json", settings=settings
+    )
+    assert out == str(Path(settings.paths.response_dir) / "network_device_list.json")
 
 
 def test_payload_from_args_strips_reserved():
     args = {"name": "x", "id": "1", "console": True, "module": "m", "foo": "bar"}
-    payload = commands._payload_from_args(args, {"console", "module"})
+    payload = commands.payload_from_cli_args(args, {"console", "module"})
     assert payload == {"name": "x", "id": "1", "foo": "bar"}
 
 
-def test_list_handler_validates_limit_range(api_catalog):
+def test_list_handler_validates_limit_range(api_catalog, settings):
     class CP:
         def get_action_definition(self, api_catalog, module, service, action):
             return api_catalog["modules"][module][service]["actions"][action]
 
-        def _list(self, *args, **kwargs):
+        def list(self, *args, **kwargs):
             return {}
 
     with pytest.raises(ValueError, match="--limit must be between 1 and 1000"):
@@ -90,17 +103,18 @@ def test_list_handler_validates_limit_range(api_catalog):
                 "action": "list",
                 "limit": "0",
             },
+            settings=settings,
         )
 
 
-def test_list_handler_calls_cp_and_logs(monkeypatch, api_catalog):
+def test_list_handler_calls_cp_and_logs(monkeypatch, api_catalog, settings):
     calls = {}
 
     class CP:
         def get_action_definition(self, api_catalog, module, service, action):
             return api_catalog["modules"][module][service]["actions"][action]
 
-        def _list(self, api_catalog, token, args, *, params=None):
+        def list(self, api_catalog, token, args, *, params=None):
             calls["api_catalog"] = api_catalog
             calls["token"] = token
             calls["args"] = args
@@ -126,7 +140,7 @@ def test_list_handler_calls_cp_and_logs(monkeypatch, api_catalog):
         "console": False,
     }
 
-    commands.list_handler(CP(), "tok", api_catalog, args)
+    commands.list_handler(CP(), "tok", api_catalog, args, settings=settings)
 
     assert calls["params"] == {
         "offset": 10,
@@ -139,14 +153,14 @@ def test_list_handler_calls_cp_and_logs(monkeypatch, api_catalog):
     assert calls["logged"]["filename"].endswith("endpoint_list.json")
 
 
-def test_get_handler_calls_cp_and_logs(monkeypatch, api_catalog):
+def test_get_handler_calls_cp_and_logs(monkeypatch, api_catalog, settings):
     logged = {}
 
     class CP:
         def get_action_definition(self, api_catalog, module, service, action):
             return api_catalog["modules"][module][service]["actions"][action]
 
-        def _get(self, api_catalog, token, args, *, params=None):
+        def get(self, api_catalog, token, args, *, params=None):
             logged["call"] = {
                 "api_catalog": api_catalog,
                 "token": token,
@@ -166,21 +180,26 @@ def test_get_handler_calls_cp_and_logs(monkeypatch, api_catalog):
         "tok",
         api_catalog,
         {"module": "identities", "service": "endpoint", "action": "get", "name": "bob"},
+        settings=settings,
     )
     assert logged["call"]["params"] == {"name": "bob"}
     assert logged["thing"]["id"] == 2
     assert logged["filename"].endswith("endpoint_get.json")
 
 
-def test_delete_handler_calls_delete(monkeypatch, api_catalog):
+def test_delete_handler_calls_delete(monkeypatch, api_catalog, settings):
     logged = {}
 
     class CP:
-        def _delete(self, api_catalog, token, args):
+        def get_action_definition(self, api_catalog, module, service, action):
+            return api_catalog["modules"][module][service]["actions"][action]
+
+        def delete(self, api_catalog, token, args, *, params=None):
             logged["delete_call"] = {
                 "api_catalog": api_catalog,
                 "token": token,
                 "args": args,
+                "params": params,
             }
             return {"deleted": args["id"]}
 
@@ -190,9 +209,8 @@ def test_delete_handler_calls_delete(monkeypatch, api_catalog):
 
     monkeypatch.setattr(commands, "log_to_file", fake_log_to_file)
 
-    cp = CP()
     commands.delete_handler(
-        cp,
+        CP(),
         "tok",
         api_catalog,
         {
@@ -201,13 +219,14 @@ def test_delete_handler_calls_delete(monkeypatch, api_catalog):
             "action": "delete",
             "id": "123",
         },
+        settings=settings,
     )
-    assert logged["delete_call"]["args"]["id"] == "123"
+    assert logged["delete_call"]["params"] == {"id": "123"}
     assert logged["thing"]["deleted"] == "123"
     assert logged["filename"].endswith("endpoint_delete.json")
 
 
-def test_add_handler_builds_payload_from_args(monkeypatch, api_catalog):
+def test_add_handler_builds_payload_from_args(monkeypatch, api_catalog, settings):
     logged = {}
 
     class CP:
@@ -218,7 +237,7 @@ def test_add_handler_builds_payload_from_args(monkeypatch, api_catalog):
                 [],
             )
 
-        def _add(self, api_catalog, token, args, payload):
+        def add(self, api_catalog, token, args, payload):
             logged["add_call"] = {
                 "api_catalog": api_catalog,
                 "token": token,
@@ -248,6 +267,7 @@ def test_add_handler_builds_payload_from_args(monkeypatch, api_catalog):
             "foo": "bar",
             "console": False,
         },
+        settings=settings,
     )
 
     assert logged["add_call"]["payload"] == {

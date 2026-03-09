@@ -2,7 +2,8 @@ import json
 
 import pytest
 
-from arapy.io_utils import _extract_by_path, load_payload_file, log_to_file
+from arapy.io.files import load_payload_file
+from arapy.io.output import _extract_by_path, log_to_file, sanitize_secrets
 
 
 def test_extract_by_path_happy():
@@ -83,8 +84,6 @@ def test_load_payload_file_rejects_unknown_ext(tmp_path):
 
 
 def test_sanitize_secrets_masks_nested_fields():
-    from arapy.io_utils import sanitize_secrets
-
     payload = {
         "client_secret": "top",
         "_embedded": {

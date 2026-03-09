@@ -1,4 +1,4 @@
-import arapy.main as main
+import arapy.cli.main as main
 
 TEST_CATALOG = {
     "modules": {
@@ -41,22 +41,22 @@ def test_parse_cli_ignores_unknown_flags_in_completion_mode():
 
 
 def test_complete_outputs_modules(capsys, monkeypatch):
-    monkeypatch.setattr(main, "load_cached_catalog", lambda: TEST_CATALOG)
-    main._complete(["--_cur="])
+    monkeypatch.setattr(main, "load_cached_catalog", lambda settings=None: TEST_CATALOG)
+    main.complete(["--_cur="])
     out = capsys.readouterr().out.strip().splitlines()
     assert "identities" in out
 
 
 def test_complete_outputs_services_for_module(capsys, monkeypatch):
-    monkeypatch.setattr(main, "load_cached_catalog", lambda: TEST_CATALOG)
-    main._complete(["identities", "--_cur="])
+    monkeypatch.setattr(main, "load_cached_catalog", lambda settings=None: TEST_CATALOG)
+    main.complete(["identities", "--_cur="])
     out = capsys.readouterr().out.strip().splitlines()
     assert "endpoint" in out
 
 
 def test_complete_outputs_actions_for_service(capsys, monkeypatch):
-    monkeypatch.setattr(main, "load_cached_catalog", lambda: TEST_CATALOG)
-    main._complete(["identities", "endpoint"])
+    monkeypatch.setattr(main, "load_cached_catalog", lambda settings=None: TEST_CATALOG)
+    main.complete(["identities", "endpoint"])
     out = capsys.readouterr().out.strip().splitlines()
     assert "list" in out
     assert "get" in out

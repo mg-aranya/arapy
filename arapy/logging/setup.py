@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -94,10 +93,6 @@ class LoggingManager:
         return self._root_logger
 
 
-class AppLogger(LoggingManager):
-    """Backward-compatible alias for the old logger manager name."""
-
-
 LOG_LEVELS = {
     "DEBUG": logging.DEBUG,
     "INFO": logging.INFO,
@@ -118,27 +113,5 @@ def configure_logging(
             level=level,
             console=True,
             log_file=log_file,
-        )
-    )
-
-
-def build_logger_from_env(
-    *,
-    root_name: str = "arapy",
-    default_level: int = logging.INFO,
-    env_flag: str = "DEBUG",
-    env_log_file: str = "LOG_FILE",
-) -> AppLogger:
-    debug_raw = os.getenv(env_flag, "")
-    debug_on = debug_raw.strip().lower() in {"1", "true", "yes", "on"}
-
-    log_file_raw = os.getenv(env_log_file)
-    log_file = Path(log_file_raw) if log_file_raw else None
-    return AppLogger(
-        LoggerConfig(
-            root_name=root_name,
-            level=logging.DEBUG if debug_on else default_level,
-            log_file=log_file,
-            console=True,
         )
     )

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import re
-import sys
 from urllib.parse import quote
 
 import requests
@@ -104,17 +103,12 @@ class ClearPassClient:
             debug_lines.append("Response body:")
             debug_lines.extend(body.splitlines() or ["<empty>"])
 
-            compat_log = log
-            compat_module = sys.modules.get("arapy.clearpass")
-            if compat_module is not None and hasattr(compat_module, "log"):
-                compat_log = getattr(compat_module, "log")
-
-            compat_log.error(
+            log.error(
                 "HTTP %s %s - %s", response.status_code, response.reason, response.url
             )
             for line in debug_lines:
                 if line.strip():
-                    compat_log.debug(line)
+                    log.debug(line)
             raise
 
         if response.status_code == 204 or not response.content:
@@ -273,28 +267,3 @@ class ClearPassClient:
         return self.request_action(
             api_catalog, "replace", token, args, json_body=payload
         )
-
-    # Backward-compatible aliases.
-    def _list(
-        self, api_catalog: dict, token: str, args: dict, *, params: dict | None = None
-    ):
-        return self.list(api_catalog, token, args, params=params)
-
-    def _add(self, api_catalog: dict, token: str, args: dict, payload: dict):
-        return self.add(api_catalog, token, args, payload)
-
-    def _get(
-        self, api_catalog: dict, token: str, args: dict, *, params: dict | None = None
-    ):
-        return self.get(api_catalog, token, args, params=params)
-
-    def _delete(
-        self, api_catalog: dict, token: str, args: dict, *, params: dict | None = None
-    ):
-        return self.delete(api_catalog, token, args, params=params)
-
-    def _update(self, api_catalog: dict, token: str, args: dict, payload: dict):
-        return self.update(api_catalog, token, args, payload)
-
-    def _replace(self, api_catalog: dict, token: str, args: dict, payload: dict):
-        return self.replace(api_catalog, token, args, payload)

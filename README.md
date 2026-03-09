@@ -1,6 +1,6 @@
 # arapy
 
-[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.4.1-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 
@@ -18,19 +18,18 @@ A modular CLI toolkit for interacting with **HPE Aruba ClearPass Policy Manager*
 - safe handling of secrets in output and logs
 - shell completion and context-aware help
 
-Version: **1.4.0**
+Version: **1.4.1**
 
 ---
 
-## What changed in 1.4.0
+## What changed in 1.4.1
 
-- moved configuration to environment variables and removed hardcoded credentials
-- split the package into `cli`, `core`, `io`, and `logging` layers
-- moved help/completion out of the REST client
-- made logging initialization deterministic and centralized
-- moved cache and response output defaults to user data directories
-- refreshed tests to match the v1.3.1+ action-aware catalog shape
-- added a Ruff-based formatting and linting baseline
+- removed transitional compatibility wrapper modules from the top level
+- moved command handlers fully into `arapy.cli.commands`
+- cleaned the source release so it no longer includes `.git`, `.env`, caches, or build metadata
+- kept the `cli`, `core`, `io`, and `logging` package layout introduced in 1.4.0
+- retained environment-based configuration and deterministic logging
+- refreshed tests, docs, and packaging to match the final 1.4.x layout
 
 ---
 
@@ -178,28 +177,28 @@ source /path/to/your/repo/scripts/arapy-completion.bash
 
 ```text
 arapy/
+├── __init__.py
+├── __main__.py
 ├── cli/
-│   ├── main.py
-│   ├── parser.py
+│   ├── commands.py
+│   ├── completion.py
 │   ├── help.py
-│   └── completion.py
+│   ├── main.py
+│   └── parser.py
 ├── core/
-│   ├── client.py
 │   ├── catalog.py
-│   ├── resolver.py
-│   └── config.py
+│   ├── client.py
+│   ├── config.py
+│   └── resolver.py
 ├── io/
-│   ├── output.py
-│   └── files.py
+│   ├── files.py
+│   └── output.py
 ├── logging/
 │   └── setup.py
-├── commands.py                 # thin action handlers built on resolver + output
 ├── scripts/
 │   └── arapy-completion.bash
 └── tests/
 ```
-
-Thin compatibility wrappers remain at the top level (`main.py`, `clearpass.py`, `api_catalog.py`, `config.py`, `logger.py`, `io_utils.py`) to reduce upgrade friction.
 
 ---
 

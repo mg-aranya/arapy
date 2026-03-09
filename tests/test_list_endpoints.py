@@ -3,7 +3,7 @@ import re
 import pytest
 from requests import HTTPError
 
-from arapy.api_catalog import load_cached_catalog
+from arapy.core.catalog import load_cached_catalog
 
 
 def _iter_list_endpoints(catalog: dict):
@@ -97,7 +97,7 @@ def test_list_endpoints_smoke(
 
         args = {"module": module, "service": service, "action": "list"}
         try:
-            clearpass_client._list(api_catalog, token, args, params=params or None)
+            clearpass_client.list(api_catalog, token, args, params=params or None)
         except HTTPError as e:
             code = getattr(e.response, "status_code", None)
             by_status[code] = by_status.get(code, 0) + 1

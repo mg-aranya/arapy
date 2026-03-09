@@ -1,7 +1,9 @@
 import pytest
 import requests
 
-import arapy.clearpass as clearpass
+import arapy.core.client as clearpass
+
+MISSING = object()
 
 
 class FakeResp:
@@ -10,10 +12,10 @@ class FakeResp:
         *,
         status_code=200,
         reason="OK",
-        url="https://x/api",
+        url="https://server/api/x",
         headers=None,
-        text="",
-        content=b"{}",
+        text='{"ok":true}',
+        content=b'{"ok":true}',
         json_value=None,
         raise_http=False,
     ):
@@ -23,12 +25,14 @@ class FakeResp:
         self.headers = headers or {"content-type": "application/json"}
         self.text = text
         self.content = content
-        self._json_value = json_value
+        self._json_value = {"ok": True} if json_value is MISSING else json_value
         self._raise_http = raise_http
 
     def raise_for_status(self):
         if self._raise_http:
-            raise requests.HTTPError("boom")
+            err = requests.HTTPError(self.text)
+            err.response = self
+            raise err
 
     def json(self):
         if self._json_value is None:

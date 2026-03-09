@@ -4,7 +4,8 @@ import sys
 
 import urllib3
 
-from arapy import commands, get_version
+from arapy import get_version
+from arapy.cli.commands import ACTIONS
 from arapy.cli.completion import print_completions
 from arapy.cli.help import render_help
 from arapy.cli.parser import parse_cli
@@ -33,8 +34,7 @@ def build_client(settings: Settings) -> ClearPassClient:
     )
 
 
-def print_help(args: dict | None = None, settings: Settings | None = None) -> None:
-    del settings
+def print_help(args: dict | None = None) -> None:
     catalog = load_cached_catalog()
     print(render_help(catalog, args or {}, version=get_version()))
 
@@ -73,11 +73,11 @@ def main() -> None:
         return
 
     if args.get("help"):
-        print_help(args, settings=settings)
+        print_help(args)
         return
 
     if not args.get("module"):
-        print_help({}, settings=settings)
+        print_help({})
         return
 
     if args.get("module") == "cache":
@@ -94,7 +94,7 @@ def main() -> None:
             token = cp.login(OAUTH_ENDPOINTS, settings.credentials)["access_token"]
             get_api_catalog(cp, token=token, force_refresh=True, settings=settings)
             return
-        print_help({"module": "cache"}, settings=settings)
+        print_help({"module": "cache"})
         return
 
     module = args.get("module")
@@ -102,13 +102,13 @@ def main() -> None:
     action = args.get("action")
 
     if not (module and service and action):
-        print_help(args, settings=settings)
+        print_help(args)
         return
 
     try:
-        command = commands.ACTIONS[action]
+        command = ACTIONS[action]
     except KeyError:
-        print_help(args, settings=settings)
+        print_help(args)
         print(f"\nUnknown command: {module} {service} {action}")
         return
 
