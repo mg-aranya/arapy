@@ -1,5 +1,4 @@
-from .main import main
-
+from arapy.cli.main import main
 
 if __name__ == "__main__":
     main()

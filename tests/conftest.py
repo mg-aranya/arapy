@@ -1,8 +1,17 @@
+# ruff: noqa: E402
+
 import os
+import sys
+from pathlib import Path
+
 import pytest
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from arapy.api_catalog import OAUTH_ENDPOINTS, get_api_catalog, load_cached_catalog
 from arapy.clearpass import ClearPassClient
-from arapy.api_catalog import OAUTH_ENDPOINTS, get_api_paths, load_cached_catalog
 
 
 def pytest_addoption(parser):
@@ -26,7 +35,12 @@ def clearpass_client():
     if not server:
         pytest.skip("ARAPY_SERVER not set (integration test)")
 
-    verify_ssl = os.environ.get("ARAPY_VERIFY_SSL", "false").lower() in ("1", "true", "yes", "on")
+    verify_ssl = os.environ.get("ARAPY_VERIFY_SSL", "false").lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
     timeout = int(os.environ.get("ARAPY_TIMEOUT", "30"))
 
     return ClearPassClient(
@@ -54,8 +68,8 @@ def token(clearpass_client):
 
 
 @pytest.fixture(scope="session")
-def api_paths(clearpass_client, token):
+def api_catalog(clearpass_client, token):
     catalog = load_cached_catalog()
-    if catalog and isinstance(catalog.get("flat"), dict):
-        return catalog["flat"]
-    return get_api_paths(clearpass_client, token=token, force_refresh=True)
+    if catalog and isinstance(catalog.get("modules"), dict):
+        return catalog
+    return get_api_catalog(clearpass_client, token=token, force_refresh=True)

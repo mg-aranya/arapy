@@ -7,8 +7,6 @@ dist/
 build/
 .env
 .venv/
-logs/*
-*.log
 .pytest_cache/
+.ruff_cache/
 .backup/
-cache/

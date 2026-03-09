@@ -1,75 +1,35 @@
-"""
-Configuration for ClearPass API tool.
-Keep secrets out of git in real environments (env vars / vault / local override file).
-"""
+from __future__ import annotations
 
-from pathlib import Path
-import os
+from arapy.core.config import RESERVED_ARGS, SECRET_FIELDS, load_settings
 
-PACKAGE_DIR = Path(__file__).resolve().parent
 
-_env_out = os.environ.get("ARAPY_OUT_DIR")
-if _env_out:
-    LOG_DIR = Path(_env_out)
-else:
-    LOG_DIR = Path.cwd() / "logs"
-LOG_DIR.mkdir(parents=True, exist_ok=True)
+def refresh_settings():
+    settings = load_settings()
+    globals().update(
+        {
+            "SETTINGS": settings,
+            "SERVER": settings.server,
+            "HTTPS": settings.https_prefix,
+            "VERIFY_SSL": settings.verify_ssl,
+            "DEFAULT_TIMEOUT": settings.timeout,
+            "CONSOLE": settings.console,
+            "ENCRYPT_SECRETS": settings.encrypt_secrets,
+            "DEFAULT_CSV_FIELDNAMES": settings.default_csv_fieldnames,
+            "DEFAULT_FORMAT": settings.default_format,
+            "CACHE_DIR": settings.paths.cache_dir,
+            "LOG_DIR": settings.paths.response_dir,
+            "STATE_DIR": settings.paths.state_dir,
+            "APP_LOG_DIR": settings.paths.app_log_dir,
+            "RESERVED": RESERVED_ARGS,
+            "SECRETS": SECRET_FIELDS,
+            "CREDENTIALS": settings.credentials
+            if settings.client_id and settings.client_secret
+            else {},
+        }
+    )
+    return settings
 
-CACHE_DIR = Path("cache")
 
-PROFILES = {
-    "lab": {
-        "SERVER": "192.168.100.30:443",
-        "VERIFY_SSL": False,
-    },
-    "prod": {
-        "SERVER": "clearpass.company.com:443",
-        "VERIFY_SSL": True,
-    },
-}
-ACTIVE_PROFILE = "lab"
-
-SERVER = "192.168.100.30:443"
-HTTPS = "https://"
-VERIFY_SSL = False
-DEFAULT_TIMEOUT = 15
-CONSOLE = False
-ENCRYPT_SECRETS = True
-
-RESERVED = {
-    "help",
-    "version",
-    "verbose",
-    "debug",
-    "console",
-    "module",
-    "service",
-    "action",
-    "out",
-    "file",
-    "csv_fieldnames",
-    "data_format",
-    "log_level",
-    "all",
-    "filter",
-    "sort",
-    "offset",
-    "limit",
-    "calculate_count",
-    "encrypt",
-    "decrypt",
-    "_complete",
-    "_cword",
-    "_cur",
-}
-
-SECRETS = ("client_secret", "radius_secret", "tacacs_secret", "password", "enable_password")
-
-CREDENTIALS = {
-    "grant_type": "client_credentials",
-    "client_id": "Client2",
-    "client_secret": "h6jXPUUZh/GzktMFw0Sr/Is1WeISEwAQF+k7bTFH7393",
-}
-
-DEFAULT_CSV_FIELDNAMES = None
-DEFAULT_FORMAT = "json"
+SETTINGS = refresh_settings()
+PROFILES = {}
+ACTIVE_PROFILE = None

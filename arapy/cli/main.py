@@ -4,9 +4,7 @@ import sys
 
 import urllib3
 
-import arapy.commands as commands
-import arapy.config as config
-from arapy import get_version
+from arapy import commands, get_version
 from arapy.cli.completion import print_completions
 from arapy.cli.help import render_help
 from arapy.cli.parser import parse_cli
@@ -17,51 +15,46 @@ from arapy.core.catalog import (
     load_cached_catalog,
 )
 from arapy.core.client import ClearPassClient
-from arapy.logging.setup import LOG_LEVELS, build_logger_from_env
+from arapy.core.config import Settings, load_settings
+from arapy.logging.setup import LOG_LEVELS, configure_logging
 
 
-def build_client() -> ClearPassClient:
-    if not getattr(config, "SERVER", None):
+def build_client(settings: Settings) -> ClearPassClient:
+    if not settings.server:
         raise ValueError(
-            "ARAPY_SERVER is not configured. Set it in the environment before "
-            "running network actions."
+            "ARAPY_SERVER is not configured. Set it in the "
+            "environment before running network actions."
         )
     return ClearPassClient(
-        server=config.SERVER,
-        https_prefix=config.HTTPS,
-        verify_ssl=config.VERIFY_SSL,
-        timeout=config.DEFAULT_TIMEOUT,
+        server=settings.server,
+        https_prefix=settings.https_prefix,
+        verify_ssl=settings.verify_ssl,
+        timeout=settings.timeout,
     )
 
 
-def print_help(args: dict | None = None) -> None:
+def print_help(args: dict | None = None, settings: Settings | None = None) -> None:
+    del settings
     catalog = load_cached_catalog()
     print(render_help(catalog, args or {}, version=get_version()))
 
 
-def _print_help(args=None):
-    print_help(args)
-
-
-def complete(words: list[str]) -> None:
-    catalog = load_cached_catalog() or {"modules": {"identities": {}}}
+def complete(words: list[str], settings: Settings | None = None) -> None:
+    catalog = load_cached_catalog(settings=settings)
     print_completions(words, catalog)
 
 
-def _complete(words):
-    complete(words)
-
-
 def main() -> None:
-    if not getattr(config, "VERIFY_SSL", False):
+    settings = load_settings()
+    if not settings.verify_ssl:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     if "--_complete" in sys.argv:
         words = [word for word in sys.argv[1:] if word != "--_complete"]
-        _complete(words)
+        complete(words, settings=settings)
         return
 
-    log_mgr = build_logger_from_env(root_name="arapy")
+    log_mgr = configure_logging(settings, root_name="arapy")
     log = log_mgr.get_logger(__name__)
 
     args = parse_cli(sys.argv)
@@ -80,28 +73,28 @@ def main() -> None:
         return
 
     if args.get("help"):
-        _print_help(args)
+        print_help(args, settings=settings)
         return
 
     if not args.get("module"):
-        _print_help({})
+        print_help({}, settings=settings)
         return
 
     if args.get("module") == "cache":
         service = args.get("service")
         if service == "clear" and not args.get("action"):
-            removed = clear_api_cache()
+            removed = clear_api_cache(settings=settings)
             if removed:
                 log.info("API endpoint cache cleared.")
             else:
                 log.info("No API endpoint cache file found (already clear).")
             return
         if service == "update" and not args.get("action"):
-            cp = build_client()
-            token = cp.login(OAUTH_ENDPOINTS, config.CREDENTIALS)["access_token"]
-            get_api_catalog(cp, token=token, force_refresh=True)
+            cp = build_client(settings)
+            token = cp.login(OAUTH_ENDPOINTS, settings.credentials)["access_token"]
+            get_api_catalog(cp, token=token, force_refresh=True, settings=settings)
             return
-        _print_help({"module": "cache"})
+        print_help({"module": "cache"}, settings=settings)
         return
 
     module = args.get("module")
@@ -109,43 +102,22 @@ def main() -> None:
     action = args.get("action")
 
     if not (module and service and action):
-        _print_help(args)
+        print_help(args, settings=settings)
         return
 
     try:
         command = commands.ACTIONS[action]
     except KeyError:
-        _print_help(args)
+        print_help(args, settings=settings)
         print(f"\nUnknown command: {module} {service} {action}")
         return
 
-    cp = build_client()
+    cp = build_client(settings)
     log.info(
         "Connecting to ClearPass server: %s (SSL verify: %s)",
-        config.SERVER,
-        config.VERIFY_SSL,
+        settings.server,
+        settings.verify_ssl,
     )
-    token = cp.login(OAUTH_ENDPOINTS, config.CREDENTIALS)["access_token"]
-    api_catalog = load_cached_catalog()
-    if api_catalog is None:
-        try:
-            api_catalog = get_api_catalog(cp, token=token)
-        except AttributeError:
-            api_catalog = {}
-    command(cp, token, api_catalog, args)
-
-
-__all__ = [
-    "ClearPassClient",
-    "build_client",
-    "build_logger_from_env",
-    "commands",
-    "complete",
-    "get_version",
-    "load_cached_catalog",
-    "main",
-    "parse_cli",
-    "print_help",
-    "_complete",
-    "_print_help",
-]
+    token = cp.login(OAUTH_ENDPOINTS, settings.credentials)["access_token"]
+    api_catalog = get_api_catalog(cp, token=token, settings=settings)
+    command(cp, token, api_catalog, args, settings=settings)

@@ -1,110 +1,79 @@
 # arapy
 
-[![Version](https://img.shields.io/badge/version-1.3.1-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
-[![License](https://img.shields.io/badge/license-Internal-orange.svg)]()
 
-A modern, modular CLI toolkit for interacting with  
-**Aruba ClearPass Policy Manager REST API**.
+A modular CLI toolkit for interacting with **HPE Aruba ClearPass Policy Manager**.
 
-------------------------------------------------------------------------
+---
 
-## 🚀 Overview
+## Overview
 
-**arapy** is designed for operators and automation engineers who need:
+**arapy** is aimed at operators and automation engineers who need:
 
-- A powerful, script-friendly CLI
-- A clean, extensible architecture
-- Clear, structured logging
-- Reliable error diagnostics
-- Native tab completion support
-- API discovery that adapts to ClearPass upgrades
+- dynamic API discovery through ClearPass `/api-docs`
+- a script-friendly CLI for `get`, `list`, `add`, `delete`, `update`, and `replace`
+- structured file output for JSON, CSV, or raw responses
+- safe handling of secrets in output and logs
+- shell completion and context-aware help
 
-Version: **1.3.1**
+Version: **1.4.0**
 
-------------------------------------------------------------------------
+---
 
-## ✨ Key Features
+## What changed in 1.4.0
 
-- ✅ Dynamic API discovery via `/api-docs`
-- ✅ Swagger 1.2 / Apigility documentation parsing
-- ✅ Action-aware endpoint cache in `cache/api_endpoints_cache.json`
-- ✅ Preserved parameterized paths with CLI placeholder expansion
-- ✅ `get`, `add`, `delete`, `update`, and `replace` action mapping
-- ✅ `list` alias for `get --all`
-- ✅ Dynamic service and action help
-- ✅ Bash tab-completion driven by the discovered API catalog
-- ✅ Structured logging with configurable levels
-- ✅ Pagination, filtering, and sorting support
-- ✅ CSV import/export and bulk operations
+- moved configuration to environment variables and removed hardcoded credentials
+- split the package into `cli`, `core`, `io`, and `logging` layers
+- moved help/completion out of the REST client
+- made logging initialization deterministic and centralized
+- moved cache and response output defaults to user data directories
+- refreshed tests to match the v1.3.1+ action-aware catalog shape
+- added a Ruff-based formatting and linting baseline
 
-------------------------------------------------------------------------
+---
 
-## 🆕 What's New in 1.3.1
+## Installation
 
-- The cached API catalog now stores actions as `module -> service -> action -> {method, paths, params}`
-- Parameterized Swagger endpoints are kept instead of discarded
-- Single `*_id` path placeholders are normalized to `{id}`
-- `ClearPassClient._help()` now renders compact service help and action-specific help blocks
-- `list` is available as a direct alias for `get --all`
-- `arapy cache update` logging now reports discovered modules and total services
-- Secret masking is configurable via `ENCRYPT_SECRETS`, `--encrypt=enable|disable`, and `--decrypt`
-
-If you are upgrading from an older cache format, run:
+### Development install
 
 ```bash
-arapy cache clear
-arapy cache update
+pip install -e .[dev]
 ```
 
-------------------------------------------------------------------------
-
-# 🛠 Installation
-
-## Install (Development)
-
-```bash
-pip install -e .
-```
-
-## Install (Standard)
+### Standard install
 
 ```bash
 pip install .
 ```
 
-------------------------------------------------------------------------
+---
 
-# ⚡ Enable Tab Completion (Bash)
+## Required environment variables
 
-Run once per session:
-
-```bash
-source /path/to/your/repo/scripts/arapy-completion.bash
-```
-
-To enable permanently, add to `~/.bashrc` then reload terminal:
+Create a local `.env` or export the variables in your shell.
 
 ```bash
-for f in ~/.bash_completion.d/*; do
-  [ -r "$f" ] && source "$f"
-done
+export ARAPY_SERVER="clearpass.example.com:443"
+export ARAPY_CLIENT_ID="your-client-id"
+export ARAPY_CLIENT_SECRET="your-client-secret"
 ```
 
-### Zsh Support
+Optional settings:
 
-Add to `~/.zshrc`:
-
-```zsh
-autoload -Uz bashcompinit
-bashcompinit
-source /path/to/your/repo/scripts/arapy-completion.bash
+```bash
+export ARAPY_VERIFY_SSL="true"
+export ARAPY_TIMEOUT="30"
+export ARAPY_LOG_LEVEL="INFO"
+export ARAPY_ENCRYPT_SECRETS="true"
 ```
 
-------------------------------------------------------------------------
+An example file is included as `.env.example`.
 
-# 🖥 CLI Syntax
+---
+
+## CLI syntax
 
 ```bash
 arapy <module> <service> list [--key=value] [options]
@@ -120,100 +89,138 @@ arapy identities endpoint list --limit=10
 arapy policyelements network-device get --all --limit=25
 arapy policyelements network-device get --id=1001
 arapy policyelements network-device delete --name=switch-01
-arapy policyelements network-device update --id=1001 --description='Core switch'
+arapy policyelements network-device update --id=1001 --description="Core switch"
 ```
 
-------------------------------------------------------------------------
+Both `--log-level` and the legacy `--log_level` style are accepted. The same applies to flags like `--csv-fieldnames` / `--csv_fieldnames`.
 
-## 🌍 Global Options
+---
 
-| Option                         | Description                     |
-|--------------------------------|---------------------------------|
-| `--log_level=LEVEL`            | Set logging level               |
-| `--console`                    | Print API response to terminal  |
-| `--limit=N`                    | Limit results (1–1000)          |
-| `--offset=N`                   | Pagination offset               |
-| `--sort=±field`                | Sort results                    |
-| `--filter=JSON`                | Server-side filter              |
-| `--calculate_count=true/false` | Request total count             |
-| `--csv_fieldnames=a,b,c`       | Fields and order for CSV output |
-| `--file=FILE`                  | Bulk import JSON/CSV            |
-| `--out=FILE`                   | Override output file            |
-| `--help`                       | Context-aware help              |
-| `--version`                    | Show version                    |
-| `--encrypt=enable/disable`     | Mask or show secret fields      |
-| `--decrypt`                    | Shortcut for showing secrets    |
+## Global options
 
-------------------------------------------------------------------------
+| Option | Description |
+|---|---|
+| `--log-level=LEVEL` | Set logging level |
+| `--console` | Print API response to terminal |
+| `--limit=N` | Limit results (1–1000) |
+| `--offset=N` | Pagination offset |
+| `--sort=±field` | Sort results |
+| `--filter=JSON` | Server-side filter |
+| `--calculate-count=true/false` | Request total count |
+| `--csv-fieldnames=a,b,c` | Fields and order for CSV output |
+| `--file=FILE` | Bulk import JSON/CSV |
+| `--out=FILE` | Override output file |
+| `--help` | Context-aware help |
+| `--version` | Show version |
+| `--encrypt=enable/disable` | Mask or show secret fields |
+| `--decrypt` | Shortcut for showing secrets |
 
-# 📂 Logging & Error Handling
+---
 
-- All responses are written to file by default
-- Logging level is controlled via `--log_level`
-- Debug mode provides structured, line-by-line HTTP diagnostics
-- Sensitive fields are masked by default and can be shown with `--encrypt=disable` or `--decrypt`
+## Dynamic API discovery
 
-------------------------------------------------------------------------
-
-## 🔍 Dynamic API Discovery
-
-Starting with **v1.2.4**, arapy discovers available ClearPass API modules and services at runtime using the ClearPass API explorer:
+arapy discovers available ClearPass modules and services at runtime using:
 
 - `/api-docs`
 - `/api/apigility/documentation/<Module-v1>`
 
-This removes the need for hardcoded endpoint maps and makes arapy version agnostic so it can adapt to ClearPass upgrades automatically.
-
-In **v1.3.0**, the generated cache became action-aware and now stores discovered methods, paths, and parameters per service action.
-
-------------------------------------------------------------------------
-
-## 🗂 Endpoint Cache
-
-Discovered endpoints are cached locally for faster startup:
+The generated cache stores actions as:
 
 ```text
-cache/api_endpoints_cache.json
+module -> service -> action -> {method, paths, params}
 ```
 
-To clear the cache run:
+To refresh the cache:
 
 ```bash
 arapy cache clear
-```
-
-To update the cache run:
-
-```bash
 arapy cache update
 ```
 
-------------------------------------------------------------------------
+---
 
-# 🏗 Architecture
+## Default cache and output locations
+
+v1.4.0 no longer writes cache and response files into the project tree by default.
+
+On Linux/macOS the defaults are:
+
+```text
+cache:     ~/.cache/arapy/
+state:     ~/.local/state/arapy/
+responses: ~/.local/state/arapy/responses/
+app logs:  ~/.local/state/arapy/logs/
+```
+
+These can be overridden with environment variables such as `ARAPY_CACHE_DIR`, `ARAPY_STATE_DIR`, `ARAPY_OUT_DIR`, and `ARAPY_APP_LOG_DIR`.
+
+---
+
+## Enable tab completion (Bash)
+
+Run once per session:
+
+```bash
+source /path/to/your/repo/scripts/arapy-completion.bash
+```
+
+For zsh:
+
+```zsh
+autoload -Uz bashcompinit
+bashcompinit
+source /path/to/your/repo/scripts/arapy-completion.bash
+```
+
+---
+
+## Architecture
 
 ```text
 arapy/
-├── api_catalog.py               # Dynamic API discovery and cache builder
-├── clearpass.py                 # REST client and dynamic help renderer
-├── commands.py                  # CLI command routing
-├── config.py                    # Default configuration
-├── io_utils.py                  # File input / output
-├── logger.py                    # Terminal logs
-├── main.py                      # CLI entrypoint
+├── cli/
+│   ├── main.py
+│   ├── parser.py
+│   ├── help.py
+│   └── completion.py
+├── core/
+│   ├── client.py
+│   ├── catalog.py
+│   ├── resolver.py
+│   └── config.py
+├── io/
+│   ├── output.py
+│   └── files.py
+├── logging/
+│   └── setup.py
+├── commands.py                 # thin action handlers built on resolver + output
 ├── scripts/
-│   └── arapy-completion.bash    # Command tab-completion
-├── cache/
-│   └── api_endpoints_cache.json # Endpoint cache
-├── logs/                        # API response logs
-└── tests/                       # Unit tests
+│   └── arapy-completion.bash
+└── tests/
 ```
 
-------------------------------------------------------------------------
+Thin compatibility wrappers remain at the top level (`main.py`, `clearpass.py`, `api_catalog.py`, `config.py`, `logger.py`, `io_utils.py`) to reduce upgrade friction.
 
-# 📄 License
+---
+
+## Development
+
+Run tests:
+
+```bash
+pytest -q
+```
+
+Run lint and formatting:
+
+```bash
+ruff check .
+ruff format .
+```
+
+---
+
+## License
 
 Internal / Custom Use  
 © Mathias Granlund
-
-------------------------------------------------------------------------
