@@ -34,6 +34,7 @@ HTTPS = "https://"
 VERIFY_SSL = False
 DEFAULT_TIMEOUT = 15
 CONSOLE = False
+ENCRYPT_SECRETS = True
 
 RESERVED = {
     "help",
@@ -55,6 +56,8 @@ RESERVED = {
     "offset",
     "limit",
     "calculate_count",
+    "encrypt",
+    "decrypt",
     "_complete",
     "_cword",
     "_cur",

@@ -35,3 +35,16 @@ def test_complete_outputs_actions_for_service(capsys):
     out = capsys.readouterr().out.strip().splitlines()
     assert "list" in out
     assert "get" in out
+
+
+def test_parse_cli_encrypt_disable_and_separator():
+    argv = ["arapy", "policyelements", "network-device", "list", "--console", "--", "--encrypt=disable"]
+    args = main.parse_cli(argv)
+    assert args["encrypt"] == "disable"
+    assert args["console"] is True
+
+
+def test_parse_cli_decrypt_flag():
+    argv = ["arapy", "policyelements", "network-device", "list", "--decrypt"]
+    args = main.parse_cli(argv)
+    assert args["decrypt"] is True

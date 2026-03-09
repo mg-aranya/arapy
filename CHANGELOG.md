@@ -6,6 +6,17 @@ The format loosely follows Keep a Changelog and Semantic Versioning
 principles.
 ------------------------------------------------------------------------
 
+## [1.3.1] - 2026-03-09
+
+### Added
+- Added configurable secret masking for console and file output using `ENCRYPT_SECRETS` in `config.py`
+- Added CLI overrides `--encrypt=enable|disable` and `--decrypt`
+
+### Changed
+- Secret fields such as `radius_secret`, `tacacs_secret`, `client_secret`, and passwords are blanked in output by default
+
+------------------------------------------------------------------------
+
 ## [1.3.0] - 2026-03-09
 
 ### Added

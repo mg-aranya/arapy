@@ -81,3 +81,29 @@ def test_load_payload_file_rejects_unknown_ext(tmp_path):
     p.write_text("x", encoding="utf-8")
     with pytest.raises(ValueError, match="Unsupported file type"):
         load_payload_file(str(p))
+
+
+def test_sanitize_secrets_masks_nested_fields():
+    from arapy.io_utils import sanitize_secrets
+
+    payload = {
+        "client_secret": "top",
+        "_embedded": {
+            "items": [
+                {"radius_secret": "abc123", "nested": {"tacacs_secret": "def456"}},
+            ]
+        },
+    }
+
+    sanitized = sanitize_secrets(payload, mask_secrets=True)
+
+    assert sanitized["client_secret"] == ""
+    assert sanitized["_embedded"]["items"][0]["radius_secret"] == ""
+    assert sanitized["_embedded"]["items"][0]["nested"]["tacacs_secret"] == ""
+
+
+def test_log_to_file_json_can_leave_secrets_visible(tmp_path):
+    out = tmp_path/"out.json"
+    value = {"radius_secret": "abc123"}
+    log_to_file(value, filename=out, data_format="json", mask_secrets=False)
+    assert json.loads(out.read_text(encoding="utf-8"))["radius_secret"] == "abc123"

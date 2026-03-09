@@ -5,7 +5,7 @@
 #                   :Aruba ClearPass Policy Manager REST API.
 # author            :Mathias Granlund [mathias.granlund@aranya.se]
 # date              :2026-03-09
-# script version    :1.3.0
+# script version    :1.3.1
 # clearpass version :6.5+
 # python_version    :3.10.12
 # ======================================================================
@@ -63,6 +63,10 @@ def parse_cli(argv):
             args["console"] = True
         elif item == "--all":
             args["all"] = True
+        elif item == "--decrypt":
+            args["decrypt"] = True
+        elif item == "--":
+            continue
         elif item.startswith("--") and "=" in item:
             key, value = item[2:].split("=", 1)
             args[key] = value

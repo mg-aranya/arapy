@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from . import config
-from .io_utils import load_payload_file, log_to_file
+from .io_utils import load_payload_file, log_to_file, should_mask_secrets
 from .logger import AppLogger
 
 log = AppLogger().get_logger(__name__)
@@ -22,12 +22,13 @@ def _csv_fieldnames_from_args(args: dict):
     return csv_fieldnames
 
 
-def _output_settings(args: dict) -> tuple[bool, str, str, list[str] | None]:
+def _output_settings(args: dict) -> tuple[bool, str, str, list[str] | None, bool]:
     console = args.get("console", config.CONSOLE)
     data_format = args.get("data_format", config.DEFAULT_FORMAT)
     out_path = resolve_out_path(args, args["service"], args["action"], data_format)
     csv_fieldnames = _csv_fieldnames_from_args(args)
-    return console, data_format, out_path, csv_fieldnames
+    mask_secrets = should_mask_secrets(args)
+    return console, data_format, out_path, csv_fieldnames, mask_secrets
 
 
 def _payload_from_args(args: dict, excluded_keys: set[str]) -> dict:
@@ -78,7 +79,7 @@ def _query_params_for_action(cp, api_catalog, args: dict, action: str) -> dict:
 
 
 def add_handler(cp, token, api_catalog, args):
-    console, data_format, out_path, csv_fieldnames = _output_settings(args)
+    console, data_format, out_path, csv_fieldnames, mask_secrets = _output_settings(args)
     payload = _payload_for_write_action(cp, api_catalog, args, "add")
 
     if isinstance(payload, list):
@@ -86,17 +87,17 @@ def add_handler(cp, token, api_catalog, args):
     else:
         result = cp._add(api_catalog, token, args, payload)
 
-    log_to_file(result, filename=out_path, data_format=data_format, csv_fieldnames=csv_fieldnames, also_console=console)
+    log_to_file(result, filename=out_path, data_format=data_format, csv_fieldnames=csv_fieldnames, also_console=console, mask_secrets=mask_secrets)
 
 
 def delete_handler(cp, token, api_catalog, args):
-    console, data_format, out_path, csv_fieldnames = _output_settings(args)
+    console, data_format, out_path, csv_fieldnames, mask_secrets = _output_settings(args)
     result = cp._delete(api_catalog, token, args)
-    log_to_file(result, filename=out_path, data_format=data_format, csv_fieldnames=csv_fieldnames, also_console=console)
+    log_to_file(result, filename=out_path, data_format=data_format, csv_fieldnames=csv_fieldnames, also_console=console, mask_secrets=mask_secrets)
 
 
 def get_handler(cp, token, api_catalog, args):
-    console, data_format, out_path, csv_fieldnames = _output_settings(args)
+    console, data_format, out_path, csv_fieldnames, mask_secrets = _output_settings(args)
 
     if args.get("all"):
         params = _query_params_for_action(cp, api_catalog, args, "list")
@@ -105,7 +106,7 @@ def get_handler(cp, token, api_catalog, args):
         params = _query_params_for_action(cp, api_catalog, args, "get")
         result = cp._get(api_catalog, token, args, params=params)
 
-    log_to_file(result, filename=out_path, data_format=data_format, csv_fieldnames=csv_fieldnames, also_console=console)
+    log_to_file(result, filename=out_path, data_format=data_format, csv_fieldnames=csv_fieldnames, also_console=console, mask_secrets=mask_secrets)
 
 
 def list_handler(cp, token, api_catalog, args):
@@ -116,7 +117,7 @@ def list_handler(cp, token, api_catalog, args):
 
 
 def replace_handler(cp, token, api_catalog, args):
-    console, data_format, out_path, csv_fieldnames = _output_settings(args)
+    console, data_format, out_path, csv_fieldnames, mask_secrets = _output_settings(args)
     payload = _payload_for_write_action(cp, api_catalog, args, "replace")
 
     if isinstance(payload, list):
@@ -124,11 +125,11 @@ def replace_handler(cp, token, api_catalog, args):
     else:
         result = cp._replace(api_catalog, token, args, payload)
 
-    log_to_file(result, filename=out_path, data_format=data_format, csv_fieldnames=csv_fieldnames, also_console=console)
+    log_to_file(result, filename=out_path, data_format=data_format, csv_fieldnames=csv_fieldnames, also_console=console, mask_secrets=mask_secrets)
 
 
 def update_handler(cp, token, api_catalog, args):
-    console, data_format, out_path, csv_fieldnames = _output_settings(args)
+    console, data_format, out_path, csv_fieldnames, mask_secrets = _output_settings(args)
     payload = _payload_for_write_action(cp, api_catalog, args, "update")
 
     if isinstance(payload, list):
@@ -136,7 +137,7 @@ def update_handler(cp, token, api_catalog, args):
     else:
         result = cp._update(api_catalog, token, args, payload)
 
-    log_to_file(result, filename=out_path, data_format=data_format, csv_fieldnames=csv_fieldnames, also_console=console)
+    log_to_file(result, filename=out_path, data_format=data_format, csv_fieldnames=csv_fieldnames, also_console=console, mask_secrets=mask_secrets)
 
 
 ACTIONS = {

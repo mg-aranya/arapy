@@ -1,6 +1,6 @@
 # arapy
 
-[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.3.1-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 [![License](https://img.shields.io/badge/license-Internal-orange.svg)]()
@@ -21,7 +21,7 @@ A modern, modular CLI toolkit for interacting with
 - Native tab completion support
 - API discovery that adapts to ClearPass upgrades
 
-Version: **1.3.0**
+Version: **1.3.1**
 
 ------------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ Version: **1.3.0**
 
 ------------------------------------------------------------------------
 
-## 🆕 What's New in 1.3.0
+## 🆕 What's New in 1.3.1
 
 - The cached API catalog now stores actions as `module -> service -> action -> {method, paths, params}`
 - Parameterized Swagger endpoints are kept instead of discarded
@@ -49,6 +49,7 @@ Version: **1.3.0**
 - `ClearPassClient._help()` now renders compact service help and action-specific help blocks
 - `list` is available as a direct alias for `get --all`
 - `arapy cache update` logging now reports discovered modules and total services
+- Secret masking is configurable via `ENCRYPT_SECRETS`, `--encrypt=enable|disable`, and `--decrypt`
 
 If you are upgrading from an older cache format, run:
 
@@ -140,6 +141,8 @@ arapy policyelements network-device update --id=1001 --description='Core switch'
 | `--out=FILE`                   | Override output file            |
 | `--help`                       | Context-aware help              |
 | `--version`                    | Show version                    |
+| `--encrypt=enable/disable`     | Mask or show secret fields      |
+| `--decrypt`                    | Shortcut for showing secrets    |
 
 ------------------------------------------------------------------------
 
@@ -148,7 +151,7 @@ arapy policyelements network-device update --id=1001 --description='Core switch'
 - All responses are written to file by default
 - Logging level is controlled via `--log_level`
 - Debug mode provides structured, line-by-line HTTP diagnostics
-- Sensitive fields are automatically masked
+- Sensitive fields are masked by default and can be shown with `--encrypt=disable` or `--decrypt`
 
 ------------------------------------------------------------------------
 
