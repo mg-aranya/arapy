@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.6 - 2026-03-11
+
+### Added
+- static `arapy(1)` man page at `man/arapy.1` for users who prefer standard Unix CLI documentation
+
+### Changed
+- README now points to the bundled man page and shows how to view it locally with `man -l`
+
 ## 1.4.5 - 2026-03-11
 
 ### Added
