@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arapy"
-version = "1.4.4"
+version = "1.4.5"
 description = "CLI toolkit for HPE Aruba ClearPass Policy Manager"
 readme = "README.md"
 authors = [{ name = "Mathias Granlund", email = "mathias.granlund@aranya.se" }]
@@ -14,6 +14,7 @@ keywords = ["clearpass", "aruba", "cli", "rest-api"]
 
 [project.optional-dependencies]
 dev = [
+    "hypothesis>=6.0",
     "pytest>=9.0",
     "ruff>=0.15",
 ]

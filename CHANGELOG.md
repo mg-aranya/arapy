@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.5 - 2026-03-11
+
+### Added
+- property-based fuzz coverage with `hypothesis` for CLI parsing, recursive secret masking, and `calculate_count` query serialization
+
+### Changed
+- `hypothesis` is now included in the `.[dev]` extra
+- local `.hypothesis/` state is ignored by git
+
 ## 1.4.4 - 2026-03-11
 
 ### Changed
