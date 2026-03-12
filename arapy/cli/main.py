@@ -10,6 +10,7 @@ from arapy.cli.commands import ACTIONS
 from arapy.cli.completion import print_completions
 from arapy.cli.help import render_help
 from arapy.cli.parser import parse_cli
+from arapy.cli.server import handle_server_command
 from arapy.core.catalog import (
     OAUTH_ENDPOINTS,
     clear_api_cache,
@@ -118,6 +119,12 @@ def main() -> None:
             )
             return
         print_help({"module": "cache"})
+        return
+
+    if args.get("module") == "server":
+        if handle_server_command(args):
+            return
+        print_help({"module": "server", "service": args.get("service")})
         return
 
     module = args.get("module")

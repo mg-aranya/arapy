@@ -1,3 +1,4 @@
+import arapy.cli.completion as completion
 import arapy.cli.main as main
 
 TEST_CATALOG = {
@@ -60,6 +61,15 @@ def test_complete_outputs_actions_for_service(capsys, monkeypatch):
     out = capsys.readouterr().out.strip().splitlines()
     assert "list" in out
     assert "get" in out
+
+
+def test_complete_outputs_server_profiles_for_use(capsys, monkeypatch):
+    monkeypatch.setattr(main, "load_cached_catalog", lambda settings=None: TEST_CATALOG)
+    monkeypatch.setattr(completion, "list_profiles", lambda: ["dev", "prod"])
+    main.complete(["server", "use"])
+    out = capsys.readouterr().out.strip().splitlines()
+    assert "dev" in out
+    assert "prod" in out
 
 
 def test_parse_cli_encrypt_disable_and_separator():

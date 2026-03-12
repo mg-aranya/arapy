@@ -1,6 +1,6 @@
 # arapy
 
-[![Version](https://img.shields.io/badge/version-1.4.7-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.4.8-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 
@@ -18,16 +18,16 @@ A modular CLI toolkit for interacting with **HPE Aruba ClearPass Policy Manager*
 - safe handling of secrets in output and logs
 - shell completion and context-aware help
 
-Version: **1.4.7**
+Version: **1.4.8**
 
 ---
 
-## What changed in 1.4.7
+## What changed in 1.4.8
 
-- added package metadata required for cleaner wheel and sdist publishing
-- added a packaged `arapy-install-manpage` helper for installed environments
-- added release validation support with `build` and `twine`
-- added GitHub Actions CI for test and package validation
+- added built-in `arapy server list`, `show`, and `use <profile>` commands
+- added profile-aware config loading from `~/.config/arapy/profiles.env` and `credentials.env`
+- replaced `.env.example` with `profiles.env.example` and `credentials.env.example`
+- updated help, completion, and docs for named environment profiles
 
 ---
 
@@ -37,6 +37,14 @@ Version: **1.4.7**
 
 ```bash
 pip install -e .[dev]
+```
+
+If `pip` performs a user install on Linux or macOS, the `arapy` and
+`arapy-install-manpage` commands are typically written to `~/.local/bin`.
+Make sure that directory is on your `PATH`:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
 ### Standard install
@@ -56,7 +64,8 @@ python -m twine check dist/*
 
 ## Required environment variables
 
-Create a local `.env` or export the variables in your shell.
+Use per-user profile files under `~/.config/arapy/`, or export environment
+variables directly in your shell.
 
 ```bash
 export ARAPY_SERVER="clearpass.example.com:443"
@@ -75,7 +84,32 @@ export ARAPY_API_TOKEN="optional-access-token"
 export ARAPY_API_TOKEN_FILE="/path/to/token.json"
 ```
 
-An example file is included as `.env.example`.
+Example files are included as `profiles.env.example` and
+`credentials.env.example`.
+
+Per-user profile files under `~/.config/arapy/` are the recommended way to
+switch between environments like `prod` and `dev` without re-exporting shell
+variables on each run.
+
+Example `~/.config/arapy/profiles.env`:
+
+```bash
+ARAPY_ACTIVE_PROFILE=prod
+ARAPY_SERVER_PROD="clearpass-prod.example.com:443"
+ARAPY_SERVER_DEV="clearpass-dev.example.com:443"
+```
+
+Example `~/.config/arapy/credentials.env`:
+
+```bash
+ARAPY_CLIENT_ID_PROD="prod-client-id"
+ARAPY_CLIENT_SECRET_PROD="prod-client-secret"
+ARAPY_CLIENT_ID_DEV="dev-client-id"
+ARAPY_CLIENT_SECRET_DEV="dev-client-secret"
+```
+
+Direct environment variables such as `ARAPY_SERVER` and `ARAPY_CLIENT_ID` still
+override the profile files when they are set in the current shell.
 
 ---
 
@@ -86,6 +120,8 @@ arapy <module> <service> list [--key=value] [options]
 arapy <module> <service> get [--all] [--key=value] [options]
 arapy <module> <service> add|delete|update|replace [--key=value] [options]
 arapy cache clear|update
+arapy server list|show
+arapy server use <profile>
 ```
 
 Examples:
@@ -96,6 +132,8 @@ arapy policyelements network-device get --all --limit=25
 arapy policyelements network-device get --id=1001
 arapy policyelements network-device delete --name=switch-01
 arapy policyelements network-device update --id=1001 --description="Core switch"
+arapy server use prod
+arapy server show
 ```
 
 Both `--log-level` and the legacy `--log_level` style are accepted. The same applies to flags like `--csv-fieldnames` / `--csv_fieldnames`.
@@ -265,6 +303,23 @@ man arapy
 ```
 
 If your system does not already search `~/.local/share/man`, add it to `MANPATH`.
+
+## Server profiles
+
+Use the built-in server profile commands to inspect and switch the active
+ClearPass target:
+
+```bash
+arapy server list
+arapy server show
+arapy server use prod
+arapy server use dev
+```
+
+`arapy server use <profile>` updates `ARAPY_ACTIVE_PROFILE` in
+`~/.config/arapy/profiles.env`. The next `arapy` command resolves
+profile-scoped values such as `ARAPY_SERVER_PROD` and
+`ARAPY_CLIENT_SECRET_PROD` automatically.
 
 ---
 

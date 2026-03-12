@@ -59,3 +59,26 @@ def test_render_action_block_keeps_params_without_body_fields():
 
     assert "params:" in text
     assert "limit" in text
+
+
+def test_render_help_includes_server_builtin(monkeypatch):
+    monkeypatch.setattr(helpmod, "list_profiles", lambda: ["dev", "prod"])
+    monkeypatch.setattr(helpmod, "profiles_env_path", lambda: "/tmp/profiles.env")
+    monkeypatch.setattr(
+        helpmod, "credentials_env_path", lambda: "/tmp/credentials.env"
+    )
+
+    text = helpmod.render_help({}, {"module": "server"}, version="1.4.7")
+
+    assert "arapy server use <profile>" in text
+    assert "Configured profiles:" in text
+    assert "  - dev" in text
+    assert "  - prod" in text
+
+
+def test_render_help_without_catalog_lists_builtin_modules():
+    text = helpmod.render_help({}, {}, version="1.4.7")
+
+    assert "Available modules:" in text
+    assert "  - cache" in text
+    assert "  - server" in text

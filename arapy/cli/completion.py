@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from arapy.cli.help import service_cli_actions
+from arapy.core.config import list_profiles
 
 
 def completion_candidates(words: list[str], catalog: dict | None) -> list[str]:
@@ -14,7 +15,7 @@ def completion_candidates(words: list[str], catalog: dict | None) -> list[str]:
     positionals = [word for word in words if not word.startswith("-")]
 
     if len(positionals) == 0:
-        return ["cache", *sorted(modules.keys())]
+        return ["cache", "server", *sorted(modules.keys())]
 
     module = positionals[0]
     if module == "cache":
@@ -22,8 +23,18 @@ def completion_candidates(words: list[str], catalog: dict | None) -> list[str]:
             return ["clear", "update"]
         return []
 
+    if module == "server":
+        if len(positionals) == 1:
+            return ["list", "show", "use"]
+        service = positionals[1]
+        if service == "use" and len(positionals) == 2:
+            return list_profiles()
+        if service in {"list", "show"}:
+            return []
+        return ["list", "show", "use"]
+
     if module not in modules:
-        return ["cache", *sorted(modules.keys())]
+        return ["cache", "server", *sorted(modules.keys())]
 
     services = modules[module]
     if len(positionals) == 1 or (len(positionals) == 2 and current != ""):

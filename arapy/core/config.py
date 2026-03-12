@@ -1,14 +1,39 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
 APP_NAME = "arapy"
+ACTIVE_PROFILE_ENV = "ARAPY_ACTIVE_PROFILE"
+CONFIG_DIR_ENV = "ARAPY_CONFIG_DIR"
+PROFILES_FILE_NAME = "profiles.env"
+CREDENTIALS_FILE_NAME = "credentials.env"
 DEFAULT_TIMEOUT = 15
 DEFAULT_FORMAT = "json"
 DEFAULT_HTTPS_PREFIX = "https://"
 DEFAULT_LOG_LEVEL = "INFO"
+PROFILE_SCOPED_ENV_KEYS = (
+    "ARAPY_SERVER",
+    "ARAPY_HTTPS_PREFIX",
+    "ARAPY_VERIFY_SSL",
+    "ARAPY_TIMEOUT",
+    "ARAPY_CONSOLE",
+    "ARAPY_ENCRYPT_SECRETS",
+    "ARAPY_DATA_FORMAT",
+    "ARAPY_CSV_FIELDNAMES",
+    "ARAPY_LOG_LEVEL",
+    "ARAPY_API_TOKEN",
+    "ARAPY_API_TOKEN_FILE",
+    "ARAPY_TOKEN",
+    "ARAPY_TOKEN_FILE",
+    "ARAPY_GRANT_TYPE",
+    "ARAPY_CLIENT_ID",
+    "ARAPY_CLIENT_SECRET",
+    "ARAPY_USERNAME",
+    "ARAPY_PASSWORD",
+)
 SECRET_FIELDS = (
     "client_secret",
     "radius_secret",
@@ -47,15 +72,13 @@ RESERVED_ARGS = {
 }
 
 
-def _bool_env(name: str, default: bool) -> bool:
-    raw = os.getenv(name)
+def _bool_value(raw: str | None, default: bool) -> bool:
     if raw is None:
         return default
     return raw.strip().lower() in {"1", "true", "yes", "on", "enabled", "enable"}
 
 
-def _int_env(name: str, default: int) -> int:
-    raw = os.getenv(name)
+def _int_value(raw: str | None, default: int) -> int:
     if raw is None or raw.strip() == "":
         return default
     return int(raw)
@@ -65,8 +88,209 @@ def _xdg_cache_home() -> Path:
     return Path(os.getenv("XDG_CACHE_HOME", Path.home() / ".cache"))
 
 
+def _xdg_config_home() -> Path:
+    return Path(os.getenv("XDG_CONFIG_HOME", Path.home() / ".config"))
+
+
 def _xdg_state_home() -> Path:
     return Path(os.getenv("XDG_STATE_HOME", Path.home() / ".local" / "state"))
+
+
+def config_dir() -> Path:
+    override = os.getenv(CONFIG_DIR_ENV)
+    return Path(override) if override else _xdg_config_home() / APP_NAME
+
+
+def profiles_env_path() -> Path:
+    return config_dir() / PROFILES_FILE_NAME
+
+
+def credentials_env_path() -> Path:
+    return config_dir() / CREDENTIALS_FILE_NAME
+
+
+def _normalize_profile_name(name: str) -> str:
+    return name.strip().lower()
+
+
+def _profile_suffix(profile: str) -> str:
+    normalized = _normalize_profile_name(profile)
+    if not normalized:
+        raise ValueError("Profile name must not be empty.")
+    allowed = set("abcdefghijklmnopqrstuvwxyz0123456789-_")
+    invalid = {char for char in normalized if char not in allowed}
+    if invalid:
+        raise ValueError(
+            "Profile names may contain only letters, digits, hyphens, and underscores."
+        )
+    return normalized.replace("-", "_").upper()
+
+
+def _profile_env_key(name: str, profile: str) -> str:
+    return f"{name}_{_profile_suffix(profile)}"
+
+
+def _profile_name_from_suffix(suffix: str) -> str:
+    return suffix.strip().lower()
+
+
+def _read_env_file(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+
+    data: dict[str, str] = {}
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+            value = value[1:-1]
+        data[key] = value
+    return data
+
+
+def _write_env_value(path: Path, key: str, value: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+    updated = False
+    rendered = f"{key}={value}"
+    new_lines: list[str] = []
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#") and "=" in line:
+            existing_key = line.split("=", 1)[0].strip()
+            if existing_key == key and not updated:
+                new_lines.append(rendered)
+                updated = True
+                continue
+        new_lines.append(line)
+
+    if not updated:
+        if new_lines and new_lines[-1].strip():
+            new_lines.append("")
+        new_lines.append(rendered)
+
+    path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+
+
+def _load_config_values() -> dict[str, str]:
+    values = _read_env_file(profiles_env_path())
+    values.update(_read_env_file(credentials_env_path()))
+    return values
+
+
+def _resolve_active_profile(config_values: Mapping[str, str]) -> str | None:
+    raw = os.getenv(ACTIVE_PROFILE_ENV)
+    if raw is None:
+        raw = config_values.get(ACTIVE_PROFILE_ENV)
+    if raw is None or raw.strip() == "":
+        return None
+    return _normalize_profile_name(raw)
+
+
+def _resolve_value(
+    name: str,
+    config_values: Mapping[str, str],
+    *,
+    active_profile: str | None,
+) -> str | None:
+    raw = os.getenv(name)
+    if raw is not None:
+        return raw
+
+    raw = config_values.get(name)
+    if raw is not None:
+        return raw
+
+    if active_profile and name in PROFILE_SCOPED_ENV_KEYS:
+        scoped_key = _profile_env_key(name, active_profile)
+        raw = os.getenv(scoped_key)
+        if raw is not None:
+            return raw
+        return config_values.get(scoped_key)
+
+    return None
+
+
+def _scoped_file_value(
+    name: str, profile: str, config_values: Mapping[str, str]
+) -> str | None:
+    return config_values.get(_profile_env_key(name, profile))
+
+
+def list_profiles(config_values: Mapping[str, str] | None = None) -> list[str]:
+    values = dict(config_values or _load_config_values())
+    profiles: set[str] = set()
+
+    for key in values:
+        for base_name in PROFILE_SCOPED_ENV_KEYS:
+            prefix = f"{base_name}_"
+            if key.startswith(prefix) and len(key) > len(prefix):
+                profiles.add(_profile_name_from_suffix(key[len(prefix) :]))
+
+    active_profile = _resolve_active_profile(values)
+    if active_profile:
+        profiles.add(active_profile)
+
+    return sorted(profiles)
+
+
+@dataclass(frozen=True)
+class ProfileState:
+    active_profile: str | None
+    available_profiles: list[str]
+    profiles_path: Path
+    credentials_path: Path
+    server: str | None = None
+    has_client_id: bool = False
+    has_client_secret: bool = False
+    profile_servers: dict[str, str | None] = field(default_factory=dict)
+
+
+def describe_profile_state() -> ProfileState:
+    values = _load_config_values()
+    active_profile = _resolve_active_profile(values)
+    available_profiles = list_profiles(values)
+    profile_servers = {
+        profile: _scoped_file_value("ARAPY_SERVER", profile, values)
+        for profile in available_profiles
+    }
+
+    server = _resolve_value("ARAPY_SERVER", values, active_profile=active_profile)
+    client_id = _resolve_value("ARAPY_CLIENT_ID", values, active_profile=active_profile)
+    client_secret = _resolve_value(
+        "ARAPY_CLIENT_SECRET", values, active_profile=active_profile
+    )
+
+    return ProfileState(
+        active_profile=active_profile,
+        available_profiles=available_profiles,
+        profiles_path=profiles_env_path(),
+        credentials_path=credentials_env_path(),
+        server=server,
+        has_client_id=bool(client_id),
+        has_client_secret=bool(client_secret),
+        profile_servers=profile_servers,
+    )
+
+
+def set_active_profile(profile: str) -> Path:
+    normalized = _normalize_profile_name(profile)
+    if not normalized:
+        raise ValueError("Profile name must not be empty.")
+    available_profiles = list_profiles()
+    if normalized not in available_profiles:
+        available_text = ", ".join(available_profiles) if available_profiles else "<none>"
+        raise ValueError(
+            f"Unknown profile '{profile}'. Available profiles: {available_text}"
+        )
+    target = profiles_env_path()
+    _write_env_value(target, ACTIVE_PROFILE_ENV, normalized)
+    return target
 
 
 @dataclass(frozen=True)
@@ -102,6 +326,9 @@ class Settings:
     client_secret: str | None = None
     api_token: str | None = None
     api_token_file: Path | None = None
+    active_profile: str | None = None
+    profiles_path: Path | None = None
+    credentials_path: Path | None = None
     paths: AppPaths = field(default_factory=lambda: default_paths().ensure())
 
     @property
@@ -144,40 +371,86 @@ def default_paths() -> AppPaths:
 
 
 def load_settings() -> Settings:
+    values = _load_config_values()
+    active_profile = _resolve_active_profile(values)
     paths = default_paths().ensure()
-    log_file_raw = os.getenv("ARAPY_LOG_FILE")
-    log_file = Path(log_file_raw) if log_file_raw else paths.app_log_dir / "arapy.log"
-    log_to_file = _bool_env("ARAPY_LOG_TO_FILE", False) or bool(log_file_raw)
 
-    csv_fieldnames_raw = os.getenv("ARAPY_CSV_FIELDNAMES")
+    log_file_raw = _resolve_value(
+        "ARAPY_LOG_FILE", values, active_profile=active_profile
+    )
+    log_file = Path(log_file_raw) if log_file_raw else paths.app_log_dir / "arapy.log"
+    log_to_file = _bool_value(
+        _resolve_value("ARAPY_LOG_TO_FILE", values, active_profile=active_profile),
+        False,
+    ) or bool(log_file_raw)
+
+    csv_fieldnames_raw = _resolve_value(
+        "ARAPY_CSV_FIELDNAMES", values, active_profile=active_profile
+    )
     csv_fieldnames = None
     if csv_fieldnames_raw:
         csv_fieldnames = [
             value.strip() for value in csv_fieldnames_raw.split(",") if value.strip()
         ]
 
+    api_token_file_raw = _resolve_value(
+        "ARAPY_API_TOKEN_FILE", values, active_profile=active_profile
+    ) or _resolve_value("ARAPY_TOKEN_FILE", values, active_profile=active_profile)
+
     return Settings(
-        server=os.getenv("ARAPY_SERVER"),
-        https_prefix=os.getenv("ARAPY_HTTPS_PREFIX", DEFAULT_HTTPS_PREFIX),
-        verify_ssl=_bool_env("ARAPY_VERIFY_SSL", False),
-        timeout=_int_env("ARAPY_TIMEOUT", DEFAULT_TIMEOUT),
-        console=_bool_env("ARAPY_CONSOLE", False),
-        encrypt_secrets=_bool_env("ARAPY_ENCRYPT_SECRETS", True),
-        default_format=os.getenv("ARAPY_DATA_FORMAT", DEFAULT_FORMAT),
+        server=_resolve_value("ARAPY_SERVER", values, active_profile=active_profile),
+        https_prefix=_resolve_value(
+            "ARAPY_HTTPS_PREFIX", values, active_profile=active_profile
+        )
+        or DEFAULT_HTTPS_PREFIX,
+        verify_ssl=_bool_value(
+            _resolve_value("ARAPY_VERIFY_SSL", values, active_profile=active_profile),
+            False,
+        ),
+        timeout=_int_value(
+            _resolve_value("ARAPY_TIMEOUT", values, active_profile=active_profile),
+            DEFAULT_TIMEOUT,
+        ),
+        console=_bool_value(
+            _resolve_value("ARAPY_CONSOLE", values, active_profile=active_profile),
+            False,
+        ),
+        encrypt_secrets=_bool_value(
+            _resolve_value(
+                "ARAPY_ENCRYPT_SECRETS", values, active_profile=active_profile
+            ),
+            True,
+        ),
+        default_format=_resolve_value(
+            "ARAPY_DATA_FORMAT", values, active_profile=active_profile
+        )
+        or DEFAULT_FORMAT,
         default_csv_fieldnames=csv_fieldnames,
-        log_level=os.getenv("ARAPY_LOG_LEVEL", DEFAULT_LOG_LEVEL).upper(),
+        log_level=(
+            _resolve_value("ARAPY_LOG_LEVEL", values, active_profile=active_profile)
+            or DEFAULT_LOG_LEVEL
+        ).upper(),
         log_file=log_file,
         log_to_file=log_to_file,
-        grant_type=os.getenv("ARAPY_GRANT_TYPE", "client_credentials"),
-        client_id=os.getenv("ARAPY_CLIENT_ID") or os.getenv("ARAPY_USERNAME"),
-        client_secret=os.getenv("ARAPY_CLIENT_SECRET") or os.getenv("ARAPY_PASSWORD"),
-        api_token=os.getenv("ARAPY_API_TOKEN") or os.getenv("ARAPY_TOKEN"),
-        api_token_file=(
-            Path(
-                os.getenv("ARAPY_API_TOKEN_FILE") or os.getenv("ARAPY_TOKEN_FILE", "")
-            )
-            if os.getenv("ARAPY_API_TOKEN_FILE") or os.getenv("ARAPY_TOKEN_FILE")
-            else None
-        ),
+        grant_type=_resolve_value(
+            "ARAPY_GRANT_TYPE", values, active_profile=active_profile
+        )
+        or "client_credentials",
+        client_id=_resolve_value(
+            "ARAPY_CLIENT_ID", values, active_profile=active_profile
+        )
+        or _resolve_value("ARAPY_USERNAME", values, active_profile=active_profile),
+        client_secret=_resolve_value(
+            "ARAPY_CLIENT_SECRET", values, active_profile=active_profile
+        )
+        or _resolve_value("ARAPY_PASSWORD", values, active_profile=active_profile),
+        api_token=_resolve_value(
+            "ARAPY_API_TOKEN", values, active_profile=active_profile
+        )
+        or _resolve_value("ARAPY_TOKEN", values, active_profile=active_profile),
+        api_token_file=Path(api_token_file_raw) if api_token_file_raw else None,
+        active_profile=active_profile,
+        profiles_path=profiles_env_path(),
+        credentials_path=credentials_env_path(),
         paths=paths,
     )

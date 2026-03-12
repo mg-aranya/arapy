@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 
+from arapy.core.config import credentials_env_path, list_profiles, profiles_env_path
+
 CLI_ACTION_ORDER = ["list", "get", "add", "delete", "update", "replace"]
 
 
@@ -95,6 +97,8 @@ def render_help(
         "[--key=value] "
         "[--log-level=debug|info|warning|error|critical] [--console]\n"
         "  arapy cache [clear | update]\n"
+        "  arapy server [list | show]\n"
+        "  arapy server use <profile>\n"
         "  arapy [--help | ?]\n"
         "  arapy --version\n\n"
         "Common options:\n"
@@ -111,21 +115,57 @@ def render_help(
         "  Action 'list' is the same as 'get --all'.\n"
     )
 
-    modules = (api_catalog or {}).get("modules") or {}
-    if not modules:
+    if module == "cache":
         return (
             header
             + usage
+            + "\nBuilt-in module: cache\n"
+            + "Commands:\n"
+            + "  arapy cache clear\n"
+            + "  arapy cache update"
+        )
+
+    if module == "server":
+        profiles = list_profiles()
+        profile_lines = (
+            "\n".join(f"  - {profile}" for profile in profiles)
+            if profiles
+            else "  <none found>"
+        )
+        return (
+            header
+            + usage
+            + "\nBuilt-in module: server\n"
+            + "Commands:\n"
+            + "  arapy server list\n"
+            + "  arapy server show\n"
+            + "  arapy server use <profile>\n\n"
+            + f"Profiles file: {profiles_env_path()}\n"
+            + f"Credentials file: {credentials_env_path()}\n"
+            + "Configured profiles:\n"
+            + profile_lines
+        )
+
+    modules = (api_catalog or {}).get("modules") or {}
+    if not modules:
+        builtin_modules = "\n".join(["  - cache", "  - server"])
+        return (
+            header
+            + usage
+            + "\nAvailable modules:\n"
+            + builtin_modules
             + "\nNo API catalog cache found.\n"
             + "Run `arapy cache update` to build the cache from ClearPass /api-docs."
         )
 
     if not module:
-        available_modules = "\n".join(f"  - {name}" for name in sorted(modules.keys()))
+        available_modules = "\n".join(
+            ["  - cache", "  - server", *[f"  - {name}" for name in sorted(modules.keys())]]
+        )
         return header + usage + "\nAvailable modules:\n" + available_modules
 
     if module not in modules:
-        available = ", ".join(sorted(modules.keys()))
+        available = ", ".join(["cache", "server", *sorted(modules.keys())])
         return header + f"Unknown module '{module}'. Available modules: {available}"
 
     services = modules[module]

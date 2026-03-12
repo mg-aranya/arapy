@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.4.8 - 2026-03-12
+
+### Added
+- `arapy server list`, `arapy server show`, and `arapy server use <profile>` built-in commands for switching between named ClearPass environments
+- profile-aware configuration loading from `~/.config/arapy/profiles.env` and `~/.config/arapy/credentials.env`
+- packaged `profiles.env.example` and `credentials.env.example` templates for per-user profile setup
+
+### Changed
+- environment loading now resolves profile-scoped keys such as `ARAPY_SERVER_PROD` and `ARAPY_CLIENT_SECRET_DEV` based on `ARAPY_ACTIVE_PROFILE`
+- shell completion and built-in help now include the `server` command surface and discovered profile names
+- README now documents the profile-based configuration model and the replacement example files
+
 ## 1.4.7 - 2026-03-11
 
 ### Added

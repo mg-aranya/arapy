@@ -16,6 +16,18 @@ cache update
 
 .br
 .B arapy
+server list
+
+.br
+.B arapy
+server show
+
+.br
+.B arapy
+server use \fIPROFILE\fR
+
+.br
+.B arapy
 [\fB--help\fR|\fB?\fR]
 
 .br
@@ -86,6 +98,20 @@ Refresh the local API catalog from ClearPass.
 .TP
 .B arapy cache clear
 Remove the local API catalog cache.
+
+.SH SERVER PROFILE COMMANDS
+.TP
+.B arapy server list
+List configured server profiles discovered from the user config files.
+
+.TP
+.B arapy server show
+Show the active profile, resolved server, and config file locations.
+
+.TP
+.BI "arapy server use " PROFILE
+Persist the active profile in
+.BR ~/.config/arapy/profiles.env .
 
 .SH AUTHENTICATION
 .B arapy
@@ -246,6 +272,11 @@ OAuth client ID.
 OAuth client secret.
 
 .TP
+.B ARAPY_ACTIVE_PROFILE
+Select the active profile name used to resolve profile-scoped values from
+the config files.
+
+.TP
 .B ARAPY_API_TOKEN
 Direct bearer token.
 
@@ -299,6 +330,16 @@ Override application log directory.
 Default cache directory on Linux when XDG defaults are used.
 
 .TP
+.B ~/.config/arapy/profiles.env
+Per-user profile definitions such as
+.BR ARAPY_SERVER_PROD .
+
+.TP
+.B ~/.config/arapy/credentials.env
+Per-user profile credentials such as
+.BR ARAPY_CLIENT_ID_PROD " and " ARAPY_CLIENT_SECRET_PROD .
+
+.TP
 .B ~/.local/state/arapy/
 Default state directory on Linux when XDG defaults are used.
 
@@ -316,6 +357,14 @@ Refresh API discovery cache:
 .PP
 .EX
 arapy cache update
+.EE
+
+Switch the active server profile:
+
+.PP
+.EX
+arapy server use prod
+arapy server show
 .EE
 
 List endpoints:
