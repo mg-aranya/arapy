@@ -113,6 +113,8 @@ def render_help(
         "  --out=PATH                         Override the output file path.\n"
         "  --data-format=json|csv|raw         Output format (default: json).\n"
         "  --csv-fieldnames=a,b,c             Fields and order for CSV output.\n"
+        "  --filter=JSON                      Server-side filter; list/get --all keep paging until all matching rows are fetched.\n"
+        "  --limit=N                          Page size for paged list/get --all requests (1-1000 per request).\n"
         "  --log-level=LEVEL                 Select log level.\n\n"
         "Common flags:\n"
         "  --help                             Print help message (same as -h and ?).\n"
@@ -120,6 +122,7 @@ def render_help(
         "  --decrypt                          Include secrets in output.\n\n"
         "Notes:\n"
         "  Action 'list' is the same as 'get --all'.\n"
+        "  When --filter is used with list/get --all, arapy fetches every matching page, not just the first 1000 results.\n"
     )
 
     if module == "cache":
@@ -163,7 +166,7 @@ def render_help(
             + "Selectors:\n"
             + "  --id=VALUE\n"
             + "  --name=VALUE\n"
-            + "  --filter=JSON\n"
+            + "  --filter=JSON  (copied across all matching paged results)\n"
             + "  --all\n\n"
             + "Behavior:\n"
             + "  --on-conflict=fail|skip|update|replace\n"

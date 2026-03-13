@@ -107,3 +107,11 @@ def test_render_help_includes_copy_builtin():
     assert "Built-in module: copy" in text
     assert "--from=SOURCE_PROFILE" in text
     assert "--on-conflict=fail|skip|update|replace" in text
+    assert "copied across all matching paged results" in text
+
+
+def test_render_help_mentions_filter_paging_behavior():
+    text = helpmod.render_help({}, {}, version="1.5.3")
+
+    assert "list/get --all keep paging until all matching rows are fetched" in text
+    assert "fetches every matching page, not just the first 1000 results" in text

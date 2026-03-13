@@ -153,11 +153,34 @@ class _TargetCP(_BaseCP):
         return {"id": args["id"], **payload}
 
 
+class _PagedSourceCP(_SourceCP):
+    def __init__(self, catalog, items):
+        super().__init__(catalog, items)
+        self.list_calls = []
+
+    def list(self, api_catalog, token, args, *, params=None):
+        self.list_calls.append(dict(params or {}))
+        offset = int((params or {}).get("offset", 0))
+        limit = int((params or {}).get("limit", 25))
+        items = self.items[offset : offset + limit]
+        response = {"_embedded": {"items": items}}
+        if offset == 0:
+            response["count"] = len(self.items)
+        return response
+
+
 def test_handle_copy_command_dry_run_create(monkeypatch, tmp_path, capsys):
     catalog = _catalog()
     source_cp = _SourceCP(
         catalog,
-        [{"id": 1, "name": "switch-a", "ip_address": "10.0.0.1"}],
+        [
+            {
+                "id": 1,
+                "name": "switch-a",
+                "ip_address": "10.0.0.1",
+                "radius_secret": "abc123",
+            }
+        ],
     )
     target_cp = _TargetCP(catalog, {})
 
@@ -192,6 +215,68 @@ def test_handle_copy_command_dry_run_create(monkeypatch, tmp_path, capsys):
     assert report["summary"]["created"] == 1
     assert report["items"][0]["action"] == "create"
     assert report["items"][0]["status"] == "planned"
+
+
+def test_handle_copy_command_fetches_all_source_pages(monkeypatch, tmp_path):
+    catalog = _catalog()
+    source_cp = _PagedSourceCP(
+        catalog,
+        [
+            {
+                "id": 1,
+                "name": "switch-a",
+                "ip_address": "10.0.0.1",
+                "radius_secret": "one",
+            },
+            {
+                "id": 2,
+                "name": "switch-b",
+                "ip_address": "10.0.0.2",
+                "radius_secret": "two",
+            },
+            {
+                "id": 3,
+                "name": "switch-c",
+                "ip_address": "10.0.0.3",
+                "radius_secret": "three",
+            },
+        ],
+    )
+    target_cp = _TargetCP(catalog, {})
+
+    monkeypatch.setattr(copymod, "list_profiles", lambda: ["dev", "prod"])
+    monkeypatch.setattr(
+        copymod,
+        "load_settings_for_profile",
+        lambda profile: _make_settings(tmp_path, profile),
+    )
+
+    def build_client(settings, *, mask_secrets=True):
+        return source_cp if settings.server == "dev" else target_cp
+
+    report = copymod.handle_copy_command(
+        {
+            "module": "copy",
+            "copy_module": "policyelements",
+            "copy_service": "network-device",
+            "from": "dev",
+            "to": "prod",
+            "all": True,
+            "limit": "2",
+            "dry_run": True,
+        },
+        settings=_make_settings(tmp_path, "prod"),
+        build_client=build_client,
+        resolve_auth_token=lambda cp, settings: f"{settings.server}-token",
+        get_api_catalog=lambda cp, token, settings, force_refresh=True: catalog,
+    )
+
+    assert report["summary"]["selected"] == 3
+    assert report["summary"]["created"] == 3
+    assert source_cp.list_calls == [
+        {"limit": 2, "offset": 0, "sort": None},
+        {"limit": 2, "offset": 2, "sort": None},
+    ]
 
 
 def test_handle_copy_command_updates_existing_match_and_restores_secret(

@@ -11,6 +11,7 @@ from arapy.core.config import (
     list_profiles,
     load_settings_for_profile,
 )
+from arapy.core.pagination import fetch_all_list_results
 from arapy.core.resolver import normalize_file_payload_for_action, query_params_for_action
 from arapy.io.output import sanitize_secrets, should_mask_secrets, write_value_to_file
 
@@ -98,8 +99,7 @@ def _fetch_source_items(
         sort=args.get("sort"),
         calculate_count=args.get("calculate_count"),
     )
-    params = query_params_for_action(cp, api_catalog, list_args, "list")
-    result = cp.list(api_catalog, token, list_args, params=params or None)
+    result = fetch_all_list_results(cp, token, api_catalog, list_args)
     return _extract_items(result)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.3 - 2026-03-13
+
+### Changed
+- `list`, `get --all`, and `copy` source reads now iterate through paged ClearPass collection responses until all matching entries are fetched instead of stopping after the first page
+- `--filter` now applies across the full paged result set, and `--limit` acts as the per-request page size for paged collection reads
+- built-in help and README guidance now explain the filtered paging behavior explicitly
+
 ## 1.5.2 - 2026-03-13
 
 ### Fixed

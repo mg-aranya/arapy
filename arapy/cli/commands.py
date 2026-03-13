@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from arapy.core.pagination import fetch_all_list_results
 from arapy.core.config import Settings, load_settings
 from arapy.core.resolver import (
     normalize_file_payload_for_action,
@@ -116,8 +117,7 @@ def get_handler(cp, token, api_catalog, args, settings: Settings | None = None):
 
     if args.get("all"):
         action_name = "list"
-        params = query_params_for_action(cp, api_catalog, args, "list")
-        result = cp.list(api_catalog, token, args, params=params or None)
+        result = fetch_all_list_results(cp, token, api_catalog, args)
     else:
         action_name = "get"
         params = query_params_for_action(cp, api_catalog, args, "get")

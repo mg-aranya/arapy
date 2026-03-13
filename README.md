@@ -1,6 +1,6 @@
 # arapy
 
-[![Version](https://img.shields.io/badge/version-1.5.2-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.5.3-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 
@@ -18,9 +18,15 @@ A modular CLI toolkit for interacting with **HPE Aruba ClearPass Policy Manager*
 - safe handling of secrets in output and logs
 - shell completion and context-aware help
 
-Version: **1.5.2**
+Version: **1.5.3**
 
 ---
+
+## What changed in 1.5.3
+
+- `list`, `get --all`, and `copy` source reads now page automatically across all matching results instead of stopping after the first 1000 entries
+- `--filter` now applies across the full paged collection, and `--limit` acts as the per-request page size instead of silently capping the overall result set
+- built-in `--help` text now calls out the filtered paging behavior directly
 
 ## What changed in 1.5.2
 
@@ -168,10 +174,10 @@ arapy identities endpoint list --token-file=./token.json
 |---|---|
 | `--log-level=LEVEL` | Set logging level |
 | `--console` | Print API response to terminal |
-| `--limit=N` | Limit results (1-1000) |
+| `--limit=N` | Page size for list/get --all requests (1-1000 per request) |
 | `--offset=N` | Pagination offset |
 | `--sort=+field` | Sort results |
-| `--filter=JSON` | Server-side filter |
+| `--filter=JSON` | Server-side filter applied across all fetched pages |
 | `--calculate-count=true/false` | Request total count |
 | `--csv-fieldnames=a,b,c` | Fields and order for CSV output |
 | `--file=FILE` | Bulk import JSON/CSV |

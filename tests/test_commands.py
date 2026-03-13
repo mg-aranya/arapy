@@ -158,6 +158,57 @@ def test_list_handler_calls_cp_and_logs(monkeypatch, api_catalog, settings):
     assert calls["logged"]["filename"].endswith("endpoint_list.json")
 
 
+def test_list_handler_fetches_all_pages(monkeypatch, api_catalog, settings):
+    calls = []
+
+    class CP:
+        last_response_meta = None
+
+        def get_action_definition(self, api_catalog, module, service, action):
+            return api_catalog["modules"][module][service]["actions"][action]
+
+        def list(self, api_catalog, token, args, *, params=None):
+            calls.append(dict(params or {}))
+            offset = int((params or {}).get("offset", 0))
+            limit = int((params or {}).get("limit", 25))
+            items = [{"id": item_id} for item_id in range(offset + 1, min(offset + limit, 5) + 1)]
+            response = {"_embedded": {"items": items}}
+            if offset == 0:
+                response["count"] = 5
+            return response
+
+    logged = {}
+    monkeypatch.setattr(
+        commands,
+        "log_to_file",
+        lambda thing, filename, **kwargs: logged.update(
+            {"thing": thing, "filename": str(filename)}
+        ),
+    )
+
+    commands.list_handler(
+        CP(),
+        "tok",
+        api_catalog,
+        {
+            "module": "identities",
+            "service": "endpoint",
+            "action": "list",
+            "limit": "2",
+            "calculate_count": True,
+        },
+        settings=settings,
+    )
+
+    assert calls == [
+        {"limit": 2, "offset": 0, "sort": None, "calculate_count": "true"},
+        {"limit": 2, "offset": 2, "sort": None, "calculate_count": "false"},
+        {"limit": 2, "offset": 4, "sort": None, "calculate_count": "false"},
+    ]
+    assert [item["id"] for item in logged["thing"]["_embedded"]["items"]] == [1, 2, 3, 4, 5]
+    assert logged["thing"]["count"] == 5
+
+
 def test_get_handler_calls_cp_and_logs(monkeypatch, api_catalog, settings):
     logged = {}
 
@@ -192,6 +243,55 @@ def test_get_handler_calls_cp_and_logs(monkeypatch, api_catalog, settings):
     assert logged["call"]["params"] == {"name": "bob"}
     assert logged["thing"]["id"] == 2
     assert logged["filename"].endswith("endpoint_get.json")
+
+
+def test_get_handler_all_fetches_all_pages_without_count(
+    monkeypatch, api_catalog, settings
+):
+    calls = []
+
+    class CP:
+        last_response_meta = None
+
+        def get_action_definition(self, api_catalog, module, service, action):
+            return api_catalog["modules"][module][service]["actions"][action]
+
+        def list(self, api_catalog, token, args, *, params=None):
+            calls.append(dict(params or {}))
+            offset = int((params or {}).get("offset", 0))
+            limit = int((params or {}).get("limit", 25))
+            items = [{"id": item_id} for item_id in range(offset + 1, min(offset + limit, 5) + 1)]
+            return {"_embedded": {"items": items}}
+
+    logged = {}
+    monkeypatch.setattr(
+        commands,
+        "log_to_file",
+        lambda thing, filename, **kwargs: logged.update(
+            {"thing": thing, "filename": str(filename)}
+        ),
+    )
+
+    commands.get_handler(
+        CP(),
+        "tok",
+        api_catalog,
+        {
+            "module": "identities",
+            "service": "endpoint",
+            "action": "get",
+            "all": True,
+            "limit": "2",
+        },
+        settings=settings,
+    )
+
+    assert calls == [
+        {"limit": 2, "offset": 0, "sort": None},
+        {"limit": 2, "offset": 2, "sort": None},
+        {"limit": 2, "offset": 4, "sort": None},
+    ]
+    assert [item["id"] for item in logged["thing"]["_embedded"]["items"]] == [1, 2, 3, 4, 5]
 
 
 def test_delete_handler_calls_delete(monkeypatch, api_catalog, settings):
