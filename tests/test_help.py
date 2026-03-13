@@ -97,4 +97,13 @@ def test_render_help_without_catalog_lists_builtin_modules():
 
     assert "Available modules:" in text
     assert "  - cache" in text
+    assert "  - copy" in text
     assert "  - server" in text
+
+
+def test_render_help_includes_copy_builtin():
+    text = helpmod.render_help({}, {"module": "copy"}, version="1.5.0")
+
+    assert "Built-in module: copy" in text
+    assert "--from=SOURCE_PROFILE" in text
+    assert "--on-conflict=fail|skip|update|replace" in text

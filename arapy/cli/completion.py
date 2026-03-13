@@ -15,12 +15,22 @@ def completion_candidates(words: list[str], catalog: dict | None) -> list[str]:
     positionals = [word for word in words if not word.startswith("-")]
 
     if len(positionals) == 0:
-        return ["cache", "server", *sorted(modules.keys())]
+        return ["cache", "copy", "server", *sorted(modules.keys())]
 
     module = positionals[0]
     if module == "cache":
         if len(positionals) == 1:
             return ["clear", "update"]
+        return []
+
+    if module == "copy":
+        if len(positionals) == 1:
+            return sorted(modules.keys())
+        copy_module = positionals[1]
+        if copy_module not in modules:
+            return sorted(modules.keys())
+        if len(positionals) == 2 or (len(positionals) == 3 and current != ""):
+            return sorted(((modules.get(copy_module) or {}).keys()))
         return []
 
     if module == "server":
@@ -34,7 +44,7 @@ def completion_candidates(words: list[str], catalog: dict | None) -> list[str]:
         return ["list", "show", "use"]
 
     if module not in modules:
-        return ["cache", "server", *sorted(modules.keys())]
+        return ["cache", "copy", "server", *sorted(modules.keys())]
 
     services = modules[module]
     if len(positionals) == 1 or (len(positionals) == 2 and current != ""):

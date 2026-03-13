@@ -46,6 +46,7 @@ def test_complete_outputs_modules(capsys, monkeypatch):
     main.complete(["--_cur="])
     out = capsys.readouterr().out.strip().splitlines()
     assert "identities" in out
+    assert "copy" in out
 
 
 def test_complete_outputs_services_for_module(capsys, monkeypatch):
@@ -72,6 +73,13 @@ def test_complete_outputs_server_profiles_for_use(capsys, monkeypatch):
     assert "prod" in out
 
 
+def test_complete_outputs_services_for_copy_module(capsys, monkeypatch):
+    monkeypatch.setattr(main, "load_cached_catalog", lambda settings=None: TEST_CATALOG)
+    main.complete(["copy", "identities"])
+    out = capsys.readouterr().out.strip().splitlines()
+    assert "endpoint" in out
+
+
 def test_parse_cli_encrypt_disable_and_separator():
     argv = [
         "arapy",
@@ -91,3 +99,24 @@ def test_parse_cli_decrypt_flag():
     argv = ["arapy", "policyelements", "network-device", "list", "--decrypt"]
     args = main.parse_cli(argv)
     assert args["decrypt"] is True
+
+
+def test_parse_cli_copy_command():
+    argv = [
+        "arapy",
+        "copy",
+        "policyelements",
+        "network-device",
+        "--from=dev",
+        "--to=prod",
+        "--all",
+        "--dry-run",
+    ]
+    args = main.parse_cli(argv)
+    assert args["module"] == "copy"
+    assert args["copy_module"] == "policyelements"
+    assert args["copy_service"] == "network-device"
+    assert args["from"] == "dev"
+    assert args["to"] == "prod"
+    assert args["all"] is True
+    assert args["dry_run"] is True

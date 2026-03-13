@@ -398,9 +398,9 @@ def default_paths(
     )
 
 
-def load_settings() -> Settings:
-    values = _load_config_values()
-    active_profile = _resolve_active_profile(values)
+def _build_settings_from_values(
+    values: Mapping[str, str], *, active_profile: str | None
+) -> Settings:
     paths = default_paths(values, active_profile=active_profile).ensure()
 
     log_file_raw = _resolve_value(
@@ -482,3 +482,19 @@ def load_settings() -> Settings:
         credentials_path=credentials_env_path(),
         paths=paths,
     )
+
+
+def load_settings() -> Settings:
+    values = _load_config_values()
+    active_profile = _resolve_active_profile(values)
+    return _build_settings_from_values(values, active_profile=active_profile)
+
+
+def load_settings_for_profile(profile: str | None) -> Settings:
+    values = _load_config_values()
+    active_profile = (
+        _normalize_profile_name(profile)
+        if profile not in (None, "")
+        else _resolve_active_profile(values)
+    )
+    return _build_settings_from_values(values, active_profile=active_profile)

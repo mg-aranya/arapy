@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.5.0 - 2026-03-13
+
+### Added
+- built-in `arapy copy <module> <service> --from=SOURCE --to=TARGET` workflow for copying resources between ClearPass profiles without shell-chaining separate export and import commands
+- copy workflow support for `--dry-run`, `--match-by=auto|name|id`, `--on-conflict=fail|skip|update|replace`, and optional report artifacts via `--save-source`, `--save-payload`, and `--save-plan`
+- parser, help text, completion, and integration coverage for the new `copy` built-in command
+
+### Changed
+- copy execution now fetches source objects, normalizes them against the destination write schema, strips response-only metadata, and reuses destination profile settings within a single command run
+
 ## 1.4.11 - 2026-03-13
 
 ### Fixed

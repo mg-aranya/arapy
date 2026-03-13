@@ -8,6 +8,7 @@ import urllib3
 from arapy import get_version
 from arapy.cli.commands import ACTIONS
 from arapy.cli.completion import print_completions
+from arapy.cli.copy import handle_copy_command
 from arapy.cli.help import render_help
 from arapy.cli.parser import parse_cli
 from arapy.cli.server import handle_server_command
@@ -139,6 +140,16 @@ def main() -> None:
         if handle_server_command(args):
             return
         print_help({"module": "server", "service": args.get("service")})
+        return
+
+    if args.get("module") == "copy":
+        handle_copy_command(
+            args,
+            settings=active_settings,
+            build_client=build_client,
+            resolve_auth_token=resolve_auth_token,
+            get_api_catalog=get_api_catalog,
+        )
         return
 
     module = args.get("module")

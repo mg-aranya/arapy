@@ -96,11 +96,13 @@ def render_help(
     usage = (
         "Usage:\n"
         "  arapy <module> <service> <action> [options] [flags]\n\n"
+        "  arapy copy <module> <service> --from=SOURCE --to=TARGET [options] [flags]\n\n"
         "Examples:\n"
         "  arapy <module> <service> "
         "[add|delete|get|list|update|replace] "
         "[--key=value] "
         "[--log-level=debug|info|warning|error|critical] [--console]\n"
+        "  arapy copy <module> <service> --from=dev --to=prod --all --dry-run\n"
         "  arapy cache [clear | update]\n"
         "  arapy server [list | show]\n"
         "  arapy server use <profile>\n"
@@ -151,9 +153,34 @@ def render_help(
             + profile_lines
         )
 
+    if module == "copy":
+        return (
+            header
+            + usage
+            + "\nBuilt-in module: copy\n"
+            + "Usage:\n"
+            + "  arapy copy <module> <service> --from=SOURCE_PROFILE --to=TARGET_PROFILE [options]\n\n"
+            + "Selectors:\n"
+            + "  --id=VALUE\n"
+            + "  --name=VALUE\n"
+            + "  --filter=JSON\n"
+            + "  --all\n\n"
+            + "Behavior:\n"
+            + "  --on-conflict=fail|skip|update|replace\n"
+            + "  --match-by=auto|name|id\n"
+            + "  --dry-run\n"
+            + "  --continue-on-error\n"
+            + "  --decrypt\n\n"
+            + "Artifacts:\n"
+            + "  --out=PATH\n"
+            + "  --save-source=PATH\n"
+            + "  --save-payload=PATH\n"
+            + "  --save-plan=PATH\n"
+        )
+
     modules = (api_catalog or {}).get("modules") or {}
     if not modules:
-        builtin_modules = "\n".join(["  - cache", "  - server"])
+        builtin_modules = "\n".join(["  - cache", "  - copy", "  - server"])
         return (
             header
             + usage
@@ -165,12 +192,12 @@ def render_help(
 
     if not module:
         available_modules = "\n".join(
-            ["  - cache", "  - server", *[f"  - {name}" for name in sorted(modules.keys())]]
+            ["  - cache", "  - copy", "  - server", *[f"  - {name}" for name in sorted(modules.keys())]]
         )
         return header + usage + "\nAvailable modules:\n" + available_modules
 
     if module not in modules:
-        available = ", ".join(["cache", "server", *sorted(modules.keys())])
+        available = ", ".join(["cache", "copy", "server", *sorted(modules.keys())])
         return header + f"Unknown module '{module}'. Available modules: {available}"
 
     services = modules[module]

@@ -1,6 +1,6 @@
 # arapy
 
-[![Version](https://img.shields.io/badge/version-1.4.11-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 
@@ -18,12 +18,15 @@ A modular CLI toolkit for interacting with **HPE Aruba ClearPass Policy Manager*
 - safe handling of secrets in output and logs
 - shell completion and context-aware help
 
-Version: **1.4.11**
+Version: **1.5.0**
 
 ---
 
-## What changed in 1.4.11
+## What changed in 1.5.0
 
+- added built-in `arapy copy <module> <service> --from=... --to=...` support for cross-profile resource migration workflows
+- copy mode supports `--dry-run`, `--match-by`, `--on-conflict`, `--decrypt`, and report artifact options like `--save-source`, `--save-payload`, and `--save-plan`
+- copy mode normalizes source responses into writable target payloads, strips response-only fields, preserves requested secret visibility, and applies creates or updates against the destination profile
 - path overrides such as `ARAPY_OUT_DIR` now resolve through the same config and profile loading path as the other settings
 - profile-scoped path settings like `ARAPY_OUT_DIR_PROD` are now respected
 - `~` is now expanded correctly in path override settings such as `ARAPY_OUT_DIR=~/responses`
@@ -118,6 +121,7 @@ override the profile files when they are set in the current shell.
 arapy <module> <service> list [--key=value] [options]
 arapy <module> <service> get [--all] [--key=value] [options]
 arapy <module> <service> add|delete|update|replace [--key=value] [options]
+arapy copy <module> <service> --from=<profile> --to=<profile> [options]
 arapy cache clear|update
 arapy server list|show
 arapy server use <profile>
@@ -131,6 +135,7 @@ arapy policyelements network-device get --all --limit=25
 arapy policyelements network-device get --id=1001
 arapy policyelements network-device delete --name=switch-01
 arapy policyelements network-device update --id=1001 --description="Core switch"
+arapy copy policyelements network-device --from=dev --to=prod --all --dry-run
 arapy server use prod
 arapy server show
 ```

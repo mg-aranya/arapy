@@ -17,6 +17,8 @@ def parse_cli(argv: list[str]) -> dict:
         "console",
         "all",
         "decrypt",
+        "dry_run",
+        "continue_on_error",
         "help",
     }
 
@@ -51,9 +53,15 @@ def parse_cli(argv: list[str]) -> dict:
 
     if len(positionals) >= 1:
         args["module"] = positionals[0]
-    if len(positionals) >= 2:
-        args["service"] = positionals[1]
-    if len(positionals) >= 3:
-        args["action"] = positionals[2]
+    if positionals[:1] == ["copy"]:
+        if len(positionals) >= 2:
+            args["copy_module"] = positionals[1]
+        if len(positionals) >= 3:
+            args["copy_service"] = positionals[2]
+    else:
+        if len(positionals) >= 2:
+            args["service"] = positionals[1]
+        if len(positionals) >= 3:
+            args["action"] = positionals[2]
 
     return args

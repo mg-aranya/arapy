@@ -253,3 +253,37 @@ def test_main_uses_direct_api_token_without_login(monkeypatch, tmp_path):
     main.main()
 
     assert calls["action"]["token"] == "CLI-TOKEN"
+
+
+def test_main_copy_invokes_copy_handler(monkeypatch, tmp_path):
+    calls = {}
+    mgr = FakeLogMgr()
+    settings = make_settings(tmp_path)
+    monkeypatch.setattr(main, "configure_logging", lambda settings, root_name: mgr)
+    monkeypatch.setattr(main, "load_settings", lambda: settings)
+    monkeypatch.setattr(
+        main,
+        "handle_copy_command",
+        lambda args, **kwargs: calls.update({"args": args, "kwargs": kwargs}),
+    )
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "arapy",
+            "copy",
+            "policyelements",
+            "network-device",
+            "--from=dev",
+            "--to=prod",
+            "--all",
+        ],
+    )
+
+    main.main()
+
+    assert calls["args"]["module"] == "copy"
+    assert calls["args"]["copy_module"] == "policyelements"
+    assert calls["args"]["copy_service"] == "network-device"
+    assert calls["kwargs"]["settings"] == settings
