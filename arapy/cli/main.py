@@ -20,21 +20,35 @@ from arapy.core.catalog import (
 from arapy.core.client import ClearPassClient
 from arapy.core.config import Settings, load_settings
 from arapy.io.files import load_api_token_file
+from arapy.io.output import should_mask_secrets
 from arapy.logging.setup import LOG_LEVELS, configure_logging
 
 
-def build_client(settings: Settings) -> ClearPassClient:
+def build_client(settings: Settings, *, mask_secrets: bool = True) -> ClearPassClient:
     if not settings.server:
         raise ValueError(
             "ARAPY_SERVER is not configured. Set it in the "
             "environment before running network actions."
         )
-    return ClearPassClient(
-        server=settings.server,
-        https_prefix=settings.https_prefix,
-        verify_ssl=settings.verify_ssl,
-        timeout=settings.timeout,
-    )
+    try:
+        return ClearPassClient(
+            server=settings.server,
+            https_prefix=settings.https_prefix,
+            verify_ssl=settings.verify_ssl,
+            timeout=settings.timeout,
+            mask_secrets=mask_secrets,
+        )
+    except TypeError as exc:
+        if "mask_secrets" not in str(exc):
+            raise
+        cp = ClearPassClient(
+            server=settings.server,
+            https_prefix=settings.https_prefix,
+            verify_ssl=settings.verify_ssl,
+            timeout=settings.timeout,
+        )
+        setattr(cp, "mask_secrets", mask_secrets)
+        return cp
 
 
 def print_help(args: dict | None = None) -> None:
@@ -142,7 +156,8 @@ def main() -> None:
         print(f"\nUnknown command: {module} {service} {action}")
         return
 
-    cp = build_client(active_settings)
+    mask_secrets = should_mask_secrets(args, active_settings)
+    cp = build_client(active_settings, mask_secrets=mask_secrets)
     log.info(
         "Connecting to ClearPass server: %s (SSL verify: %s)",
         active_settings.server,

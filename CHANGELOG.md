@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.10 - 2026-03-13
+
+### Fixed
+- saved ClearPass `list` responses can now be reused as `--file` input for write actions by unwrapping `_embedded.items` and dropping response `_links`
+- file-backed `add`, `update`, and `replace` requests now filter response-only fields such as `id` out of the JSON body while still allowing path fields to resolve update/replace URLs
+- empty optional container values from exported responses, such as `attributes: {}`, are now omitted from replayed write payloads when ClearPass expects the field to be absent instead of empty
+- `--decrypt` now also disables secret masking in HTTP request debug logs so troubleshooting output matches the requested secret visibility
+- client construction remains compatible with older test doubles and call sites that do not accept the new secret-masking parameter
+
 ## 1.4.9 - 2026-03-12
 
 ### Fixed

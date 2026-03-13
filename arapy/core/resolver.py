@@ -5,6 +5,8 @@ from pathlib import Path
 from arapy.core.config import RESERVED_ARGS, Settings
 from arapy.io.files import load_payload_file
 
+_LIST_QUERY_PARAMS = {"filter", "sort", "offset", "limit", "calculate_count"}
+
 
 _TEXT_CONTENT_MARKERS = (
     "json",
@@ -155,6 +157,63 @@ def payload_for_write_action(cp, api_catalog, args: dict, action: str):
     placeholders = set(resolve_placeholders_for_action(cp, api_catalog, args, action))
     excluded = set(RESERVED_ARGS) | placeholders
     return payload_from_args(args, excluded)
+
+
+def normalize_file_payload_for_action(
+    cp, api_catalog, args: dict, action: str, payload: dict
+) -> dict:
+    if not isinstance(payload, dict):
+        raise ValueError("File payload items must be JSON objects.")
+
+    action_def = cp.get_action_definition(
+        api_catalog, args["module"], args["service"], action
+    )
+    placeholders = set(resolve_placeholders_for_action(cp, api_catalog, args, action))
+
+    body_fields = [
+        {
+            "name": str(field.get("name")),
+            "required": bool(field.get("required")),
+        }
+        for field in action_def.get("body_fields", []) or []
+        if isinstance(field, dict) and isinstance(field.get("name"), str)
+    ]
+    if body_fields:
+        allowed_fields = {field["name"] for field in body_fields}
+        required_fields = {
+            field["name"] for field in body_fields if field.get("required")
+        }
+    else:
+        params = {
+            str(name)
+            for name in action_def.get("params", []) or []
+            if isinstance(name, str)
+        }
+        filtered_params = params - placeholders - _LIST_QUERY_PARAMS
+        allowed_fields = filtered_params or None
+        required_fields: set[str] = set()
+
+    excluded_fields = set(placeholders)
+    if action == "add":
+        excluded_fields.add("id")
+
+    if allowed_fields is None:
+        return {
+            key: value
+            for key, value in payload.items()
+            if key not in excluded_fields
+        }
+
+    normalized = {
+        key: value
+        for key, value in payload.items()
+        if key in allowed_fields and key not in excluded_fields
+    }
+    return {
+        key: value
+        for key, value in normalized.items()
+        if key in required_fields or value not in (None, {}, [])
+    }
 
 
 def query_params_for_action(cp, api_catalog, args: dict, action: str) -> dict:

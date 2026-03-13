@@ -144,5 +144,36 @@ def test_request_http_error_masks_secrets_and_reraises(monkeypatch):
 
     assert fake_log.error_calls
     joined = "\n".join(fake_log.debug_calls)
-    assert "***" in joined
+    assert "'client_secret': ''" in joined
     assert "SUPERSECRET" not in joined
+
+
+def test_request_http_error_can_show_secrets_when_masking_disabled(monkeypatch):
+    cp = clearpass.ClearPassClient(
+        "server:443",
+        https_prefix="https://",
+        verify_ssl=False,
+        mask_secrets=False,
+    )
+    fake_log = FakeLogger()
+    monkeypatch.setattr(clearpass, "log", fake_log)
+
+    resp = FakeResp(
+        status_code=401,
+        reason="Unauthorized",
+        url="https://server/api/oauth",
+        headers={"content-type": "application/json"},
+        text='{"error":"bad"}',
+        content=b'{"error":"bad"}',
+        raise_http=True,
+    )
+    monkeypatch.setattr(cp.session, "request", lambda **kw: resp)
+
+    payload = {"client_id": "x", "client_secret": "SUPERSECRET"}
+    with pytest.raises(requests.HTTPError):
+        cp.request(
+            {"oauth": "/api/oauth"}, "POST", "oauth", token="t", json_body=payload
+        )
+
+    joined = "\n".join(fake_log.debug_calls)
+    assert "SUPERSECRET" in joined

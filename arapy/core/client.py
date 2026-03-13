@@ -7,7 +7,7 @@ from urllib.parse import quote
 
 import requests
 
-from arapy.core.config import SECRET_FIELDS
+from arapy.io.output import sanitize_secrets
 
 log = logging.getLogger(__name__)
 _PLACEHOLDER_RE = re.compile(r"\{([^}]+)\}")
@@ -59,11 +59,13 @@ class ClearPassClient:
         https_prefix: str,
         verify_ssl: bool = False,
         timeout: int = 15,
+        mask_secrets: bool = True,
     ):
         self.server = server
         self.https_prefix = https_prefix
         self.verify_ssl = verify_ssl
         self.timeout = timeout
+        self.mask_secrets = mask_secrets
         self.session = requests.Session()
         self.session.headers.update({"accept": "application/json"})
         self.last_response_meta = ResponseMetadata()
@@ -128,13 +130,9 @@ class ClearPassClient:
             if len(body) > 4000:
                 body = body[:4000] + "\n... (truncated)"
 
-            request_json = json_body
-            if isinstance(request_json, dict):
-                masked = dict(request_json)
-                for key in SECRET_FIELDS:
-                    if key in masked:
-                        masked[key] = "***"
-                request_json = masked
+            request_json = sanitize_secrets(
+                json_body, mask_secrets=self.mask_secrets
+            )
 
             debug_lines = [
                 "HTTP ERROR (details below)",

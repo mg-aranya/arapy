@@ -77,6 +77,51 @@ def test_load_payload_file_json_list_of_dicts(tmp_path):
     assert load_payload_file(str(path)) == [{"a": 1}, {"a": 2}]
 
 
+def test_load_payload_file_json_clearpass_list_response_unwraps_items(tmp_path):
+    path = tmp_path / "payload.json"
+    path.write_text(
+        json.dumps(
+            {
+                "_links": {"self": {"href": "https://clearpass/api/network-device"}},
+                "_embedded": {
+                    "items": [
+                        {
+                            "id": 3002,
+                            "name": "Ciscoswitch",
+                            "_links": {
+                                "self": {
+                                    "href": "https://clearpass/api/network-device/3002"
+                                }
+                            },
+                        }
+                    ]
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert load_payload_file(str(path)) == [{"id": 3002, "name": "Ciscoswitch"}]
+
+
+def test_load_payload_file_json_dict_strips_response_links(tmp_path):
+    path = tmp_path / "payload.json"
+    path.write_text(
+        json.dumps(
+            {
+                "id": 3002,
+                "name": "Ciscoswitch",
+                "_links": {
+                    "self": {"href": "https://clearpass/api/network-device/3002"}
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert load_payload_file(str(path)) == {"id": 3002, "name": "Ciscoswitch"}
+
+
 def test_load_payload_file_csv(tmp_path):
     path = tmp_path / "payload.csv"
     path.write_text("a,b\n1,2\n3,4\n", encoding="utf-8")

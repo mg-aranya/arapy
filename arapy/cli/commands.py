@@ -4,6 +4,7 @@ from pathlib import Path
 
 from arapy.core.config import Settings, load_settings
 from arapy.core.resolver import (
+    normalize_file_payload_for_action,
     output_settings,
     payload_for_write_action,
     payload_from_args,
@@ -36,6 +37,18 @@ def payload_from_cli_args(args: dict, excluded_keys: set[str]) -> dict:
     return payload_from_args(args, excluded_keys)
 
 
+def _request_args_and_payload(
+    cp, api_catalog, args: dict, action: str, payload
+) -> tuple[dict, dict]:
+    request_args = {**args, **payload} if "file" in args and isinstance(payload, dict) else args
+    request_payload = (
+        normalize_file_payload_for_action(cp, api_catalog, request_args, action, payload)
+        if "file" in args and isinstance(payload, dict)
+        else payload
+    )
+    return request_args, request_payload
+
+
 def add_handler(cp, token, api_catalog, args, settings: Settings | None = None):
     active_settings = _settings_or_default(settings)
     action_def = cp.get_action_definition(
@@ -45,11 +58,17 @@ def add_handler(cp, token, api_catalog, args, settings: Settings | None = None):
     payload = payload_for_write_action(cp, api_catalog, args, "add")
 
     if isinstance(payload, list):
-        result = [
-            cp.add(api_catalog, token, {**args, **item}, item) for item in payload
-        ]
+        result = []
+        for item in payload:
+            request_args, request_payload = _request_args_and_payload(
+                cp, api_catalog, args, "add", item
+            )
+            result.append(cp.add(api_catalog, token, request_args, request_payload))
     else:
-        result = cp.add(api_catalog, token, args, payload)
+        request_args, request_payload = _request_args_and_payload(
+            cp, api_catalog, args, "add", payload
+        )
+        result = cp.add(api_catalog, token, request_args, request_payload)
 
     console, data_format, out_path, csv_fieldnames = output_settings(
         args,
@@ -139,11 +158,19 @@ def replace_handler(cp, token, api_catalog, args, settings: Settings | None = No
     payload = payload_for_write_action(cp, api_catalog, args, "replace")
 
     if isinstance(payload, list):
-        result = [
-            cp.replace(api_catalog, token, {**args, **item}, item) for item in payload
-        ]
+        result = []
+        for item in payload:
+            request_args, request_payload = _request_args_and_payload(
+                cp, api_catalog, args, "replace", item
+            )
+            result.append(
+                cp.replace(api_catalog, token, request_args, request_payload)
+            )
     else:
-        result = cp.replace(api_catalog, token, args, payload)
+        request_args, request_payload = _request_args_and_payload(
+            cp, api_catalog, args, "replace", payload
+        )
+        result = cp.replace(api_catalog, token, request_args, request_payload)
 
     console, data_format, out_path, csv_fieldnames = output_settings(
         args,
@@ -170,11 +197,17 @@ def update_handler(cp, token, api_catalog, args, settings: Settings | None = Non
     payload = payload_for_write_action(cp, api_catalog, args, "update")
 
     if isinstance(payload, list):
-        result = [
-            cp.update(api_catalog, token, {**args, **item}, item) for item in payload
-        ]
+        result = []
+        for item in payload:
+            request_args, request_payload = _request_args_and_payload(
+                cp, api_catalog, args, "update", item
+            )
+            result.append(cp.update(api_catalog, token, request_args, request_payload))
     else:
-        result = cp.update(api_catalog, token, args, payload)
+        request_args, request_payload = _request_args_and_payload(
+            cp, api_catalog, args, "update", payload
+        )
+        result = cp.update(api_catalog, token, request_args, request_payload)
 
     console, data_format, out_path, csv_fieldnames = output_settings(
         args,

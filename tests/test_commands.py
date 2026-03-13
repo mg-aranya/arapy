@@ -292,6 +292,142 @@ def test_add_handler_builds_payload_from_args(monkeypatch, api_catalog, settings
     assert logged["thing"]["id"] == 7
 
 
+def test_add_handler_file_payload_filters_response_fields(
+    monkeypatch, api_catalog, settings, tmp_path
+):
+    logged = {}
+    payload_path = tmp_path / "payload.json"
+    payload_path.write_text(
+        (
+            '[{"id": 7, "name": "alice", "description": "demo", '
+            '"foo": "bar", "attributes": {}, "ignored": "x"}]'
+        ),
+        encoding="utf-8",
+    )
+    api_catalog["modules"]["identities"]["endpoint"]["actions"]["add"]["body_fields"] = [
+        {"name": "name", "required": True},
+        {"name": "description", "required": False},
+        {"name": "foo", "required": False},
+        {"name": "attributes", "required": False},
+    ]
+
+    class CP:
+        last_response_meta = None
+
+        def get_action_definition(self, api_catalog, module, service, action):
+            return api_catalog["modules"][module][service]["actions"][action]
+
+        def resolve_action(self, api_catalog, module, service, action, args):
+            return (
+                api_catalog["modules"][module][service]["actions"][action],
+                "/api/endpoint",
+                [],
+            )
+
+        def add(self, api_catalog, token, args, payload):
+            logged["add_call"] = {
+                "api_catalog": api_catalog,
+                "token": token,
+                "args": args,
+                "payload": payload,
+            }
+            return {"id": 7, **payload}
+
+    monkeypatch.setattr(
+        commands,
+        "log_to_file",
+        lambda thing, filename, **kwargs: logged.update(
+            {"thing": thing, "filename": str(filename)}
+        ),
+    )
+
+    commands.add_handler(
+        CP(),
+        "tok",
+        api_catalog,
+        {
+            "module": "identities",
+            "service": "endpoint",
+            "action": "add",
+            "file": str(payload_path),
+            "console": False,
+        },
+        settings=settings,
+    )
+
+    assert logged["add_call"]["payload"] == {
+        "name": "alice",
+        "description": "demo",
+        "foo": "bar",
+    }
+
+
+def test_update_handler_file_payload_uses_id_for_path_not_body(
+    monkeypatch, api_catalog, settings, tmp_path
+):
+    logged = {}
+    payload_path = tmp_path / "payload.json"
+    payload_path.write_text(
+        '{"id": "123", "name": "alice", "description": "demo", "ignored": "x"}',
+        encoding="utf-8",
+    )
+    api_catalog["modules"]["identities"]["endpoint"]["actions"]["update"] = {
+        "method": "PATCH",
+        "paths": ["/api/endpoint/{id}"],
+        "params": ["id", "name", "description"],
+    }
+
+    class CP:
+        last_response_meta = None
+
+        def get_action_definition(self, api_catalog, module, service, action):
+            return api_catalog["modules"][module][service]["actions"][action]
+
+        def resolve_action(self, api_catalog, module, service, action, args):
+            return (
+                api_catalog["modules"][module][service]["actions"][action],
+                f"/api/endpoint/{args['id']}",
+                ["id"],
+            )
+
+        def update(self, api_catalog, token, args, payload):
+            logged["update_call"] = {
+                "api_catalog": api_catalog,
+                "token": token,
+                "args": args,
+                "payload": payload,
+            }
+            return {"id": args["id"], **payload}
+
+    monkeypatch.setattr(
+        commands,
+        "log_to_file",
+        lambda thing, filename, **kwargs: logged.update(
+            {"thing": thing, "filename": str(filename)}
+        ),
+    )
+
+    commands.update_handler(
+        CP(),
+        "tok",
+        api_catalog,
+        {
+            "module": "identities",
+            "service": "endpoint",
+            "action": "update",
+            "file": str(payload_path),
+            "console": False,
+        },
+        settings=settings,
+    )
+
+    assert logged["update_call"]["args"]["id"] == "123"
+    assert logged["update_call"]["payload"] == {
+        "name": "alice",
+        "description": "demo",
+    }
+
+
 def test_get_handler_binary_response_uses_raw_output_and_filename(
     monkeypatch, api_catalog, settings
 ):

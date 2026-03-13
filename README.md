@@ -1,6 +1,6 @@
 # arapy
 
-[![Version](https://img.shields.io/badge/version-1.4.9-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.4.10-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 
@@ -18,15 +18,17 @@ A modular CLI toolkit for interacting with **HPE Aruba ClearPass Policy Manager*
 - safe handling of secrets in output and logs
 - shell completion and context-aware help
 
-Version: **1.4.9**
+Version: **1.4.10**
 
 ---
 
-## What changed in 1.4.9
+## What changed in 1.4.10
 
-- cleaned `/api-docs` HTML out of dynamic help notes instead of printing raw tags
-- preserved multiline formatting for long filter/documentation notes in `list` help output
-- added regression coverage for HTML-heavy Swagger note cleanup and multiline help rendering
+- saved ClearPass `list` JSON responses can now be reused as `--file` input for write actions
+- response-only fields like `_links` and `id` are stripped or filtered before file-backed `add`, `update`, and `replace` requests
+- empty optional response containers like `attributes: {}` are omitted from generated write payloads when replaying exported data
+- `--decrypt` now also affects HTTP request debug logging so secret values are visible when explicitly requested
+- added regression coverage for reusable list-response imports and decrypt-aware HTTP error logging
 
 ---
 
