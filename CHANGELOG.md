@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.1 - 2026-03-13
+
+### Fixed
+- `arapy copy` now uses the normal cached API catalog path for both source and target profiles instead of forcing a fresh `/api-docs` discovery on every run
+- added regression coverage to keep the copy workflow aligned with the cache behavior used by the rest of the CLI
+
 ## 1.5.0 - 2026-03-13
 
 ### Added

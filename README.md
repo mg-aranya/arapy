@@ -1,6 +1,6 @@
 # arapy
 
-[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.5.1-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 
@@ -18,9 +18,14 @@ A modular CLI toolkit for interacting with **HPE Aruba ClearPass Policy Manager*
 - safe handling of secrets in output and logs
 - shell completion and context-aware help
 
-Version: **1.5.0**
+Version: **1.5.1**
 
 ---
+
+## What changed in 1.5.1
+
+- fixed `arapy copy` so it now reuses the cached API catalog for both source and target profiles instead of refetching `/api-docs` on every run
+- added regression coverage for the copy catalog-loading path so normal copy operations stay aligned with the rest of the CLI cache behavior
 
 ## What changed in 1.5.0
 

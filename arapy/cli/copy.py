@@ -64,7 +64,7 @@ def _is_not_found(exc: requests.HTTPError) -> bool:
 
 def _load_catalog(catalog_loader, cp, token: str, settings: Settings) -> dict:
     try:
-        return catalog_loader(cp, token=token, force_refresh=True, settings=settings)
+        return catalog_loader(cp, token=token, force_refresh=False, settings=settings)
     except TypeError as exc:
         if "force_refresh" not in str(exc):
             raise

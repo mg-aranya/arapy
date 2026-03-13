@@ -249,6 +249,58 @@ def test_handle_copy_command_updates_existing_match_and_restores_secret(
     assert report["items"][0]["response"]["radius_secret"] == "abc123"
 
 
+def test_handle_copy_command_uses_cached_catalog_by_default(monkeypatch, tmp_path):
+    catalog = _catalog()
+    source_cp = _SourceCP(
+        catalog,
+        [{"id": 1, "name": "switch-a", "ip_address": "10.0.0.1"}],
+    )
+    target_cp = _TargetCP(catalog, {})
+    catalog_calls = []
+
+    monkeypatch.setattr(copymod, "list_profiles", lambda: ["dev", "prod"])
+    monkeypatch.setattr(
+        copymod,
+        "load_settings_for_profile",
+        lambda profile: _make_settings(tmp_path, profile),
+    )
+
+    def build_client(settings, *, mask_secrets=True):
+        return source_cp if settings.server == "dev" else target_cp
+
+    def get_api_catalog(cp, token, settings, force_refresh=False):
+        catalog_calls.append(
+            {
+                "server": settings.server,
+                "token": token,
+                "force_refresh": force_refresh,
+            }
+        )
+        return catalog
+
+    copymod.handle_copy_command(
+        {
+            "module": "copy",
+            "copy_module": "policyelements",
+            "copy_service": "network-device",
+            "from": "dev",
+            "to": "prod",
+            "all": True,
+            "dry_run": True,
+        },
+        settings=_make_settings(tmp_path, "prod"),
+        build_client=build_client,
+        resolve_auth_token=lambda cp, settings: f"{settings.server}-token",
+        get_api_catalog=get_api_catalog,
+    )
+
+    assert len(catalog_calls) == 2
+    assert catalog_calls[0]["server"] == "dev"
+    assert catalog_calls[1]["server"] == "prod"
+    assert catalog_calls[0]["force_refresh"] is False
+    assert catalog_calls[1]["force_refresh"] is False
+
+
 def test_handle_copy_command_console_masks_secrets_by_default(
     monkeypatch, tmp_path, capsys
 ):
