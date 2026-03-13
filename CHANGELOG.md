@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.11 - 2026-03-13
+
+### Fixed
+- path override settings such as `ARAPY_OUT_DIR`, `ARAPY_STATE_DIR`, `ARAPY_CACHE_DIR`, and `ARAPY_APP_LOG_DIR` now resolve through the same config/profile loading path as the rest of the runtime settings
+- profile-scoped path overrides such as `ARAPY_OUT_DIR_PROD` are now respected
+- `~` is now expanded in configured path overrides so values like `ARAPY_OUT_DIR=~/responses` resolve to the user home directory as expected
+
 ## 1.4.10 - 2026-03-13
 
 ### Fixed

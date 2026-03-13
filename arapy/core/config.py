@@ -33,6 +33,10 @@ PROFILE_SCOPED_ENV_KEYS = (
     "ARAPY_CLIENT_SECRET",
     "ARAPY_USERNAME",
     "ARAPY_PASSWORD",
+    "ARAPY_CACHE_DIR",
+    "ARAPY_STATE_DIR",
+    "ARAPY_OUT_DIR",
+    "ARAPY_APP_LOG_DIR",
 )
 SECRET_FIELDS = (
     "client_secret",
@@ -350,18 +354,42 @@ class Settings:
         }
 
 
-def default_paths() -> AppPaths:
-    cache_override = os.getenv("ARAPY_CACHE_DIR")
-    state_override = os.getenv("ARAPY_STATE_DIR")
-    response_override = os.getenv("ARAPY_OUT_DIR")
-    app_log_override = os.getenv("ARAPY_APP_LOG_DIR")
+def _resolve_path_override(
+    name: str,
+    config_values: Mapping[str, str] | None = None,
+    *,
+    active_profile: str | None = None,
+) -> Path | None:
+    raw = _resolve_value(name, config_values or {}, active_profile=active_profile)
+    if raw is None or raw.strip() == "":
+        return None
+    return Path(raw).expanduser()
 
-    cache_dir = Path(cache_override) if cache_override else _xdg_cache_home() / APP_NAME
-    state_dir = Path(state_override) if state_override else _xdg_state_home() / APP_NAME
-    response_dir = (
-        Path(response_override) if response_override else state_dir / "responses"
+
+def default_paths(
+    config_values: Mapping[str, str] | None = None,
+    *,
+    active_profile: str | None = None,
+) -> AppPaths:
+    cache_override = _resolve_path_override(
+        "ARAPY_CACHE_DIR", config_values, active_profile=active_profile
     )
-    app_log_dir = Path(app_log_override) if app_log_override else state_dir / "logs"
+    state_override = _resolve_path_override(
+        "ARAPY_STATE_DIR", config_values, active_profile=active_profile
+    )
+    response_override = _resolve_path_override(
+        "ARAPY_OUT_DIR", config_values, active_profile=active_profile
+    )
+    app_log_override = _resolve_path_override(
+        "ARAPY_APP_LOG_DIR", config_values, active_profile=active_profile
+    )
+
+    cache_dir = cache_override or (_xdg_cache_home() / APP_NAME)
+    state_dir = state_override or (_xdg_state_home() / APP_NAME)
+    response_dir = (
+        response_override if response_override else state_dir / "responses"
+    )
+    app_log_dir = app_log_override if app_log_override else state_dir / "logs"
     return AppPaths(
         cache_dir=cache_dir,
         state_dir=state_dir,
@@ -373,7 +401,7 @@ def default_paths() -> AppPaths:
 def load_settings() -> Settings:
     values = _load_config_values()
     active_profile = _resolve_active_profile(values)
-    paths = default_paths().ensure()
+    paths = default_paths(values, active_profile=active_profile).ensure()
 
     log_file_raw = _resolve_value(
         "ARAPY_LOG_FILE", values, active_profile=active_profile

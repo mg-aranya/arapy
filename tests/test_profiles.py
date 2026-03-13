@@ -96,6 +96,39 @@ def test_load_settings_prefers_process_environment(monkeypatch, tmp_path):
     assert settings.client_secret == "prod-secret"
 
 
+def test_load_settings_uses_out_dir_from_profile_files(monkeypatch, tmp_path):
+    config_dir = _configure_runtime(monkeypatch, tmp_path)
+    config_dir.mkdir(parents=True, exist_ok=True)
+    (config_dir / "profiles.env").write_text(
+        "\n".join(
+            [
+                "ARAPY_ACTIVE_PROFILE=prod",
+                "ARAPY_SERVER_PROD=prod.clearpass.example:443",
+                "ARAPY_OUT_DIR_PROD=~/custom-responses",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (config_dir / "credentials.env").write_text(
+        "\n".join(
+            [
+                "ARAPY_CLIENT_ID_PROD=prod-client",
+                "ARAPY_CLIENT_SECRET_PROD=prod-secret",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    home_dir = tmp_path / "home"
+    monkeypatch.setenv("HOME", str(home_dir))
+    monkeypatch.setenv("USERPROFILE", str(home_dir))
+
+    settings = load_settings()
+
+    assert settings.paths.response_dir == home_dir / "custom-responses"
+
+
 def test_list_profiles_and_set_active_profile(monkeypatch, tmp_path):
     config_dir = _configure_runtime(monkeypatch, tmp_path)
     _write_profiles(config_dir)
