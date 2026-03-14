@@ -1,14 +1,12 @@
-<p align="center">
-  <img src="netloom.png" alt="netloom logo" width="760">
+<p>
+  <img src="netloom.png" alt="netloom logo" width="320">
 </p>
 
-# netloom
+**Weave your network APIs into one CLI.**
 
 [![Version](https://img.shields.io/badge/version-1.6.2-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
-
-Weave your network APIs into one CLI.
 
 ---
 
