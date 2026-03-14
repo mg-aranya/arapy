@@ -1,10 +1,12 @@
-_arapy_complete() {
+_netloom_complete() {
   local cur
   cur="${COMP_WORDS[COMP_CWORD]}"
+  local cli
+  cli="${COMP_WORDS[0]}"
 
-  # Pass words after arapy, plus cursor index and current token
+  # Pass words after the invoked CLI name, plus cursor index and current token
   local candidates
-  candidates="$(arapy --_complete \
+  candidates="$("${cli}" --_complete \
     --_cword="${COMP_CWORD}" \
     --_cur="${cur}" \
     "${COMP_WORDS[@]:1}" 2>/dev/null)"
@@ -13,4 +15,5 @@ _arapy_complete() {
   return 0
 }
 
-complete -F _arapy_complete arapy
+complete -F _netloom_complete arapy
+complete -F _netloom_complete netloom

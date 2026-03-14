@@ -218,6 +218,9 @@ def test_handle_copy_command_dry_run_create(monkeypatch, tmp_path, capsys):
 
 
 def test_handle_copy_command_fetches_all_source_pages(monkeypatch, tmp_path):
+    import arapy.core.pagination as pagination
+
+    monkeypatch.setattr(pagination, "DEFAULT_PAGE_SIZE", 2)
     catalog = _catalog()
     source_cp = _PagedSourceCP(
         catalog,
@@ -262,7 +265,6 @@ def test_handle_copy_command_fetches_all_source_pages(monkeypatch, tmp_path):
             "from": "dev",
             "to": "prod",
             "all": True,
-            "limit": "2",
             "dry_run": True,
         },
         settings=_make_settings(tmp_path, "prod"),
@@ -277,6 +279,59 @@ def test_handle_copy_command_fetches_all_source_pages(monkeypatch, tmp_path):
         {"limit": 2, "offset": 0, "sort": None},
         {"limit": 2, "offset": 2, "sort": None},
     ]
+
+
+def test_handle_copy_command_honors_explicit_limit(monkeypatch, tmp_path):
+    catalog = _catalog()
+    source_cp = _PagedSourceCP(
+        catalog,
+        [
+            {
+                "id": 1,
+                "name": "switch-a",
+                "ip_address": "10.0.0.1",
+                "radius_secret": "one",
+            },
+            {
+                "id": 2,
+                "name": "switch-b",
+                "ip_address": "10.0.0.2",
+                "radius_secret": "two",
+            },
+        ],
+    )
+    target_cp = _TargetCP(catalog, {})
+
+    monkeypatch.setattr(copymod, "list_profiles", lambda: ["dev", "prod"])
+    monkeypatch.setattr(
+        copymod,
+        "load_settings_for_profile",
+        lambda profile: _make_settings(tmp_path, profile),
+    )
+
+    def build_client(settings, *, mask_secrets=True):
+        return source_cp if settings.server == "dev" else target_cp
+
+    report = copymod.handle_copy_command(
+        {
+            "module": "copy",
+            "copy_module": "policyelements",
+            "copy_service": "network-device",
+            "from": "dev",
+            "to": "prod",
+            "all": True,
+            "limit": "1",
+            "dry_run": True,
+        },
+        settings=_make_settings(tmp_path, "prod"),
+        build_client=build_client,
+        resolve_auth_token=lambda cp, settings: f"{settings.server}-token",
+        get_api_catalog=lambda cp, token, settings, force_refresh=True: catalog,
+    )
+
+    assert report["summary"]["selected"] == 1
+    assert report["summary"]["created"] == 1
+    assert source_cp.list_calls == [{"limit": 1, "offset": 0, "sort": None}]
 
 
 def test_handle_copy_command_updates_existing_match_and_restores_secret(

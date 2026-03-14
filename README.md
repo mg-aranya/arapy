@@ -1,16 +1,16 @@
-# arapy
+# netloom
 
-[![Version](https://img.shields.io/badge/version-1.5.3-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 
-A modular CLI toolkit for interacting with **HPE Aruba ClearPass Policy Manager**.
+A spec-driven network API CLI with first-class support for **HPE Aruba ClearPass Policy Manager**.
 
 ---
 
 ## Overview
 
-**arapy** is aimed at operators and automation engineers who need:
+**netloom** is aimed at operators and automation engineers who need:
 
 - dynamic API discovery through ClearPass `/api-docs`
 - a script-friendly CLI for `get`, `list`, `add`, `delete`, `update`, and `replace`
@@ -18,9 +18,17 @@ A modular CLI toolkit for interacting with **HPE Aruba ClearPass Policy Manager*
 - safe handling of secrets in output and logs
 - shell completion and context-aware help
 
-Version: **1.5.3**
+Version: **1.6.0**
 
 ---
+
+## What changed in 1.6.0
+
+- the project is now branded as `netloom`, with `netloom-tool` as the PyPI package name and `netloom` as the primary CLI command
+- the legacy `arapy` command remains available as a compatibility alias during the transition
+- the repository and project links now point to `netloom.se` and `github.com/mathias-granlund/netloom`
+- explicit `--limit` values on `list`, `get --all`, and `copy` are now honored as requested instead of being overridden by automatic paging
+- the bundled Bash completion script now registers completion for both `netloom` and `arapy`
 
 ## What changed in 1.5.3
 
@@ -58,7 +66,7 @@ Version: **1.5.3**
 pip install -e .[dev]
 ```
 
-If `pip` performs a user install on Linux or macOS, the `arapy` and
+If `pip` performs a user install on Linux or macOS, the `netloom` and
 `arapy-install-manpage` commands are typically written to `~/.local/bin`.
 Make sure that directory is on your `PATH`:
 
@@ -69,7 +77,13 @@ export PATH="$HOME/.local/bin:$PATH"
 ### Standard install
 
 ```bash
-pip install git+https://github.com/mg-aranya/arapy
+pip install netloom-tool
+```
+
+Or install directly from GitHub:
+
+```bash
+pip install git+https://github.com/mathias-granlund/netloom
 ```
 
 To build release artifacts locally:
@@ -110,6 +124,10 @@ Per-user profile files under `~/.config/arapy/` are the recommended way to
 switch between environments like `prod` and `dev` without re-exporting shell
 variables on each run.
 
+For this first rename stage, the internal Python package, config directory, and
+environment variable names still use the existing `arapy` / `ARAPY_*`
+conventions for compatibility.
+
 Example `~/.config/arapy/profiles.env`:
 
 ```bash
@@ -135,26 +153,26 @@ override the profile files when they are set in the current shell.
 ## CLI syntax
 
 ```bash
-arapy <module> <service> list [--key=value] [options]
-arapy <module> <service> get [--all] [--key=value] [options]
-arapy <module> <service> add|delete|update|replace [--key=value] [options]
-arapy copy <module> <service> --from=<profile> --to=<profile> [options]
-arapy cache clear|update
-arapy server list|show
-arapy server use <profile>
+netloom <module> <service> list [--key=value] [options]
+netloom <module> <service> get [--all] [--key=value] [options]
+netloom <module> <service> add|delete|update|replace [--key=value] [options]
+netloom copy <module> <service> --from=<profile> --to=<profile> [options]
+netloom cache clear|update
+netloom server list|show
+netloom server use <profile>
 ```
 
 Examples:
 
 ```bash
-arapy identities endpoint list --limit=10
-arapy policyelements network-device get --all --limit=25
-arapy policyelements network-device get --id=1001
-arapy policyelements network-device delete --name=switch-01
-arapy policyelements network-device update --id=1001 --description="Core switch"
-arapy copy policyelements network-device --from=dev --to=prod --all --dry-run
-arapy server use prod
-arapy server show
+netloom identities endpoint list --limit=10
+netloom policyelements network-device get --all --limit=25
+netloom policyelements network-device get --id=1001
+netloom policyelements network-device delete --name=switch-01
+netloom policyelements network-device update --id=1001 --description="Core switch"
+netloom copy policyelements network-device --from=dev --to=prod --all --dry-run
+netloom server use prod
+netloom server show
 ```
 
 Both `--log-level` and the legacy `--log_level` style are accepted. The same applies to flags like `--csv-fieldnames` / `--csv_fieldnames`.
@@ -162,8 +180,11 @@ Both `--log-level` and the legacy `--log_level` style are accepted. The same app
 Authentication can also be provided per command with:
 
 ```bash
-arapy identities endpoint list --api-token=your-token
-arapy identities endpoint list --token-file=./token.json
+netloom identities endpoint list --api-token=your-token
+netloom identities endpoint list --token-file=./token.json
+
+The legacy `arapy` command still works during the transition, but new examples
+and docs use `netloom`.
 ```
 
 ---
@@ -193,7 +214,7 @@ arapy identities endpoint list --token-file=./token.json
 
 ## Dynamic API discovery
 
-arapy discovers available ClearPass modules and services at runtime using:
+netloom discovers available ClearPass modules and services at runtime using:
 
 - `/api-docs`
 - `/api/apigility/documentation/<Module-v1>`
@@ -204,20 +225,20 @@ The generated cache stores actions as:
 module -> service -> action -> {method, paths, params, response metadata, body hints}
 ```
 
-When the ClearPass docs include Swagger model details, `arapy --help` now renders:
+When the ClearPass docs include Swagger model details, `netloom --help` now renders:
 
 - operation summaries and notes
 - response-code lists
 - response content types
 - generated request body examples and top-level body field descriptions
 
-Download-style endpoints that advertise binary response types are written as raw files automatically, and `arapy` will use the server-provided filename when one is supplied.
+Download-style endpoints that advertise binary response types are written as raw files automatically, and `netloom` will use the server-provided filename when one is supplied.
 
 To refresh the cache:
 
 ```bash
-arapy cache clear
-arapy cache update
+netloom cache clear
+netloom cache update
 ```
 
 ---
@@ -246,6 +267,8 @@ Run once per session:
 ```bash
 source /path/to/your/repo/scripts/arapy-completion.bash
 ```
+
+The bundled completion script currently supports both `netloom` and `arapy`.
 
 Or to enable permanently, add to `~/.bashrc` then reload terminal:
 
@@ -323,6 +346,9 @@ arapy-install-manpage
 man arapy
 ```
 
+The manpage helper and bundled manpage name still use `arapy` during this
+first transition stage.
+
 If your system does not already search `~/.local/share/man`, add it to `MANPATH`.
 
 ## Server profiles
@@ -331,14 +357,14 @@ Use the built-in server profile commands to inspect and switch the active
 ClearPass target:
 
 ```bash
-arapy server list
-arapy server show
-arapy server use prod
-arapy server use dev
+netloom server list
+netloom server show
+netloom server use prod
+netloom server use dev
 ```
 
-`arapy server use <profile>` updates `ARAPY_ACTIVE_PROFILE` in
-`~/.config/arapy/profiles.env`. The next `arapy` command resolves
+`netloom server use <profile>` updates `ARAPY_ACTIVE_PROFILE` in
+`~/.config/arapy/profiles.env`. The next `netloom` command resolves
 profile-scoped values such as `ARAPY_SERVER_PROD` and
 `ARAPY_CLIENT_SECRET_PROD` automatically.
 
@@ -346,7 +372,7 @@ profile-scoped values such as `ARAPY_SERVER_PROD` and
 
 ## Packaging
 
-`arapy` now includes the baseline pieces expected from a releasable Python package:
+`netloom` now includes the baseline pieces expected from a releasable Python package:
 
 - explicit project metadata, classifiers, and project URLs in `pyproject.toml`
 - a packaged license file

@@ -160,6 +160,9 @@ def test_list_handler_calls_cp_and_logs(monkeypatch, api_catalog, settings):
 
 def test_list_handler_fetches_all_pages(monkeypatch, api_catalog, settings):
     calls = []
+    import arapy.core.pagination as pagination
+
+    monkeypatch.setattr(pagination, "DEFAULT_PAGE_SIZE", 2)
 
     class CP:
         last_response_meta = None
@@ -194,7 +197,6 @@ def test_list_handler_fetches_all_pages(monkeypatch, api_catalog, settings):
             "module": "identities",
             "service": "endpoint",
             "action": "list",
-            "limit": "2",
             "calculate_count": True,
         },
         settings=settings,
@@ -249,6 +251,9 @@ def test_get_handler_all_fetches_all_pages_without_count(
     monkeypatch, api_catalog, settings
 ):
     calls = []
+    import arapy.core.pagination as pagination
+
+    monkeypatch.setattr(pagination, "DEFAULT_PAGE_SIZE", 2)
 
     class CP:
         last_response_meta = None
@@ -281,7 +286,6 @@ def test_get_handler_all_fetches_all_pages_without_count(
             "service": "endpoint",
             "action": "get",
             "all": True,
-            "limit": "2",
         },
         settings=settings,
     )
@@ -292,6 +296,45 @@ def test_get_handler_all_fetches_all_pages_without_count(
         {"limit": 2, "offset": 4, "sort": None},
     ]
     assert [item["id"] for item in logged["thing"]["_embedded"]["items"]] == [1, 2, 3, 4, 5]
+
+
+def test_list_handler_honors_explicit_limit(monkeypatch, api_catalog, settings):
+    calls = []
+    logged = {}
+
+    class CP:
+        last_response_meta = None
+
+        def get_action_definition(self, api_catalog, module, service, action):
+            return api_catalog["modules"][module][service]["actions"][action]
+
+        def list(self, api_catalog, token, args, *, params=None):
+            calls.append(dict(params or {}))
+            return {"_embedded": {"items": [{"id": 1}]}, "count": 4}
+
+    monkeypatch.setattr(
+        commands,
+        "log_to_file",
+        lambda thing, filename, **kwargs: logged.update(
+            {"thing": thing, "filename": str(filename)}
+        ),
+    )
+
+    commands.list_handler(
+        CP(),
+        "tok",
+        api_catalog,
+        {
+            "module": "identities",
+            "service": "endpoint",
+            "action": "list",
+            "limit": "1",
+        },
+        settings=settings,
+    )
+
+    assert calls == [{"limit": 1, "offset": 0, "sort": None}]
+    assert [item["id"] for item in logged["thing"]["_embedded"]["items"]] == [1]
 
 
 def test_delete_handler_calls_delete(monkeypatch, api_catalog, settings):

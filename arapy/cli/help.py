@@ -92,22 +92,22 @@ def render_help(
     service = args.get("service")
     action = args.get("action")
 
-    header = f"ClearPass API tool v{version}\n"
+    header = f"netloom v{version}\n"
     usage = (
         "Usage:\n"
-        "  arapy <module> <service> <action> [options] [flags]\n\n"
-        "  arapy copy <module> <service> --from=SOURCE --to=TARGET [options] [flags]\n\n"
+        "  netloom <module> <service> <action> [options] [flags]\n\n"
+        "  netloom copy <module> <service> --from=SOURCE --to=TARGET [options] [flags]\n\n"
         "Examples:\n"
-        "  arapy <module> <service> "
+        "  netloom <module> <service> "
         "[add|delete|get|list|update|replace] "
         "[--key=value] "
         "[--log-level=debug|info|warning|error|critical] [--console]\n"
-        "  arapy copy <module> <service> --from=dev --to=prod --all --dry-run\n"
-        "  arapy cache [clear | update]\n"
-        "  arapy server [list | show]\n"
-        "  arapy server use <profile>\n"
-        "  arapy [--help | ?]\n"
-        "  arapy --version\n\n"
+        "  netloom copy <module> <service> --from=dev --to=prod --all --dry-run\n"
+        "  netloom cache [clear | update]\n"
+        "  netloom server [list | show]\n"
+        "  netloom server use <profile>\n"
+        "  netloom [--help | ?]\n"
+        "  netloom --version\n\n"
         "Common options:\n"
         "  --file=PATH                        Path to JSON/CSV bulk payload input.\n"
         "  --out=PATH                         Override the output file path.\n"
@@ -122,7 +122,8 @@ def render_help(
         "  --decrypt                          Include secrets in output.\n\n"
         "Notes:\n"
         "  Action 'list' is the same as 'get --all'.\n"
-        "  When --filter is used with list/get --all, arapy fetches every matching page, not just the first 1000 results.\n"
+        "  When --filter is used with list/get --all, netloom fetches every matching page, not just the first 1000 results.\n"
+        "  The legacy 'arapy' command still works during the transition.\n"
     )
 
     if module == "cache":
@@ -131,8 +132,8 @@ def render_help(
             + usage
             + "\nBuilt-in module: cache\n"
             + "Commands:\n"
-            + "  arapy cache clear\n"
-            + "  arapy cache update"
+            + "  netloom cache clear\n"
+            + "  netloom cache update"
         )
 
     if module == "server":
@@ -147,9 +148,9 @@ def render_help(
             + usage
             + "\nBuilt-in module: server\n"
             + "Commands:\n"
-            + "  arapy server list\n"
-            + "  arapy server show\n"
-            + "  arapy server use <profile>\n\n"
+            + "  netloom server list\n"
+            + "  netloom server show\n"
+            + "  netloom server use <profile>\n\n"
             + f"Profiles file: {profiles_env_path()}\n"
             + f"Credentials file: {credentials_env_path()}\n"
             + "Configured profiles:\n"
@@ -162,7 +163,7 @@ def render_help(
             + usage
             + "\nBuilt-in module: copy\n"
             + "Usage:\n"
-            + "  arapy copy <module> <service> --from=SOURCE_PROFILE --to=TARGET_PROFILE [options]\n\n"
+            + "  netloom copy <module> <service> --from=SOURCE_PROFILE --to=TARGET_PROFILE [options]\n\n"
             + "Selectors:\n"
             + "  --id=VALUE\n"
             + "  --name=VALUE\n"
@@ -190,7 +191,7 @@ def render_help(
             + "\nAvailable modules:\n"
             + builtin_modules
             + "\nNo API catalog cache found.\n"
-            + "Run `arapy cache update` to build the cache from ClearPass /api-docs."
+            + "Run `netloom cache update` to build the cache from ClearPass /api-docs."
         )
 
     if not module:

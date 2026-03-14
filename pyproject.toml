@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "arapy"
-version = "1.5.3"
-description = "CLI toolkit for HPE Aruba ClearPass Policy Manager"
+name = "netloom-tool"
+version = "1.6.0"
+description = "Spec-driven network API CLI with first-class ClearPass support"
 readme = "README.md"
 authors = [{ name = "Mathias Granlund", email = "mathias.granlund@aranya.se" }]
 license = { file = "LICENSE" }
@@ -28,10 +28,10 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/mg-aranya/arapy"
-Repository = "https://github.com/mg-aranya/arapy"
-Issues = "https://github.com/mg-aranya/arapy/issues"
-Changelog = "https://github.com/mg-aranya/arapy/blob/main/CHANGELOG.md"
+Homepage = "https://netloom.se"
+Repository = "https://github.com/mathias-granlund/netloom"
+Issues = "https://github.com/mathias-granlund/netloom/issues"
+Changelog = "https://github.com/mathias-granlund/netloom/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
@@ -43,6 +43,7 @@ dev = [
 ]
 
 [project.scripts]
+netloom = "arapy.cli.main:main"
 arapy = "arapy.cli.main:main"
 arapy-install-manpage = "arapy.install_manpage:main"
 

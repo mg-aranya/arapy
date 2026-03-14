@@ -5,6 +5,8 @@ from typing import Any
 
 from arapy.core.resolver import query_params_for_action
 
+DEFAULT_PAGE_SIZE = 1000
+
 
 def _extract_items(response: Any) -> list[Any] | None:
     if isinstance(response, dict):
@@ -67,14 +69,17 @@ def fetch_all_list_results(cp, token: str, api_catalog: dict, args: dict[str, An
         str(name) for name in action_def.get("params", []) or [] if isinstance(name, str)
     }
 
-    if "limit" in allowed and "limit" not in args:
-        params["limit"] = 1000
+    explicit_limit = "limit" in args and args.get("limit") not in (None, "")
+    if "limit" in allowed and not explicit_limit:
+        params["limit"] = DEFAULT_PAGE_SIZE
     if "offset" in allowed and "offset" not in params:
         params["offset"] = 0
 
     response = cp.list(api_catalog, token, args, params=params or None)
     page_items = _extract_items(response)
     if page_items is None or "limit" not in allowed or "offset" not in allowed:
+        return response
+    if explicit_limit:
         return response
 
     all_items = list(page_items)

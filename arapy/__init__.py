@@ -1,9 +1,29 @@
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _version
+from pathlib import Path
+import re
+
+
+def _source_version() -> str | None:
+    pyproject_path = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    try:
+        text = pyproject_path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    match = re.search(r'^version\s*=\s*"([^"]+)"', text, re.MULTILINE)
+    if match:
+        return match.group(1)
+    return None
 
 
 def get_version() -> str:
-    try:
-        return _version("arapy")
-    except PackageNotFoundError:
-        return "1.5.3"
+    source_version = _source_version()
+    for package_name in ("netloom-tool", "arapy"):
+        try:
+            installed_version = _version(package_name)
+            if source_version and installed_version != source_version:
+                continue
+            return installed_version
+        except PackageNotFoundError:
+            continue
+    return source_version or "1.6.0"

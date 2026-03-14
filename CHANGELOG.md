@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.6.0 - 2026-03-14
+
+### Changed
+- project branding now uses `netloom` as the primary name, with `netloom-tool` as the Python package distribution name
+- added the `netloom` CLI entrypoint while keeping `arapy` available as a compatibility alias during the transition
+- documentation and project metadata now point to `https://netloom.se` and `https://github.com/mathias-granlund/netloom`
+- automatic collection paging now respects explicit `--limit` values for `list`, `get --all`, and `copy` instead of overriding them
+- the bundled Bash completion script now supports both `netloom` and `arapy`
+
 ## 1.5.3 - 2026-03-13
 
 ### Changed

@@ -84,9 +84,9 @@ def test_render_help_includes_server_builtin(monkeypatch):
         helpmod, "credentials_env_path", lambda: "/tmp/credentials.env"
     )
 
-    text = helpmod.render_help({}, {"module": "server"}, version="1.4.7")
+    text = helpmod.render_help({}, {"module": "server"}, version="1.6.0")
 
-    assert "arapy server use <profile>" in text
+    assert "netloom server use <profile>" in text
     assert "Configured profiles:" in text
     assert "  - dev" in text
     assert "  - prod" in text
@@ -102,7 +102,7 @@ def test_render_help_without_catalog_lists_builtin_modules():
 
 
 def test_render_help_includes_copy_builtin():
-    text = helpmod.render_help({}, {"module": "copy"}, version="1.5.0")
+    text = helpmod.render_help({}, {"module": "copy"}, version="1.6.0")
 
     assert "Built-in module: copy" in text
     assert "--from=SOURCE_PROFILE" in text
@@ -111,7 +111,8 @@ def test_render_help_includes_copy_builtin():
 
 
 def test_render_help_mentions_filter_paging_behavior():
-    text = helpmod.render_help({}, {}, version="1.5.3")
+    text = helpmod.render_help({}, {}, version="1.6.0")
 
     assert "list/get --all keep paging until all matching rows are fetched" in text
     assert "fetches every matching page, not just the first 1000 results" in text
+    assert "The legacy 'arapy' command still works during the transition." in text
