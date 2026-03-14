@@ -5,6 +5,13 @@ import json
 from arapy.core.config import credentials_env_path, list_profiles, profiles_env_path
 
 CLI_ACTION_ORDER = ["list", "get", "add", "delete", "update", "replace"]
+NETLOOM_BANNER = r"""
+ _   _      _   _
+| \ | | ___| |_| | ___   ___  _ __ ___
+|  \| |/ _ \ __| |/ _ \ / _ \| '_ ` _ \
+| |\  |  __/ |_| | (_) | (_) | | | | | |
+|_| \_|\___|\__|_|\___/ \___/|_| |_| |_|
+""".strip("\n")
 
 
 def service_cli_actions(service_entry: dict) -> list[str]:
@@ -94,7 +101,7 @@ def render_help(
     service = args.get("service")
     action = args.get("action")
 
-    header = f"netloom v{version}\n"
+    header = f"{NETLOOM_BANNER}\nnetloom v{version}\n"
     usage = (
         "Usage:\n"
         "  netloom <module> <service> <action> [options] [flags]\n\n"

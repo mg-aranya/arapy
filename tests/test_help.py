@@ -116,3 +116,10 @@ def test_render_help_mentions_filter_paging_behavior():
     assert "list/get --all keep paging until all matching rows are fetched" in text
     assert "fetches every matching page, not just the first 1000 results" in text
     assert "The legacy 'arapy' command still works during the transition." in text
+
+
+def test_render_help_includes_ascii_banner():
+    text = helpmod.render_help({}, {}, version="1.6.2")
+
+    assert "_   _      _   _" in text
+    assert "netloom v1.6.2" in text

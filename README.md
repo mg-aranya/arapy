@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="netloom.png" alt="netloom logo" width="760">
+</p>
+
 # netloom
 
 [![Version](https://img.shields.io/badge/version-1.6.2-blue.svg)]()
@@ -250,14 +254,13 @@ These can be overridden with environment variables such as `ARAPY_CACHE_DIR`, `A
 ---
 
 ## Enable tab completion (Bash)
+The bundled completion script currently supports both `netloom` and `arapy`.
 
 Run once per session:
 
 ```bash
 source /path/to/your/repo/scripts/arapy-completion.bash
 ```
-
-The bundled completion script currently supports both `netloom` and `arapy`.
 
 Or to enable permanently, add to `~/.bashrc` then reload terminal:
 
@@ -394,4 +397,4 @@ For the release checklist and Trusted Publishing setup steps, see
 ## License
 
 Proprietary / Internal Use  
-See `LICENSE`.
+See [LICENSE](LICENSE).
