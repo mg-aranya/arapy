@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.6.4 - 2026-03-16
+
+### Added
+- new modular `netloom/` package with shared CLI, config, logging, I/O, and command layers separated from vendor-specific plugin code
+- `netloom load <plugin>` built-in command for persisting the active plugin before using the normal `netloom <module> <service> <action>` workflow
+- initial `netloom/plugins/clearpass` plugin boundary for the ClearPass runtime path, including plugin-specific client and copy hooks
+
+### Changed
+- the primary `netloom` console entrypoint now runs through the modular `netloom.cli.main` runtime
+- configuration now supports `NETLOOM_*` names and `~/.config/netloom/` paths while still accepting the legacy `ARAPY_*` / `~/.config/arapy/` compatibility inputs
+- README now documents the plugin-loading workflow, modular package layout, and the new `NETLOOM_*` configuration examples
+
 ## 1.6.3 - 2026-03-14
 
 ### Changed

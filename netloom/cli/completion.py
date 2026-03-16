@@ -1,0 +1,70 @@
+from __future__ import annotations
+
+from netloom.cli.help import service_cli_actions
+from netloom.core.config import list_profiles
+from netloom.core.plugin import list_plugins
+
+
+def completion_candidates(words: list[str], catalog: dict | None) -> list[str]:
+    modules = (catalog or {}).get("modules") or {}
+
+    current = ""
+    for word in words:
+        if word.startswith("--_cur="):
+            current = word.split("=", 1)[1]
+
+    positionals = [word for word in words if not word.startswith("-")]
+
+    if len(positionals) == 0:
+        return ["cache", "copy", "load", "server", *sorted(modules.keys())]
+
+    module = positionals[0]
+    if module == "cache":
+        if len(positionals) == 1:
+            return ["clear", "update"]
+        return []
+
+    if module == "copy":
+        if len(positionals) == 1:
+            return sorted(modules.keys())
+        copy_module = positionals[1]
+        if copy_module not in modules:
+            return sorted(modules.keys())
+        if len(positionals) == 2 or (len(positionals) == 3 and current != ""):
+            return sorted(((modules.get(copy_module) or {}).keys()))
+        return []
+
+    if module == "load":
+        if len(positionals) == 1:
+            return ["list", "show", *list_plugins()]
+        return list_plugins()
+
+    if module == "server":
+        if len(positionals) == 1:
+            return ["list", "show", "use"]
+        service = positionals[1]
+        if service == "use" and len(positionals) == 2:
+            return list_profiles()
+        if service in {"list", "show"}:
+            return []
+        return ["list", "show", "use"]
+
+    if module not in modules:
+        return ["cache", "copy", "load", "server", *sorted(modules.keys())]
+
+    services = modules[module]
+    if len(positionals) == 1 or (len(positionals) == 2 and current != ""):
+        return sorted(services.keys())
+
+    service = positionals[1]
+    if service not in services:
+        return sorted(services.keys())
+
+    if len(positionals) == 2:
+        return service_cli_actions(services[service])
+
+    return []
+
+
+def print_completions(words: list[str], catalog: dict | None) -> None:
+    print("\n".join(completion_candidates(words, catalog)))

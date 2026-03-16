@@ -8,7 +8,7 @@
 
 **Weave your network APIs into one CLI.**
 
-[![Version](https://img.shields.io/badge/version-1.6.3-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.6.4-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 
@@ -30,12 +30,16 @@ Today, netloom is built first and foremost for **HPE Aruba ClearPass Policy Mana
 - shell completion and context-aware help
 - profile-based switching between environments like `dev` and `prod`
 
-Version: **1.6.3**
+Version: **1.6.4**
 
 ---
 
 ## Recent changes
 
+- introduced a real modular `netloom/` runtime package with shared CLI/core code and plugin-specific code under `netloom/plugins/<plugin>`
+- added `netloom load <plugin>` so you can select the active plugin once and then keep using the regular `netloom <module> <service> <action>` syntax
+- added the initial `netloom/plugins/clearpass` plugin path for the ClearPass client/copy runtime
+- `netloom` now uses `NETLOOM_*` environment/config names by default while still accepting the legacy `ARAPY_*` names during the transition
 - added concise inline comments around the less obvious request resolution, catalog discovery, copy planning, and output-handling code paths to make maintenance easier without adding noise to straightforward code
 - shell completion now falls back cleanly between `netloom` and `arapy`, which fixes tab completion in setups where only one of the installed executables is directly discoverable by the shell
 - hyphenated server profile names such as `qa-edge` now round-trip correctly through profile-scoped config keys like `ARAPY_SERVER_QA_EDGE`
@@ -93,56 +97,60 @@ python -m twine check dist/*
 
 ## Required environment variables
 
-Use per-user profile files under `~/.config/arapy/`, or export environment
+Use per-user profile files under `~/.config/netloom/`, or export environment
 variables directly in your shell.
 
 ```bash
-export ARAPY_SERVER="clearpass.example.com:443"
-export ARAPY_CLIENT_ID="your-client-id"
-export ARAPY_CLIENT_SECRET="your-client-secret"
+export NETLOOM_SERVER="clearpass.example.com:443"
+export NETLOOM_CLIENT_ID="your-client-id"
+export NETLOOM_CLIENT_SECRET="your-client-secret"
 ```
 
 Optional settings:
 
 ```bash
-export ARAPY_VERIFY_SSL="true"
-export ARAPY_TIMEOUT="30"
-export ARAPY_LOG_LEVEL="INFO"
-export ARAPY_ENCRYPT_SECRETS="true"
-export ARAPY_API_TOKEN="optional-access-token"
-export ARAPY_API_TOKEN_FILE="/path/to/token.json"
+export NETLOOM_VERIFY_SSL="true"
+export NETLOOM_TIMEOUT="30"
+export NETLOOM_LOG_LEVEL="INFO"
+export NETLOOM_ENCRYPT_SECRETS="true"
+export NETLOOM_API_TOKEN="optional-access-token"
+export NETLOOM_API_TOKEN_FILE="/path/to/token.json"
 ```
 
 Example files are included as `profiles.env.example` and
 `credentials.env.example`.
 
-Per-user profile files under `~/.config/arapy/` are the recommended way to
+Per-user profile files under `~/.config/netloom/` are the recommended way to
 switch between environments like `prod` and `dev` without re-exporting shell
 variables on each run.
 
-For this first rename stage, the internal Python package, config directory, and
-environment variable names still use the existing `arapy` / `ARAPY_*`
-conventions for compatibility.
+The preferred naming now uses `netloom` / `NETLOOM_*`, while the legacy
+`arapy` / `ARAPY_*` names are still accepted for compatibility during the
+transition.
 
-Example `~/.config/arapy/profiles.env`:
-
-```bash
-ARAPY_ACTIVE_PROFILE=prod
-ARAPY_SERVER_PROD="clearpass-prod.example.com:443"
-ARAPY_SERVER_DEV="clearpass-dev.example.com:443"
-```
-
-Example `~/.config/arapy/credentials.env`:
+Example `~/.config/netloom/profiles.env`:
 
 ```bash
-ARAPY_CLIENT_ID_PROD="prod-client-id"
-ARAPY_CLIENT_SECRET_PROD="prod-client-secret"
-ARAPY_CLIENT_ID_DEV="dev-client-id"
-ARAPY_CLIENT_SECRET_DEV="dev-client-secret"
+NETLOOM_ACTIVE_PLUGIN=clearpass
+NETLOOM_ACTIVE_PROFILE=prod
+NETLOOM_PLUGIN_PROD=clearpass
+NETLOOM_PLUGIN_DEV=clearpass
+NETLOOM_SERVER_PROD="clearpass-prod.example.com:443"
+NETLOOM_SERVER_DEV="clearpass-dev.example.com:443"
 ```
 
-Direct environment variables such as `ARAPY_SERVER` and `ARAPY_CLIENT_ID` still
-override the profile files when they are set in the current shell.
+Example `~/.config/netloom/credentials.env`:
+
+```bash
+NETLOOM_CLIENT_ID_PROD="prod-client-id"
+NETLOOM_CLIENT_SECRET_PROD="prod-client-secret"
+NETLOOM_CLIENT_ID_DEV="dev-client-id"
+NETLOOM_CLIENT_SECRET_DEV="dev-client-secret"
+```
+
+Direct environment variables such as `NETLOOM_SERVER` and `NETLOOM_CLIENT_ID`
+still override the profile files when they are set in the current shell.
+Legacy `ARAPY_*` variables are still accepted as fallback inputs.
 
 ---
 
@@ -154,13 +162,21 @@ netloom <module> <service> get [--all] [--key=value] [options]
 netloom <module> <service> add|delete|update|replace [--key=value] [options]
 netloom copy <module> <service> --from=<profile> --to=<profile> [options]
 netloom cache clear|update
+netloom load <plugin>
 netloom server list|show
 netloom server use <profile>
+```
+
+Before using vendor-specific modules for the first time, select a plugin:
+
+```bash
+netloom load clearpass
 ```
 
 Examples:
 
 ```bash
+netloom load clearpass
 netloom identities endpoint list --limit=10
 netloom policyelements network-device get --all --limit=25
 netloom policyelements network-device get --id=1001
@@ -210,7 +226,8 @@ and docs use `netloom`.
 
 ## Dynamic API discovery
 
-netloom discovers available ClearPass modules and services at runtime using:
+The active plugin discovers available modules and services at runtime. Today,
+the first plugin is ClearPass, which uses:
 
 - `/api-docs`
 - `/api/apigility/documentation/<Module-v1>`
@@ -246,13 +263,15 @@ v1.4.0 no longer writes cache and response files into the project tree by defaul
 On Linux/macOS the defaults are:
 
 ```text
-cache:     ~/.cache/arapy/
-state:     ~/.local/state/arapy/
-responses: ~/.local/state/arapy/responses/
-app logs:  ~/.local/state/arapy/logs/
+cache:     ~/.cache/netloom/
+state:     ~/.local/state/netloom/
+responses: ~/.local/state/netloom/responses/
+app logs:  ~/.local/state/netloom/logs/
 ```
 
-These can be overridden with environment variables such as `ARAPY_CACHE_DIR`, `ARAPY_STATE_DIR`, `ARAPY_OUT_DIR`, and `ARAPY_APP_LOG_DIR`.
+These can be overridden with environment variables such as `NETLOOM_CACHE_DIR`,
+`NETLOOM_STATE_DIR`, `NETLOOM_OUT_DIR`, and `NETLOOM_APP_LOG_DIR`. Legacy
+`ARAPY_*` path overrides are still accepted during the transition.
 
 ---
 
@@ -294,29 +313,91 @@ source /path/to/your/repo/scripts/arapy-completion.bash
 
 ## Architecture
 
+The repository currently keeps both the new modular `netloom/` runtime and the
+legacy `arapy/` compatibility package side by side. The high-level source
+layout is:
+
 ```text
-arapy/
-|-- __init__.py
-|-- __main__.py
-|-- cli/
-|   |-- commands.py
-|   |-- completion.py
-|   |-- help.py
-|   |-- main.py
-|   `-- parser.py
-|-- core/
-|   |-- catalog.py
-|   |-- client.py
-|   |-- config.py
-|   `-- resolver.py
-|-- io/
-|   |-- files.py
-|   `-- output.py
-|-- logging/
-|   `-- setup.py
+.
+|-- CHANGELOG.md
+|-- README.md
+|-- pyproject.toml
 |-- scripts/
 |   `-- arapy-completion.bash
-`-- tests/
+|-- examples/
+|   |-- network_device_groups_import.json
+|   |-- network_devices_import.csv
+|   `-- network_devices_import.json
+|-- tests/
+|   |-- conftest.py
+|   |-- test_catalog.py
+|   |-- test_clearpass.py
+|   |-- test_commands.py
+|   |-- test_copy.py
+|   |-- test_fuzz.py
+|   |-- test_help.py
+|   |-- test_integration_cli.py
+|   |-- test_io_utils.py
+|   |-- test_list_endpoints.py
+|   |-- test_logger.py
+|   |-- test_main.py
+|   |-- test_manpage.py
+|   `-- test_profiles.py
+|-- netloom/
+|   |-- __init__.py
+|   |-- __main__.py
+|   |-- install_manpage.py
+|   |-- cli/
+|   |   |-- commands.py
+|   |   |-- completion.py
+|   |   |-- copy.py
+|   |   |-- help.py
+|   |   |-- load.py
+|   |   |-- main.py
+|   |   |-- parser.py
+|   |   `-- server.py
+|   |-- core/
+|   |   |-- config.py
+|   |   |-- pagination.py
+|   |   |-- plugin.py
+|   |   `-- resolver.py
+|   |-- io/
+|   |   |-- files.py
+|   |   `-- output.py
+|   |-- logging/
+|   |   `-- setup.py
+|   `-- plugins/
+|       `-- clearpass/
+|           |-- catalog.py
+|           |-- client.py
+|           |-- copy_hooks.py
+|           `-- plugin.py
+`-- arapy/
+    |-- __init__.py
+    |-- __main__.py
+    |-- install_manpage.py
+    |-- cli/
+    |   |-- commands.py
+    |   |-- completion.py
+    |   |-- copy.py
+    |   |-- help.py
+    |   |-- main.py
+    |   |-- parser.py
+    |   `-- server.py
+    |-- core/
+    |   |-- catalog.py
+    |   |-- client.py
+    |   |-- config.py
+    |   |-- pagination.py
+    |   `-- resolver.py
+    |-- io/
+    |   |-- files.py
+    |   `-- output.py
+    |-- logging/
+    |   `-- setup.py
+    `-- data/
+        `-- man/
+            `-- arapy.1
 ```
 
 ---
@@ -357,19 +438,21 @@ If your system does not already search `~/.local/share/man`, add it to `MANPATH`
 ## Server profiles
 
 Use the built-in server profile commands to inspect and switch the active
-ClearPass target:
+plugin/profile target:
 
 ```bash
+netloom load clearpass
 netloom server list
 netloom server show
 netloom server use prod
 netloom server use dev
 ```
 
-`netloom server use <profile>` updates `ARAPY_ACTIVE_PROFILE` in
-`~/.config/arapy/profiles.env`. The next `netloom` command resolves
-profile-scoped values such as `ARAPY_SERVER_PROD` and
-`ARAPY_CLIENT_SECRET_PROD` automatically.
+`netloom load <plugin>` updates `NETLOOM_ACTIVE_PLUGIN` in
+`~/.config/netloom/profiles.env`. `netloom server use <profile>` updates
+`NETLOOM_ACTIVE_PROFILE`. The next `netloom` command then resolves
+profile-scoped values such as `NETLOOM_PLUGIN_PROD`, `NETLOOM_SERVER_PROD`, and
+`NETLOOM_CLIENT_SECRET_PROD` automatically.
 
 ---
 
