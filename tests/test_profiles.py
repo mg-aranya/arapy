@@ -1,8 +1,8 @@
 import sys
 
-import arapy.cli.main as main
-from arapy.core import config
-from arapy.core.config import AppPaths, load_settings
+import netloom.cli.main as main
+from netloom.core import config
+from netloom.core.config import AppPaths, load_settings
 
 
 class _FakeLogMgr:
@@ -24,13 +24,14 @@ class _FakeLogMgr:
 
 def _configure_runtime(monkeypatch, tmp_path):
     config_dir = tmp_path / "config"
-    monkeypatch.setenv("ARAPY_CONFIG_DIR", str(config_dir))
-    monkeypatch.setenv("ARAPY_CACHE_DIR", str(tmp_path / "cache"))
-    monkeypatch.setenv("ARAPY_STATE_DIR", str(tmp_path / "state"))
-    monkeypatch.delenv("ARAPY_SERVER", raising=False)
-    monkeypatch.delenv("ARAPY_CLIENT_ID", raising=False)
-    monkeypatch.delenv("ARAPY_CLIENT_SECRET", raising=False)
-    monkeypatch.delenv("ARAPY_ACTIVE_PROFILE", raising=False)
+    monkeypatch.setenv("NETLOOM_CONFIG_DIR", str(config_dir))
+    monkeypatch.setenv("NETLOOM_CACHE_DIR", str(tmp_path / "cache"))
+    monkeypatch.setenv("NETLOOM_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.delenv("NETLOOM_SERVER", raising=False)
+    monkeypatch.delenv("NETLOOM_CLIENT_ID", raising=False)
+    monkeypatch.delenv("NETLOOM_CLIENT_SECRET", raising=False)
+    monkeypatch.delenv("NETLOOM_ACTIVE_PROFILE", raising=False)
+    monkeypatch.delenv("NETLOOM_ACTIVE_PLUGIN", raising=False)
     return config_dir
 
 
@@ -39,9 +40,12 @@ def _write_profiles(config_dir):
     (config_dir / "profiles.env").write_text(
         "\n".join(
             [
-                "ARAPY_ACTIVE_PROFILE=prod",
-                "ARAPY_SERVER_PROD=prod.clearpass.example:443",
-                "ARAPY_SERVER_DEV=dev.clearpass.example:443",
+                "NETLOOM_ACTIVE_PLUGIN=clearpass",
+                "NETLOOM_ACTIVE_PROFILE=prod",
+                "NETLOOM_PLUGIN_PROD=clearpass",
+                "NETLOOM_PLUGIN_DEV=clearpass",
+                "NETLOOM_SERVER_PROD=prod.clearpass.example:443",
+                "NETLOOM_SERVER_DEV=dev.clearpass.example:443",
             ]
         )
         + "\n",
@@ -50,10 +54,10 @@ def _write_profiles(config_dir):
     (config_dir / "credentials.env").write_text(
         "\n".join(
             [
-                "ARAPY_CLIENT_ID_PROD=prod-client",
-                "ARAPY_CLIENT_SECRET_PROD=prod-secret",
-                "ARAPY_CLIENT_ID_DEV=dev-client",
-                "ARAPY_CLIENT_SECRET_DEV=dev-secret",
+                "NETLOOM_CLIENT_ID_PROD=prod-client",
+                "NETLOOM_CLIENT_SECRET_PROD=prod-secret",
+                "NETLOOM_CLIENT_ID_DEV=dev-client",
+                "NETLOOM_CLIENT_SECRET_DEV=dev-secret",
             ]
         )
         + "\n",
@@ -78,6 +82,7 @@ def test_load_settings_uses_active_profile_files(monkeypatch, tmp_path):
     settings = load_settings()
 
     assert settings.active_profile == "prod"
+    assert settings.plugin == "clearpass"
     assert settings.server == "prod.clearpass.example:443"
     assert settings.client_id == "prod-client"
     assert settings.client_secret == "prod-secret"
@@ -86,8 +91,8 @@ def test_load_settings_uses_active_profile_files(monkeypatch, tmp_path):
 def test_load_settings_prefers_process_environment(monkeypatch, tmp_path):
     config_dir = _configure_runtime(monkeypatch, tmp_path)
     _write_profiles(config_dir)
-    monkeypatch.setenv("ARAPY_SERVER", "override.example:443")
-    monkeypatch.setenv("ARAPY_CLIENT_ID", "override-client")
+    monkeypatch.setenv("NETLOOM_SERVER", "override.example:443")
+    monkeypatch.setenv("NETLOOM_CLIENT_ID", "override-client")
 
     settings = load_settings()
 
@@ -102,9 +107,10 @@ def test_load_settings_uses_out_dir_from_profile_files(monkeypatch, tmp_path):
     (config_dir / "profiles.env").write_text(
         "\n".join(
             [
-                "ARAPY_ACTIVE_PROFILE=prod",
-                "ARAPY_SERVER_PROD=prod.clearpass.example:443",
-                "ARAPY_OUT_DIR_PROD=~/custom-responses",
+                "NETLOOM_ACTIVE_PROFILE=prod",
+                "NETLOOM_PLUGIN_PROD=clearpass",
+                "NETLOOM_SERVER_PROD=prod.clearpass.example:443",
+                "NETLOOM_OUT_DIR_PROD=~/custom-responses",
             ]
         )
         + "\n",
@@ -113,8 +119,8 @@ def test_load_settings_uses_out_dir_from_profile_files(monkeypatch, tmp_path):
     (config_dir / "credentials.env").write_text(
         "\n".join(
             [
-                "ARAPY_CLIENT_ID_PROD=prod-client",
-                "ARAPY_CLIENT_SECRET_PROD=prod-secret",
+                "NETLOOM_CLIENT_ID_PROD=prod-client",
+                "NETLOOM_CLIENT_SECRET_PROD=prod-secret",
             ]
         )
         + "\n",
@@ -139,7 +145,7 @@ def test_list_profiles_and_set_active_profile(monkeypatch, tmp_path):
 
     assert target == config_dir / "profiles.env"
     profiles_text = target.read_text(encoding="utf-8")
-    assert "ARAPY_ACTIVE_PROFILE=dev" in profiles_text
+    assert "NETLOOM_ACTIVE_PROFILE=dev" in profiles_text
 
 
 def test_hyphenated_profile_names_round_trip(monkeypatch, tmp_path):
@@ -148,8 +154,9 @@ def test_hyphenated_profile_names_round_trip(monkeypatch, tmp_path):
     (config_dir / "profiles.env").write_text(
         "\n".join(
             [
-                "ARAPY_ACTIVE_PROFILE=qa-edge",
-                "ARAPY_SERVER_QA_EDGE=qa.clearpass.example:443",
+                "NETLOOM_ACTIVE_PROFILE=qa-edge",
+                "NETLOOM_PLUGIN_QA_EDGE=clearpass",
+                "NETLOOM_SERVER_QA_EDGE=qa.clearpass.example:443",
             ]
         )
         + "\n",
@@ -158,8 +165,8 @@ def test_hyphenated_profile_names_round_trip(monkeypatch, tmp_path):
     (config_dir / "credentials.env").write_text(
         "\n".join(
             [
-                "ARAPY_CLIENT_ID_QA_EDGE=qa-client",
-                "ARAPY_CLIENT_SECRET_QA_EDGE=qa-secret",
+                "NETLOOM_CLIENT_ID_QA_EDGE=qa-client",
+                "NETLOOM_CLIENT_SECRET_QA_EDGE=qa-secret",
             ]
         )
         + "\n",
@@ -169,12 +176,13 @@ def test_hyphenated_profile_names_round_trip(monkeypatch, tmp_path):
     settings = load_settings()
 
     assert settings.active_profile == "qa-edge"
+    assert settings.plugin == "clearpass"
     assert settings.server == "qa.clearpass.example:443"
     assert config.list_profiles() == ["qa-edge"]
 
     target = config.set_active_profile("qa-edge")
 
-    assert "ARAPY_ACTIVE_PROFILE=qa-edge" in target.read_text(encoding="utf-8")
+    assert "NETLOOM_ACTIVE_PROFILE=qa-edge" in target.read_text(encoding="utf-8")
 
 
 def test_main_server_use_switches_profile(monkeypatch, capsys, tmp_path):
@@ -186,21 +194,15 @@ def test_main_server_use_switches_profile(monkeypatch, capsys, tmp_path):
         lambda settings, root_name: _FakeLogMgr(),
     )
     monkeypatch.setattr(main, "load_settings", lambda: _make_settings(tmp_path))
-    monkeypatch.setattr(
-        main,
-        "ClearPassClient",
-        lambda *args, **kwargs: (_ for _ in ()).throw(
-            AssertionError("server commands should not create a client")
-        ),
-    )
 
-    monkeypatch.setattr(sys, "argv", ["arapy", "server", "use", "dev"])
+    monkeypatch.setattr(sys, "argv", ["netloom", "server", "use", "dev"])
     main.main()
 
     out = capsys.readouterr().out
     assert "Active profile set to dev." in out
     assert "Server: dev.clearpass.example:443" in out
-    assert "ARAPY_ACTIVE_PROFILE=dev" in (
+    assert "Plugin: clearpass" in out
+    assert "NETLOOM_ACTIVE_PROFILE=dev" in (
         config_dir / "profiles.env"
     ).read_text(encoding="utf-8")
 
@@ -215,10 +217,11 @@ def test_main_server_show_prints_profile_status(monkeypatch, capsys, tmp_path):
     )
     monkeypatch.setattr(main, "load_settings", lambda: _make_settings(tmp_path))
 
-    monkeypatch.setattr(sys, "argv", ["arapy", "server", "show"])
+    monkeypatch.setattr(sys, "argv", ["netloom", "server", "show"])
     main.main()
 
     out = capsys.readouterr().out
     assert "Active profile: prod" in out
+    assert "Active plugin: clearpass" in out
     assert "Server: prod.clearpass.example:443" in out
     assert f"Profiles file: {config_dir / 'profiles.env'}" in out

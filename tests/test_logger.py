@@ -1,7 +1,7 @@
 import logging
 
-from arapy.core.config import Settings
-from arapy.logging.setup import LoggerConfig, LoggingManager, configure_logging
+from netloom.core.config import Settings
+from netloom.logging.setup import LoggerConfig, LoggingManager, configure_logging
 
 
 def test_logging_manager_is_not_singleton():
@@ -11,15 +11,15 @@ def test_logging_manager_is_not_singleton():
 
 
 def test_get_logger_prefix_and_inheritance():
-    mgr = LoggingManager(LoggerConfig(root_name="arapytest", console=False))
+    mgr = LoggingManager(LoggerConfig(root_name="netloomtest", console=False))
     child = mgr.get_logger("module")
-    assert child.name == "arapytest.module"
+    assert child.name == "netloomtest.module"
     assert child.level == logging.NOTSET
     assert child.propagate is True
 
 
 def test_set_level_updates_handlers():
-    mgr = LoggingManager(LoggerConfig(root_name="arapytest2", console=True))
+    mgr = LoggingManager(LoggerConfig(root_name="netloomtest2", console=True))
     assert any(
         isinstance(handler, logging.StreamHandler) for handler in mgr.root.handlers
     )

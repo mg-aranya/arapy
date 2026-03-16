@@ -1,29 +1,29 @@
-.TH ARAPY 1 "March 2026" "arapy 1.4.x" "User Commands"
+.TH NETLOOM 1 "March 2026" "netloom 1.7.0" "User Commands"
 .SH NAME
-arapy \- dynamic CLI for HPE Aruba ClearPass Policy Manager
+netloom \- modular CLI for HPE Aruba ClearPass Policy Manager
 
 .SH SYNOPSIS
-.B arapy
+.B netloom
 [\fIGLOBAL-OPTIONS\fR] \fIMODULE SERVICE ACTION\fR [\fIKEY=VALUE\fR ...]
 
 .br
-.B arapy
+.B netloom
 cache clear
 
 .br
-.B arapy
+.B netloom
 cache update
 
 .br
-.B arapy
+.B netloom
 [\fB--help\fR|\fB?\fR]
 
 .br
-.B arapy
+.B netloom
 \fB--version\fR
 
 .SH DESCRIPTION
-.B arapy
+.B netloom
 is a command-line client for HPE Aruba ClearPass Policy Manager.
 
 It discovers available API modules, services, actions, and request metadata
@@ -31,14 +31,14 @@ dynamically from the ClearPass API documentation endpoints. Because of this,
 the exact command surface depends on the connected ClearPass server.
 
 This manual describes the stable, static parts of
-.BR arapy :
+.BR netloom :
 authentication, global options, cache behavior, output behavior, and common
 usage. For endpoint-specific help, use the built-in dynamic help:
 
 .PP
 .EX
-arapy <module> <service> ?
-arapy <module> <service> <action> ?
+netloom <module> <service> ?
+netloom <module> <service> <action> ?
 .EE
 
 .SH COMMAND MODEL
@@ -46,7 +46,7 @@ The general command form is:
 
 .PP
 .EX
-arapy <module> <service> <action> [--key=value ...]
+netloom <module> <service> <action> [--key=value ...]
 .EE
 
 Supported action names commonly include:
@@ -80,15 +80,15 @@ ClearPass and may vary by version and enabled API surface.
 
 .SH CACHE COMMANDS
 .TP
-.B arapy cache update
+.B netloom cache update
 Refresh the local API catalog from ClearPass.
 
 .TP
-.B arapy cache clear
+.B netloom cache clear
 Remove the local API catalog cache.
 
 .SH AUTHENTICATION
-.B arapy
+.B netloom
 supports the following authentication methods:
 
 .TP
@@ -97,9 +97,9 @@ Configured with environment variables such as:
 .RS
 .PP
 .EX
-ARAPY_SERVER
-ARAPY_CLIENT_ID
-ARAPY_CLIENT_SECRET
+NETLOOM_SERVER
+NETLOOM_CLIENT_ID
+NETLOOM_CLIENT_SECRET
 .EE
 .RE
 
@@ -109,7 +109,7 @@ Configured with:
 .RS
 .PP
 .EX
-ARAPY_API_TOKEN
+NETLOOM_API_TOKEN
 .EE
 .RE
 
@@ -119,7 +119,7 @@ Configured with:
 .RS
 .PP
 .EX
-ARAPY_API_TOKEN_FILE
+NETLOOM_API_TOKEN_FILE
 .EE
 .RE
 
@@ -134,8 +134,8 @@ Command-line token overrides may also be used:
 
 .PP
 .EX
-arapy identities endpoint list --api-token=TOKEN
-arapy identities endpoint list --token-file=./token.json
+netloom identities endpoint list --api-token=TOKEN
+netloom identities endpoint list --token-file=./token.json
 .EE
 
 .SH GLOBAL OPTIONS
@@ -209,7 +209,7 @@ Show version.
 
 .SH OUTPUT
 By default,
-.B arapy
+.B netloom
 writes responses to files under its state and output directories.
 
 Supported output formats are:
@@ -228,86 +228,86 @@ Raw text or binary output, used especially for export and download style
 endpoints.
 
 For binary responses,
-.B arapy
+.B netloom
 may automatically choose raw output and use the filename provided by the
 server.
 
 .SH ENVIRONMENT
 .TP
-.B ARAPY_SERVER
+.B NETLOOM_SERVER
 ClearPass server hostname or host:port.
 
 .TP
-.B ARAPY_CLIENT_ID
+.B NETLOOM_CLIENT_ID
 OAuth client ID.
 
 .TP
-.B ARAPY_CLIENT_SECRET
+.B NETLOOM_CLIENT_SECRET
 OAuth client secret.
 
 .TP
-.B ARAPY_API_TOKEN
+.B NETLOOM_API_TOKEN
 Direct bearer token.
 
 .TP
-.B ARAPY_API_TOKEN_FILE
+.B NETLOOM_API_TOKEN_FILE
 Path to token file.
 
 .TP
-.B ARAPY_VERIFY_SSL
+.B NETLOOM_VERIFY_SSL
 Enable or disable TLS certificate verification.
 
 .TP
-.B ARAPY_TIMEOUT
+.B NETLOOM_TIMEOUT
 HTTP timeout in seconds.
 
 .TP
-.B ARAPY_LOG_LEVEL
+.B NETLOOM_LOG_LEVEL
 Default log level.
 
 .TP
-.B ARAPY_DATA_FORMAT
+.B NETLOOM_DATA_FORMAT
 Default output format.
 
 .TP
-.B ARAPY_CONSOLE
+.B NETLOOM_CONSOLE
 Enable console output by default.
 
 .TP
-.B ARAPY_ENCRYPT_SECRETS
+.B NETLOOM_ENCRYPT_SECRETS
 Mask secret values by default.
 
 .TP
-.B ARAPY_CACHE_DIR
+.B NETLOOM_CACHE_DIR
 Override cache directory.
 
 .TP
-.B ARAPY_STATE_DIR
+.B NETLOOM_STATE_DIR
 Override state directory.
 
 .TP
-.B ARAPY_OUT_DIR
+.B NETLOOM_OUT_DIR
 Override response output directory.
 
 .TP
-.B ARAPY_APP_LOG_DIR
+.B NETLOOM_APP_LOG_DIR
 Override application log directory.
 
 .SH FILES
 .TP
-.B ~/.cache/arapy/
+.B ~/.cache/netloom/
 Default cache directory on Linux when XDG defaults are used.
 
 .TP
-.B ~/.local/state/arapy/
+.B ~/.local/state/netloom/
 Default state directory on Linux when XDG defaults are used.
 
 .TP
-.B ~/.local/state/arapy/responses/
+.B ~/.local/state/netloom/responses/
 Default response output directory.
 
 .TP
-.B ~/.local/state/arapy/logs/
+.B ~/.local/state/netloom/logs/
 Default log directory.
 
 .SH EXAMPLES
@@ -315,35 +315,35 @@ Refresh API discovery cache:
 
 .PP
 .EX
-arapy cache update
+netloom cache update
 .EE
 
 List endpoints:
 
 .PP
 .EX
-arapy identities endpoint list --limit=10
+netloom identities endpoint list --limit=10
 .EE
 
 Get one network device by id:
 
 .PP
 .EX
-arapy policyelements network-device get --id=1001
+netloom policyelements network-device get --id=1001
 .EE
 
 Update one network device:
 
 .PP
 .EX
-arapy policyelements network-device update --id=1001 --description="Core switch"
+netloom policyelements network-device update --id=1001 --description="Core switch"
 .EE
 
 Use dynamic help for a discovered action:
 
 .PP
 .EX
-arapy policyelements network-device add ?
+netloom policyelements network-device add ?
 .EE
 
 .SH NOTES
@@ -354,8 +354,8 @@ Use built-in help for live endpoint metadata:
 
 .PP
 .EX
-arapy <module> <service> ?
-arapy <module> <service> <action> ?
+netloom <module> <service> ?
+netloom <module> <service> <action> ?
 .EE
 
 .SH EXIT STATUS

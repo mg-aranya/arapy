@@ -1,8 +1,9 @@
 import pytest
 import requests
+import types
 
-import arapy.cli.copy as copymod
-from arapy.core.config import AppPaths, Settings
+import netloom.cli.copy as copymod
+from netloom.core.config import AppPaths, Settings
 
 
 def _make_settings(tmp_path, profile: str):
@@ -69,6 +70,41 @@ def _catalog():
             }
         }
     }
+
+
+def _plugin(build_client, catalog, *, get_api_catalog=None):
+    return types.SimpleNamespace(
+        build_client=build_client,
+        resolve_auth_token=lambda cp, settings: f"{settings.server}-token",
+        get_api_catalog=(
+            get_api_catalog
+            or (lambda cp, token, settings, force_refresh=False: catalog)
+        ),
+        normalize_copy_payload=lambda cp, api_catalog, action_args, action, item: {
+            key: value
+            for key, value in item.items()
+            if key != "id" and value not in (None, "")
+        },
+        restore_secret_fields=lambda response, payload, mask_secrets=True: {
+            **response,
+            **{
+                key: value
+                for key, value in payload.items()
+                if key.endswith("_secret") and value not in (None, "")
+            },
+        },
+        preflight_error_for_payload=lambda module, service, action, payload: (
+            "network device did not include usable RADIUS, TACACS+, or SNMP credentials"
+            if action == "create"
+            and service == "network-device"
+            and payload is not None
+            and not any(
+                payload.get(name)
+                for name in ("radius_secret", "tacacs_secret", "snmpv2_read")
+            )
+            else None
+        ),
+    )
 
 
 class _BaseCP:
@@ -203,9 +239,7 @@ def test_handle_copy_command_dry_run_create(monkeypatch, tmp_path, capsys):
             "dry_run": True,
         },
         settings=_make_settings(tmp_path, "prod"),
-        build_client=build_client,
-        resolve_auth_token=lambda cp, settings: f"{settings.server}-token",
-        get_api_catalog=lambda cp, token, settings, force_refresh=True: catalog,
+        plugin=_plugin(build_client, catalog),
     )
 
     out = capsys.readouterr().out
@@ -216,7 +250,7 @@ def test_handle_copy_command_dry_run_create(monkeypatch, tmp_path, capsys):
 
 
 def test_handle_copy_command_fetches_all_source_pages(monkeypatch, tmp_path):
-    import arapy.core.pagination as pagination
+    import netloom.core.pagination as pagination
 
     monkeypatch.setattr(pagination, "DEFAULT_PAGE_SIZE", 2)
     catalog = _catalog()
@@ -266,9 +300,7 @@ def test_handle_copy_command_fetches_all_source_pages(monkeypatch, tmp_path):
             "dry_run": True,
         },
         settings=_make_settings(tmp_path, "prod"),
-        build_client=build_client,
-        resolve_auth_token=lambda cp, settings: f"{settings.server}-token",
-        get_api_catalog=lambda cp, token, settings, force_refresh=True: catalog,
+        plugin=_plugin(build_client, catalog),
     )
 
     assert report["summary"]["selected"] == 3
@@ -322,9 +354,7 @@ def test_handle_copy_command_honors_explicit_limit(monkeypatch, tmp_path):
             "dry_run": True,
         },
         settings=_make_settings(tmp_path, "prod"),
-        build_client=build_client,
-        resolve_auth_token=lambda cp, settings: f"{settings.server}-token",
-        get_api_catalog=lambda cp, token, settings, force_refresh=True: catalog,
+        plugin=_plugin(build_client, catalog),
     )
 
     assert report["summary"]["selected"] == 1
@@ -371,9 +401,7 @@ def test_handle_copy_command_updates_existing_match_and_restores_secret(
             "decrypt": True,
         },
         settings=_make_settings(tmp_path, "prod"),
-        build_client=build_client,
-        resolve_auth_token=lambda cp, settings: f"{settings.server}-token",
-        get_api_catalog=lambda cp, token, settings, force_refresh=True: catalog,
+        plugin=_plugin(build_client, catalog),
     )
 
     assert target_cp.update_calls
@@ -427,9 +455,7 @@ def test_handle_copy_command_uses_cached_catalog_by_default(monkeypatch, tmp_pat
             "dry_run": True,
         },
         settings=_make_settings(tmp_path, "prod"),
-        build_client=build_client,
-        resolve_auth_token=lambda cp, settings: f"{settings.server}-token",
-        get_api_catalog=get_api_catalog,
+        plugin=_plugin(build_client, catalog, get_api_catalog=get_api_catalog),
     )
 
     assert len(catalog_calls) == 2
@@ -476,9 +502,7 @@ def test_handle_copy_command_omits_blank_secrets_on_update(monkeypatch, tmp_path
             "on_conflict": "update",
         },
         settings=_make_settings(tmp_path, "prod"),
-        build_client=build_client,
-        resolve_auth_token=lambda cp, settings: f"{settings.server}-token",
-        get_api_catalog=lambda cp, token, settings, force_refresh=True: catalog,
+        plugin=_plugin(build_client, catalog),
     )
 
     assert report["summary"]["updated"] == 1
@@ -527,9 +551,7 @@ def test_handle_copy_command_fails_early_for_network_device_create_without_crede
             "dry_run": True,
         },
         settings=_make_settings(tmp_path, "prod"),
-        build_client=build_client,
-        resolve_auth_token=lambda cp, settings: f"{settings.server}-token",
-        get_api_catalog=lambda cp, token, settings, force_refresh=True: catalog,
+        plugin=_plugin(build_client, catalog),
     )
 
     out = capsys.readouterr().out
@@ -584,9 +606,7 @@ def test_handle_copy_command_console_masks_secrets_by_default(
             "console": True,
         },
         settings=_make_settings(tmp_path, "prod"),
-        build_client=build_client,
-        resolve_auth_token=lambda cp, settings: f"{settings.server}-token",
-        get_api_catalog=lambda cp, token, settings, force_refresh=True: catalog,
+        plugin=_plugin(build_client, catalog),
     )
 
     out = capsys.readouterr().out
@@ -612,7 +632,5 @@ def test_handle_copy_command_rejects_missing_selector(monkeypatch, tmp_path):
                 "to": "prod",
             },
             settings=_make_settings(tmp_path, "prod"),
-            build_client=lambda settings, mask_secrets=True: None,
-            resolve_auth_token=lambda cp, settings: "token",
-            get_api_catalog=lambda cp, token, settings, force_refresh=True: _catalog(),
+            plugin=_plugin(lambda settings, mask_secrets=True: None, _catalog()),
         )

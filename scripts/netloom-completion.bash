@@ -10,14 +10,10 @@ _netloom_complete() {
     backend="$(type -P -- netloom)"
   fi
   if [[ -z "${backend}" ]]; then
-    backend="$(type -P -- arapy)"
-  fi
-  if [[ -z "${backend}" ]]; then
     COMPREPLY=()
     return 0
   fi
 
-  # Pass words after the invoked CLI name, plus cursor index and current token
   local candidates
   candidates="$("${backend}" --_complete \
     --_cword="${COMP_CWORD}" \
@@ -28,5 +24,4 @@ _netloom_complete() {
   return 0
 }
 
-complete -F _netloom_complete arapy
 complete -F _netloom_complete netloom

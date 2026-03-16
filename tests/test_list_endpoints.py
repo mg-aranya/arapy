@@ -3,7 +3,7 @@ import re
 import pytest
 from requests import HTTPError
 
-from arapy.core.catalog import load_cached_catalog
+from netloom.plugins.clearpass.catalog import load_cached_catalog
 
 
 def _iter_list_endpoints(catalog: dict):
@@ -27,12 +27,12 @@ def _iter_list_endpoints(catalog: dict):
 def catalog():
     cat = load_cached_catalog()
     if not cat:
-        pytest.skip("No api_endpoints_cache.json found. Run: arapy cache update")
+        pytest.skip("No api_endpoints_cache.json found. Run: netloom cache update")
     return cat
 
 
 def _compile_denylist(pytestconfig):
-    pats = list(pytestconfig.getoption("--arapy-deny-regex") or [])
+    pats = list(pytestconfig.getoption("--netloom-deny-regex") or [])
     pats += [
         r"/activate-(online|offline)$",
         r"/export$",
@@ -68,7 +68,7 @@ def test_list_endpoints_smoke(
     clearpass_client, token, api_catalog, catalog, pytestconfig
 ):
     deny = _compile_denylist(pytestconfig)
-    max_n = int(pytestconfig.getoption("--arapy-max-endpoints"))
+    max_n = int(pytestconfig.getoption("--netloom-max-endpoints"))
 
     endpoints = []
     for module, service, route, action_def in _iter_list_endpoints(catalog):

@@ -1,8 +1,8 @@
 import sys
 import types
 
-import arapy.cli.main as main
-from arapy.core.config import AppPaths, Settings
+import netloom.cli.main as main
+from netloom.core.config import AppPaths, Settings
 
 
 class FakeLogger:
@@ -48,6 +48,7 @@ def make_settings(tmp_path):
         app_log_dir=tmp_path / "logs",
     ).ensure()
     return Settings(
+        plugin="clearpass",
         server="example:443",
         https_prefix="https://",
         verify_ssl=False,
@@ -55,6 +56,17 @@ def make_settings(tmp_path):
         client_id="x",
         client_secret="y",
         paths=paths,
+    )
+
+
+def _plugin_with_catalog(catalog):
+    return types.SimpleNamespace(
+        name="clearpass",
+        build_client=lambda settings, mask_secrets=True: None,
+        resolve_auth_token=lambda cp, settings: "TOKEN",
+        get_api_catalog=lambda cp, token, settings=None, force_refresh=False: catalog,
+        load_cached_catalog=lambda settings=None: catalog,
+        clear_api_cache=lambda settings=None: True,
     )
 
 
@@ -66,22 +78,36 @@ def test_main_end_to_end_calls_login_and_action(monkeypatch, tmp_path):
     monkeypatch.setattr(main, "load_settings", lambda: settings)
 
     class FakeCP:
-        def __init__(self, server, https_prefix, verify_ssl, timeout):
-            calls["cp_init"] = dict(
-                server=server,
-                https_prefix=https_prefix,
-                verify_ssl=verify_ssl,
-                timeout=timeout,
-            )
+        pass
 
-        def login(self, api_paths, credentials):
-            calls["login"] = dict(api_paths=api_paths, credentials=credentials)
-            return {"access_token": "TOKEN"}
+    def build_client(settings, mask_secrets=True):
+        calls["cp_init"] = dict(
+            server=settings.server,
+            https_prefix=settings.https_prefix,
+            verify_ssl=settings.verify_ssl,
+            timeout=settings.timeout,
+            mask_secrets=mask_secrets,
+        )
+        return FakeCP()
 
-    monkeypatch.setattr(main, "ClearPassClient", FakeCP)
-    monkeypatch.setattr(
-        main, "get_api_catalog", lambda cp, token, settings: {"modules": {}}
+    def resolve_auth_token(cp, settings):
+        calls["login"] = dict(
+            credentials=settings.credentials,
+            server=settings.server,
+        )
+        return "TOKEN"
+
+    plugin = types.SimpleNamespace(
+        name="clearpass",
+        build_client=build_client,
+        resolve_auth_token=resolve_auth_token,
+        get_api_catalog=lambda cp, token, settings=None, force_refresh=False: {
+            "modules": {}
+        },
+        load_cached_catalog=lambda settings=None: {"modules": {}},
+        clear_api_cache=lambda settings=None: True,
     )
+    monkeypatch.setattr(main, "get_plugin", lambda *args, **kwargs: plugin)
 
     def fake_action(cp, token, api_paths, args, settings=None):
         calls["action"] = dict(
@@ -93,7 +119,7 @@ def test_main_end_to_end_calls_login_and_action(monkeypatch, tmp_path):
     monkeypatch.setattr(
         sys,
         "argv",
-        ["arapy", "identities", "endpoint", "list", "--limit=1", "--console"],
+        ["netloom", "identities", "endpoint", "list", "--limit=1", "--console"],
     )
     main.main()
 
@@ -114,16 +140,16 @@ def test_main_invalid_log_level_exits_early(monkeypatch, tmp_path):
     monkeypatch.setattr(main, "load_settings", lambda: settings)
     monkeypatch.setattr(
         main,
-        "ClearPassClient",
+        "get_plugin",
         lambda *a, **k: (_ for _ in ()).throw(
-            AssertionError("should not create client")
+            AssertionError("should not resolve plugin")
         ),
     )
 
     monkeypatch.setattr(
         sys,
         "argv",
-        ["arapy", "identities", "endpoint", "list", "--log_level=nope"],
+        ["netloom", "identities", "endpoint", "list", "--log_level=nope"],
     )
     main.main()
 
@@ -138,7 +164,7 @@ def test_main_version_prints_and_exits(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(main, "load_settings", lambda: settings)
     monkeypatch.setattr(main, "get_version", lambda: "9.9.9")
 
-    monkeypatch.setattr(sys, "argv", ["arapy", "--version"])
+    monkeypatch.setattr(sys, "argv", ["netloom", "--version"])
     main.main()
 
     assert capsys.readouterr().out.strip() == "9.9.9"
@@ -150,10 +176,10 @@ def test_main_help_prints_and_exits(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(main, "configure_logging", lambda settings, root_name: mgr)
     monkeypatch.setattr(main, "load_settings", lambda: settings)
     monkeypatch.setattr(
-        main, "print_help", lambda args=None: print("Usage:\n  arapy ...")
+        main, "print_help", lambda args=None, **kwargs: print("Usage:\n  netloom ...")
     )
 
-    monkeypatch.setattr(sys, "argv", ["arapy", "--help"])
+    monkeypatch.setattr(sys, "argv", ["netloom", "--help"])
     main.main()
     out = capsys.readouterr().out
     assert "Usage:" in out
@@ -165,8 +191,9 @@ def test_main_unknown_action_prints_help_and_message(monkeypatch, capsys, tmp_pa
     monkeypatch.setattr(main, "configure_logging", lambda settings, root_name: mgr)
     monkeypatch.setattr(main, "load_settings", lambda: settings)
     monkeypatch.setattr(
-        main, "print_help", lambda args=None: print("Usage:\n  arapy ...")
+        main, "print_help", lambda args=None, **kwargs: print("Usage:\n  netloom ...")
     )
+    monkeypatch.setattr(main, "get_plugin", lambda *args, **kwargs: _plugin_with_catalog({"modules": {}}))
 
     if "doesnotexist" in main.ACTIONS:
         monkeypatch.delitem(main.ACTIONS, "doesnotexist", raising=False)
@@ -174,7 +201,7 @@ def test_main_unknown_action_prints_help_and_message(monkeypatch, capsys, tmp_pa
     monkeypatch.setattr(
         sys,
         "argv",
-        ["arapy", "identities", "endpoint", "doesnotexist"],
+        ["netloom", "identities", "endpoint", "doesnotexist"],
     )
     main.main()
 
@@ -194,18 +221,11 @@ def test_main_complete_mode_outputs_and_exits(monkeypatch, capsys, tmp_path):
     )
     monkeypatch.setattr(
         main,
-        "ClearPassClient",
-        lambda *a, **k: (_ for _ in ()).throw(
-            AssertionError("should not create client")
-        ),
-    )
-    monkeypatch.setattr(
-        main,
-        "load_cached_catalog",
-        lambda settings=None: {"modules": {"identities": {}}},
+        "get_plugin",
+        lambda *args, **kwargs: _plugin_with_catalog({"modules": {"identities": {}}}),
     )
 
-    monkeypatch.setattr(sys, "argv", ["arapy", "--_complete", "--_cur="])
+    monkeypatch.setattr(sys, "argv", ["netloom", "--_complete", "--_cur="])
     main.main()
     out = capsys.readouterr().out
     assert "identities" in out
@@ -219,21 +239,33 @@ def test_main_uses_direct_api_token_without_login(monkeypatch, tmp_path):
     monkeypatch.setattr(main, "load_settings", lambda: settings)
 
     class FakeCP:
-        def __init__(self, server, https_prefix, verify_ssl, timeout):
-            calls["cp_init"] = dict(
-                server=server,
-                https_prefix=https_prefix,
-                verify_ssl=verify_ssl,
-                timeout=timeout,
-            )
+        pass
 
-        def login(self, api_paths, credentials):
-            raise AssertionError("login should not be called when --api-token is set")
+    def build_client(settings, mask_secrets=True):
+        calls["cp_init"] = dict(
+            server=settings.server,
+            https_prefix=settings.https_prefix,
+            verify_ssl=settings.verify_ssl,
+            timeout=settings.timeout,
+            mask_secrets=mask_secrets,
+        )
+        return FakeCP()
 
-    monkeypatch.setattr(main, "ClearPassClient", FakeCP)
-    monkeypatch.setattr(
-        main, "get_api_catalog", lambda cp, token, settings: {"modules": {}}
+    def resolve_auth_token(cp, settings):
+        calls["token"] = settings.api_token
+        return settings.api_token
+
+    plugin = types.SimpleNamespace(
+        name="clearpass",
+        build_client=build_client,
+        resolve_auth_token=resolve_auth_token,
+        get_api_catalog=lambda cp, token, settings=None, force_refresh=False: {
+            "modules": {}
+        },
+        load_cached_catalog=lambda settings=None: {"modules": {}},
+        clear_api_cache=lambda settings=None: True,
     )
+    monkeypatch.setattr(main, "get_plugin", lambda *args, **kwargs: plugin)
 
     def fake_action(cp, token, api_paths, args, settings=None):
         calls["action"] = {"token": token, "args": args, "settings": settings}
@@ -243,7 +275,7 @@ def test_main_uses_direct_api_token_without_login(monkeypatch, tmp_path):
         sys,
         "argv",
         [
-            "arapy",
+            "netloom",
             "identities",
             "endpoint",
             "list",
@@ -267,12 +299,13 @@ def test_main_copy_invokes_copy_handler(monkeypatch, tmp_path):
         "handle_copy_command",
         lambda args, **kwargs: calls.update({"args": args, "kwargs": kwargs}),
     )
+    monkeypatch.setattr(main, "get_plugin", lambda *args, **kwargs: _plugin_with_catalog({"modules": {}}))
 
     monkeypatch.setattr(
         sys,
         "argv",
         [
-            "arapy",
+            "netloom",
             "copy",
             "policyelements",
             "network-device",

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from dataclasses import replace
 
 import urllib3
 
@@ -36,6 +37,16 @@ def complete(words: list[str], settings: Settings | None = None) -> None:
     print_completions(words, catalog)
 
 
+def settings_with_cli_overrides(settings: Settings, args: dict) -> Settings:
+    api_token = args.get("api_token") or args.get("token") or settings.api_token
+    token_file = (
+        args.get("token_file")
+        or args.get("api_token_file")
+        or settings.api_token_file
+    )
+    return replace(settings, api_token=api_token, api_token_file=token_file)
+
+
 def main() -> None:
     settings = load_settings()
     if not settings.verify_ssl:
@@ -50,6 +61,7 @@ def main() -> None:
     log = log_mgr.get_logger(__name__)
 
     args = parse_cli(sys.argv)
+    active_settings = settings_with_cli_overrides(settings, args)
 
     log_level = args.get("log_level")
     if log_level:
@@ -65,46 +77,57 @@ def main() -> None:
         return
 
     if args.get("help"):
-        print_help(args, settings=settings)
+        print_help(args, settings=active_settings)
         return
 
     if not args.get("module"):
-        print_help({}, settings=settings)
+        print_help({}, settings=active_settings)
         return
 
     if args.get("module") == "server":
         if handle_server_command(args):
             return
-        print_help({"module": "server", "service": args.get("service")}, settings=settings)
+        print_help(
+            {"module": "server", "service": args.get("service")},
+            settings=active_settings,
+        )
         return
 
     if args.get("module") == "load":
         if handle_load_command(args):
             return
-        print_help({"module": "load", "service": args.get("service")}, settings=settings)
+        print_help(
+            {"module": "load", "service": args.get("service")},
+            settings=active_settings,
+        )
         return
 
-    plugin = get_plugin(None, settings=settings)
+    plugin = get_plugin(None, settings=active_settings)
 
     if args.get("module") == "cache":
         service = args.get("service")
         if service == "clear" and not args.get("action"):
-            removed = plugin.clear_api_cache(settings=settings)
+            removed = plugin.clear_api_cache(settings=active_settings)
             if removed:
                 log.info("API endpoint cache cleared.")
             else:
                 log.info("No API endpoint cache file found (already clear).")
             return
         if service == "update" and not args.get("action"):
-            cp = plugin.build_client(settings)
-            token = plugin.resolve_auth_token(cp, settings)
-            plugin.get_api_catalog(cp, token=token, force_refresh=True, settings=settings)
+            cp = plugin.build_client(active_settings)
+            token = plugin.resolve_auth_token(cp, active_settings)
+            plugin.get_api_catalog(
+                cp,
+                token=token,
+                force_refresh=True,
+                settings=active_settings,
+            )
             return
-        print_help({"module": "cache"}, plugin=plugin, settings=settings)
+        print_help({"module": "cache"}, plugin=plugin, settings=active_settings)
         return
 
     if args.get("module") == "copy":
-        handle_copy_command(args, settings=settings, plugin=plugin)
+        handle_copy_command(args, settings=active_settings, plugin=plugin)
         return
 
     module = args.get("module")
@@ -112,24 +135,24 @@ def main() -> None:
     action = args.get("action")
 
     if not (module and service and action):
-        print_help(args, plugin=plugin, settings=settings)
+        print_help(args, plugin=plugin, settings=active_settings)
         return
 
     try:
         command = ACTIONS[action]
     except KeyError:
-        print_help(args, plugin=plugin, settings=settings)
+        print_help(args, plugin=plugin, settings=active_settings)
         print(f"\nUnknown command: {module} {service} {action}")
         return
 
-    mask_secrets = should_mask_secrets(args, settings)
-    cp = plugin.build_client(settings, mask_secrets=mask_secrets)
+    mask_secrets = should_mask_secrets(args, active_settings)
+    cp = plugin.build_client(active_settings, mask_secrets=mask_secrets)
     log.info(
         "Connecting via plugin '%s' to server: %s (SSL verify: %s)",
         plugin.name,
-        settings.server,
-        settings.verify_ssl,
+        active_settings.server,
+        active_settings.verify_ssl,
     )
-    token = plugin.resolve_auth_token(cp, settings)
-    api_catalog = plugin.get_api_catalog(cp, token=token, settings=settings)
-    command(cp, token, api_catalog, args, settings=settings)
+    token = plugin.resolve_auth_token(cp, active_settings)
+    api_catalog = plugin.get_api_catalog(cp, token=token, settings=active_settings)
+    command(cp, token, api_catalog, args, settings=active_settings)

@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-import arapy.cli.commands as commands
-from arapy.core.client import ResponseMetadata
-from arapy.core.config import AppPaths, Settings
+import netloom.cli.commands as commands
+from netloom.core.config import AppPaths, Settings
+from netloom.plugins.clearpass.client import ResponseMetadata
 
 
 @pytest.fixture
@@ -160,7 +160,7 @@ def test_list_handler_calls_cp_and_logs(monkeypatch, api_catalog, settings):
 
 def test_list_handler_fetches_all_pages(monkeypatch, api_catalog, settings):
     calls = []
-    import arapy.core.pagination as pagination
+    import netloom.core.pagination as pagination
 
     monkeypatch.setattr(pagination, "DEFAULT_PAGE_SIZE", 2)
 
@@ -260,7 +260,7 @@ def test_get_handler_all_fetches_all_pages_without_count(
     monkeypatch, api_catalog, settings
 ):
     calls = []
-    import arapy.core.pagination as pagination
+    import netloom.core.pagination as pagination
 
     monkeypatch.setattr(pagination, "DEFAULT_PAGE_SIZE", 2)
 

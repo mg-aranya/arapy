@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from arapy.io.files import load_api_token_file, load_payload_file
-from arapy.io.output import _extract_by_path, log_to_file, sanitize_secrets
+from netloom.io.files import load_api_token_file, load_payload_file
+from netloom.io.output import _extract_by_path, log_to_file, sanitize_secrets
 
 
 def test_extract_by_path_happy():

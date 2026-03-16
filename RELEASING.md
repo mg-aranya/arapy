@@ -1,7 +1,7 @@
 # Releasing netloom
 
-This project publishes the `netloom-tool` package to PyPI and exposes both the
-`netloom` and `arapy` CLI commands during the current rename transition.
+This project publishes the `netloom-tool` package to PyPI and exposes the
+`netloom` CLI command.
 
 ## One-time setup
 
@@ -25,7 +25,6 @@ python -m build
 python -m twine check dist/*
 python -m pip install --force-reinstall dist/*.whl
 netloom --version
-arapy --version
 netloom-install-manpage --print-path
 ```
 
@@ -50,6 +49,6 @@ On a pushed `v*` tag, GitHub Actions will:
 
 ## Notes
 
-- The internal Python package name remains `arapy` for now.
-- Environment variables and config directories still use the `ARAPY_*` /
-  `~/.config/arapy/` naming during the compatibility period.
+- The Python package name is `netloom-tool`.
+- Runtime configuration uses `NETLOOM_*` environment variables and
+  `~/.config/netloom/`.

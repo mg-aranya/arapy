@@ -3,7 +3,7 @@ include README.md
 include CHANGELOG.md
 include profiles.env.example
 include credentials.env.example
-include man/arapy.1
-include scripts/arapy-completion.bash
-recursive-include arapy/data/man *.1
+include man/netloom.1
+include scripts/netloom-completion.bash
+recursive-include netloom/data/man *.1
 recursive-include tests *.py

@@ -4,10 +4,10 @@ from hypothesis import given
 from hypothesis import settings as hyp_settings
 from hypothesis import strategies as st
 
-from arapy.cli.parser import _normalize_flag_name, parse_cli
-from arapy.core.config import SECRET_FIELDS
-from arapy.core.resolver import query_params_for_action
-from arapy.io.output import sanitize_secrets
+from netloom.cli.parser import _normalize_flag_name, parse_cli
+from netloom.core.config import SECRET_FIELDS
+from netloom.core.resolver import query_params_for_action
+from netloom.io.output import sanitize_secrets
 
 BOOLEAN_FLAGS = {
     "verbose",
@@ -65,7 +65,7 @@ def valid_cli_cases(draw):
     key_values = draw(
         st.dictionaries(flag_keys, flag_values, max_size=4)
     )
-    args = ["arapy"]
+    args = ["netloom"]
     args.extend(f"--{flag}" for flag in bool_flags)
     args.extend(f"--{key}={value}" for key, value in key_values.items())
     positional_args = draw(st.lists(positionals, max_size=4))
@@ -82,7 +82,7 @@ def completion_cli_cases(draw):
         st.lists(st.sampled_from(list(string.ascii_lowercase)), unique=True, max_size=4)
     )
     positional_args = draw(st.lists(positionals, max_size=4))
-    args = ["arapy", "--_complete"]
+    args = ["netloom", "--_complete"]
     args.extend(f"--{flag}" for flag in long_flags)
     args.extend(f"-{flag}" for flag in short_flags)
     args.extend(positional_args)

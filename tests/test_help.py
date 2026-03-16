@@ -1,4 +1,4 @@
-import arapy.cli.help as helpmod
+import netloom.cli.help as helpmod
 
 
 def test_render_action_block_includes_dynamic_body_metadata():
@@ -115,7 +115,6 @@ def test_render_help_mentions_filter_paging_behavior():
 
     assert "list/get --all keep paging until all matching rows are fetched" in text
     assert "fetches every matching page, not just the first 1000 results" in text
-    assert "The legacy 'arapy' command still works during the transition." in text
 
 
 def test_render_help_includes_ascii_banner():

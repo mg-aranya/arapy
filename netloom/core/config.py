@@ -6,12 +6,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 APP_NAME = "netloom"
-LEGACY_APP_NAME = "arapy"
 ACTIVE_PROFILE_ENV = "NETLOOM_ACTIVE_PROFILE"
-LEGACY_ACTIVE_PROFILE_ENV = "ARAPY_ACTIVE_PROFILE"
 ACTIVE_PLUGIN_ENV = "NETLOOM_ACTIVE_PLUGIN"
 CONFIG_DIR_ENV = "NETLOOM_CONFIG_DIR"
-LEGACY_CONFIG_DIR_ENV = "ARAPY_CONFIG_DIR"
 PROFILES_FILE_NAME = "profiles.env"
 CREDENTIALS_FILE_NAME = "credentials.env"
 DEFAULT_TIMEOUT = 15
@@ -80,19 +77,6 @@ RESERVED_ARGS = {
     "_cword",
     "_cur",
 }
-
-
-def _legacy_name(name: str) -> str:
-    if name.startswith("NETLOOM_"):
-        return "ARAPY_" + name[len("NETLOOM_") :]
-    return name
-
-
-def _candidate_env_names(name: str) -> tuple[str, ...]:
-    legacy = _legacy_name(name)
-    return (name,) if legacy == name else (name, legacy)
-
-
 def _bool_value(raw: str | None, default: bool) -> bool:
     if raw is None:
         return default
@@ -118,14 +102,9 @@ def _xdg_state_home() -> Path:
 
 
 def config_dir() -> Path:
-    for env_name in (CONFIG_DIR_ENV, LEGACY_CONFIG_DIR_ENV):
-        override = os.getenv(env_name)
-        if override:
-            return Path(override)
-    for app_name in (APP_NAME, LEGACY_APP_NAME):
-        candidate = _xdg_config_home() / app_name
-        if candidate.exists():
-            return candidate
+    override = os.getenv(CONFIG_DIR_ENV)
+    if override:
+        return Path(override)
     return _xdg_config_home() / APP_NAME
 
 
@@ -169,7 +148,7 @@ def _profile_suffix(profile: str) -> str:
 
 def _profile_env_keys(name: str, profile: str) -> tuple[str, ...]:
     suffix = _profile_suffix(profile)
-    return tuple(f"{candidate}_{suffix}" for candidate in _candidate_env_names(name))
+    return (f"{name}_{suffix}",)
 
 
 def _profile_name_from_suffix(suffix: str) -> str:
@@ -234,15 +213,9 @@ def _load_config_values() -> dict[str, str]:
 
 
 def _resolve_active_profile(config_values: Mapping[str, str]) -> str | None:
-    raw = None
-    for env_name in (ACTIVE_PROFILE_ENV, LEGACY_ACTIVE_PROFILE_ENV):
-        raw = os.getenv(env_name)
-        if raw is not None:
-            break
+    raw = os.getenv(ACTIVE_PROFILE_ENV)
     if raw is None:
-        raw = config_values.get(ACTIVE_PROFILE_ENV) or config_values.get(
-            LEGACY_ACTIVE_PROFILE_ENV
-        )
+        raw = config_values.get(ACTIVE_PROFILE_ENV)
     if raw is None or raw.strip() == "":
         return None
     return _normalize_profile_name(raw)
@@ -254,15 +227,13 @@ def _resolve_value(
     *,
     active_profile: str | None,
 ) -> str | None:
-    for candidate in _candidate_env_names(name):
-        raw = os.getenv(candidate)
-        if raw is not None:
-            return raw
+    raw = os.getenv(name)
+    if raw is not None:
+        return raw
 
-    for candidate in _candidate_env_names(name):
-        raw = config_values.get(candidate)
-        if raw is not None:
-            return raw
+    raw = config_values.get(name)
+    if raw is not None:
+        return raw
 
     if active_profile and name in PROFILE_SCOPED_ENV_KEYS:
         for scoped_key in _profile_env_keys(name, active_profile):
@@ -288,10 +259,7 @@ def _scoped_file_value(
 
 
 def _profile_keys() -> tuple[str, ...]:
-    keys: list[str] = []
-    for base_name in PROFILE_SCOPED_ENV_KEYS:
-        keys.extend(_candidate_env_names(base_name))
-    return tuple(keys)
+    return PROFILE_SCOPED_ENV_KEYS
 
 
 def list_profiles(config_values: Mapping[str, str] | None = None) -> list[str]:

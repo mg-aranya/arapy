@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-import arapy.core.client as clearpass
+import netloom.plugins.clearpass.client as clearpass
 
 MISSING = object()
 

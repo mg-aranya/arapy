@@ -18,13 +18,13 @@ def resolve_target_dir(raw: str | None) -> Path:
 
 
 def bundled_manpage():
-    return files("arapy").joinpath("data", "man", "arapy.1")
+    return files("netloom").joinpath("data", "man", "netloom.1")
 
 
 def install_manpage(target_dir: str | Path | None = None) -> Path:
     destination_dir = resolve_target_dir(str(target_dir) if target_dir else None)
     destination_dir.mkdir(parents=True, exist_ok=True)
-    destination = destination_dir / "arapy.1"
+    destination = destination_dir / "netloom.1"
     with as_file(bundled_manpage()) as source:
         shutil.copyfile(source, destination)
     return destination
@@ -33,7 +33,7 @@ def install_manpage(target_dir: str | Path | None = None) -> Path:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="netloom-install-manpage",
-        description="Install the bundled arapy(1) man page into a local man directory.",
+        description="Install the bundled netloom(1) man page into a local man directory.",
     )
     parser.add_argument(
         "--dir",
@@ -62,4 +62,4 @@ def main() -> None:
     print(f"Installed man page to {installed_path}")
     print(f"View with: man -l {installed_path}")
     if installed_path.parent == default_man1_dir():
-        print("If `man arapy` still does not work, add ~/.local/share/man to MANPATH.")
+        print("If `man netloom` still does not work, add ~/.local/share/man to MANPATH.")

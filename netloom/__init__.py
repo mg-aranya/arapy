@@ -18,7 +18,7 @@ def _source_version() -> str | None:
 
 def get_version() -> str:
     source_version = _source_version()
-    for package_name in ("netloom-tool", "arapy"):
+    for package_name in ("netloom-tool",):
         try:
             installed_version = _version(package_name)
             if source_version and installed_version != source_version:
@@ -26,4 +26,4 @@ def get_version() -> str:
             return installed_version
         except PackageNotFoundError:
             continue
-    return source_version or "1.6.4"
+    return source_version or "1.7.0"

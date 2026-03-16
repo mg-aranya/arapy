@@ -10,19 +10,23 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from arapy.core.catalog import OAUTH_ENDPOINTS, get_api_catalog, load_cached_catalog
-from arapy.core.client import ClearPassClient
+from netloom.plugins.clearpass.catalog import (
+    OAUTH_ENDPOINTS,
+    get_api_catalog,
+    load_cached_catalog,
+)
+from netloom.plugins.clearpass.client import ClearPassClient
 
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--arapy-max-endpoints",
+        "--netloom-max-endpoints",
         action="store",
         default="0",
         help="Limit number of list endpoints tested (0 = no limit).",
     )
     parser.addoption(
-        "--arapy-deny-regex",
+        "--netloom-deny-regex",
         action="append",
         default=[],
         help="Regex patterns (can repeat) to skip endpoints by route.",
@@ -31,17 +35,17 @@ def pytest_addoption(parser):
 
 @pytest.fixture(scope="session")
 def clearpass_client():
-    server = os.environ.get("ARAPY_SERVER")
+    server = os.environ.get("NETLOOM_SERVER")
     if not server:
-        pytest.skip("ARAPY_SERVER not set (integration test)")
+        pytest.skip("NETLOOM_SERVER not set (integration test)")
 
-    verify_ssl = os.environ.get("ARAPY_VERIFY_SSL", "false").lower() in (
+    verify_ssl = os.environ.get("NETLOOM_VERIFY_SSL", "false").lower() in (
         "1",
         "true",
         "yes",
         "on",
     )
-    timeout = int(os.environ.get("ARAPY_TIMEOUT", "30"))
+    timeout = int(os.environ.get("NETLOOM_TIMEOUT", "30"))
 
     return ClearPassClient(
         server=server,
@@ -53,16 +57,18 @@ def clearpass_client():
 
 @pytest.fixture(scope="session")
 def token(clearpass_client):
-    token = os.environ.get("ARAPY_TOKEN")
+    token = os.environ.get("NETLOOM_TOKEN")
     if token:
         return token
 
-    client_id = os.environ.get("ARAPY_CLIENT_ID")
-    client_secret = os.environ.get("ARAPY_CLIENT_SECRET")
+    client_id = os.environ.get("NETLOOM_CLIENT_ID")
+    client_secret = os.environ.get("NETLOOM_CLIENT_SECRET")
     if not client_id or not client_secret:
-        pytest.skip("Set ARAPY_TOKEN or (ARAPY_CLIENT_ID + ARAPY_CLIENT_SECRET)")
+        pytest.skip(
+            "Set NETLOOM_TOKEN or (NETLOOM_CLIENT_ID + NETLOOM_CLIENT_SECRET)"
+        )
 
-    grant_type = os.environ.get("ARAPY_GRANT_TYPE", "client_credentials")
+    grant_type = os.environ.get("NETLOOM_GRANT_TYPE", "client_credentials")
     creds = {
         "grant_type": grant_type,
         "client_id": client_id,

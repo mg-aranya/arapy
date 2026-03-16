@@ -1,5 +1,9 @@
-import arapy.cli.completion as completion
-import arapy.cli.main as main
+import types
+from pathlib import Path
+
+import netloom.cli.completion as completion
+import netloom.cli.main as main
+from netloom.core.config import AppPaths, Settings
 
 TEST_CATALOG = {
     "modules": {
@@ -16,9 +20,25 @@ TEST_CATALOG = {
 }
 
 
+def _catalog_plugin(catalog):
+    return types.SimpleNamespace(
+        load_cached_catalog=lambda settings=None: catalog,
+    )
+
+
+def _settings():
+    paths = AppPaths(
+        cache_dir=Path("cache"),
+        state_dir=Path("state"),
+        response_dir=Path("responses"),
+        app_log_dir=Path("logs"),
+    )
+    return Settings(paths=paths)
+
+
 def test_parse_cli_basic():
     argv = [
-        "arapy",
+        "netloom",
         "identities",
         "endpoint",
         "list",
@@ -36,53 +56,53 @@ def test_parse_cli_basic():
 
 
 def test_parse_cli_ignores_unknown_flags_in_completion_mode():
-    argv = ["arapy", "--_complete", "--_cur=ep", "-x", "identities"]
+    argv = ["netloom", "--_complete", "--_cur=ep", "-x", "identities"]
     args = main.parse_cli(argv)
     assert args["_complete"] is True
 
 
 def test_complete_outputs_modules(capsys, monkeypatch):
-    monkeypatch.setattr(main, "load_cached_catalog", lambda settings=None: TEST_CATALOG)
-    main.complete(["--_cur="])
+    monkeypatch.setattr(main, "get_plugin", lambda *args, **kwargs: _catalog_plugin(TEST_CATALOG))
+    main.complete(["--_cur="], settings=_settings())
     out = capsys.readouterr().out.strip().splitlines()
     assert "identities" in out
     assert "copy" in out
 
 
 def test_complete_outputs_services_for_module(capsys, monkeypatch):
-    monkeypatch.setattr(main, "load_cached_catalog", lambda settings=None: TEST_CATALOG)
-    main.complete(["identities", "--_cur="])
+    monkeypatch.setattr(main, "get_plugin", lambda *args, **kwargs: _catalog_plugin(TEST_CATALOG))
+    main.complete(["identities", "--_cur="], settings=_settings())
     out = capsys.readouterr().out.strip().splitlines()
     assert "endpoint" in out
 
 
 def test_complete_outputs_actions_for_service(capsys, monkeypatch):
-    monkeypatch.setattr(main, "load_cached_catalog", lambda settings=None: TEST_CATALOG)
-    main.complete(["identities", "endpoint"])
+    monkeypatch.setattr(main, "get_plugin", lambda *args, **kwargs: _catalog_plugin(TEST_CATALOG))
+    main.complete(["identities", "endpoint"], settings=_settings())
     out = capsys.readouterr().out.strip().splitlines()
     assert "list" in out
     assert "get" in out
 
 
 def test_complete_outputs_server_profiles_for_use(capsys, monkeypatch):
-    monkeypatch.setattr(main, "load_cached_catalog", lambda settings=None: TEST_CATALOG)
+    monkeypatch.setattr(main, "get_plugin", lambda *args, **kwargs: _catalog_plugin(TEST_CATALOG))
     monkeypatch.setattr(completion, "list_profiles", lambda: ["dev", "prod"])
-    main.complete(["server", "use"])
+    main.complete(["server", "use"], settings=_settings())
     out = capsys.readouterr().out.strip().splitlines()
     assert "dev" in out
     assert "prod" in out
 
 
 def test_complete_outputs_services_for_copy_module(capsys, monkeypatch):
-    monkeypatch.setattr(main, "load_cached_catalog", lambda settings=None: TEST_CATALOG)
-    main.complete(["copy", "identities"])
+    monkeypatch.setattr(main, "get_plugin", lambda *args, **kwargs: _catalog_plugin(TEST_CATALOG))
+    main.complete(["copy", "identities"], settings=_settings())
     out = capsys.readouterr().out.strip().splitlines()
     assert "endpoint" in out
 
 
 def test_parse_cli_encrypt_disable_and_separator():
     argv = [
-        "arapy",
+        "netloom",
         "policyelements",
         "network-device",
         "list",
@@ -96,14 +116,14 @@ def test_parse_cli_encrypt_disable_and_separator():
 
 
 def test_parse_cli_decrypt_flag():
-    argv = ["arapy", "policyelements", "network-device", "list", "--decrypt"]
+    argv = ["netloom", "policyelements", "network-device", "list", "--decrypt"]
     args = main.parse_cli(argv)
     assert args["decrypt"] is True
 
 
 def test_parse_cli_copy_command():
     argv = [
-        "arapy",
+        "netloom",
         "copy",
         "policyelements",
         "network-device",

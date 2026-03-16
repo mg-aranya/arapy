@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from arapy import install_manpage
+from netloom import install_manpage
 
 
 def test_resolve_target_dir_defaults_to_user_man1(monkeypatch, tmp_path):
@@ -15,9 +15,9 @@ def test_resolve_target_dir_appends_man1_when_needed(tmp_path):
 
 
 def test_install_manpage_copies_bundled_file(monkeypatch, tmp_path):
-    source = tmp_path / "arapy.1"
-    source.write_text(".TH ARAPY 1\n", encoding="utf-8")
+    source = tmp_path / "netloom.1"
+    source.write_text(".TH NETLOOM 1\n", encoding="utf-8")
     monkeypatch.setattr(install_manpage, "bundled_manpage", lambda: source)
     destination = install_manpage.install_manpage(tmp_path)
-    assert destination == tmp_path / "man1" / "arapy.1"
-    assert destination.read_text(encoding="utf-8") == ".TH ARAPY 1\n"
+    assert destination == tmp_path / "man1" / "netloom.1"
+    assert destination.read_text(encoding="utf-8") == ".TH NETLOOM 1\n"

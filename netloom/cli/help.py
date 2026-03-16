@@ -140,7 +140,6 @@ def render_help(
         "  Action 'list' is the same as 'get --all'.\n"
         "  When --filter is used with list/get --all, netloom fetches every "
         "matching page, not just the first 1000 results.\n"
-        "  The legacy 'arapy' command still works during the transition.\n"
     )
 
     if module == "cache":

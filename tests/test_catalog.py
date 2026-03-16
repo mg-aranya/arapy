@@ -1,5 +1,5 @@
-from arapy.core.catalog import ApiEndpointCache
-from arapy.core.config import AppPaths, Settings
+from netloom.core.config import AppPaths, Settings
+from netloom.plugins.clearpass.catalog import ApiEndpointCache
 
 
 class FakeCP:
