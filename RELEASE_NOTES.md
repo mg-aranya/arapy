@@ -1,28 +1,29 @@
-# netloom v1.7.5
+# netloom v1.7.6
 
-This release makes filtering easier to use in day-to-day CLI work and trims
-the verbose imported filter notes from dynamic terminal help.
+This release splits the static manual into a shared `netloom(1)` reference and
+a dedicated `netloom-clearpass(7)` plugin guide so the ClearPass workflow can be
+documented in much more depth without overloading the main CLI manual.
 
 ## Highlights
 
-- added shorthand filter support such as
-  `--filter=name:equals:TEST`
-- kept full JSON filters for advanced automation and compound expressions
-- replaced the large ClearPass filter note dump in CLI action help with a
-  compact operator and example summary
-- updated README and help examples to show the new filter shorthand
+- added a new `netloom-clearpass(7)` manual with ClearPass-specific
+  configuration, auth, discovery, filtering, copy, and example guidance
+- trimmed `netloom(1)` back to the shared CLI surface: plugin selection,
+  profiles, cache, global options, output behavior, and shared paths
+- updated `netloom-install-manpage` so it installs both manuals into the
+  correct man sections
 
 ## Examples
 
 ```bash
-netloom identities endpoint list --filter=name:equals:TEST
-netloom identities endpoint list --filter=id:in:1,2,3
-netloom identities endpoint list --filter='{"$and":[{"name":{"$contains":"TEST"}},{"status":{"$eq":"Known"}}]}'
+netloom-install-manpage
+man netloom
+man netloom-clearpass
 ```
 
 ## Notes
 
-- shorthand operators: `equals`, `not-equals`, `contains`, `in`, `not-in`,
-  `gt`, `gte`, `lt`, `lte`, `exists`
-- full JSON remains the recommended path for complex filters like `$and`,
-  `$or`, `$not`, and regex
+- `netloom(1)` remains the right place for the shared command model and
+  built-in commands
+- plugin-specific depth should now move into plugin manuals as more plugins are
+  added

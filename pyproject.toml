@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "netloom-tool"
-version = "1.7.5"
+version = "1.7.6"
 description = "Spec-driven network API CLI for operators, with first-class ClearPass support"
 readme = "README.md"
 authors = [
@@ -57,7 +57,7 @@ include = ["netloom*"]
 exclude = ["tests*", "cache*", "logs*", "examples*"]
 
 [tool.setuptools.package-data]
-netloom = ["data/man/*.1"]
+netloom = ["data/man/*.1", "data/man/*.7"]
 
 [tool.ruff]
 line-length = 88

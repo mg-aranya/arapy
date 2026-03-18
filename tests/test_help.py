@@ -239,7 +239,7 @@ def test_render_help_uses_plugin_specific_examples():
 def test_clearpass_help_mentions_filter_shorthand():
     plugin = types.SimpleNamespace(help_context=build_help_context)
 
-    text = helpmod.render_help({}, {}, version="1.7.5", plugin=plugin)
+    text = helpmod.render_help({}, {}, version="1.7.6", plugin=plugin)
 
     assert "--filter=JSON|FIELD:OP:VALUE" in text
     assert "--filter=key:equals:value" in text

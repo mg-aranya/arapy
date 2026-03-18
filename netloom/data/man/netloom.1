@@ -1,6 +1,6 @@
-.TH NETLOOM 1 "March 2026" "netloom 1.7.5" "User Commands"
+.TH NETLOOM 1 "March 2026" "netloom 1.7.6" "User Commands"
 .SH NAME
-netloom \- modular CLI for HPE Aruba ClearPass Policy Manager
+netloom \- spec-driven network API CLI with plugin-backed providers.
 
 .SH SYNOPSIS
 .B netloom
@@ -8,11 +8,19 @@ netloom \- modular CLI for HPE Aruba ClearPass Policy Manager
 
 .br
 .B netloom
-cache clear
+\fBload\fR [\fBlist\fR|\fBshow\fR|\fIPLUGIN\fR]
 
 .br
 .B netloom
-cache update
+\fBserver\fR [\fBlist\fR|\fBshow\fR|\fBuse\fR \fIPROFILE\fR]
+
+.br
+.B netloom
+\fBcache\fR [\fBclear\fR|\fBupdate\fR]
+
+.br
+.B netloom
+\fBcopy\fR \fIMODULE SERVICE\fR \fB--from=\fR\fISOURCE\fR \fB--to=\fR\fITARGET\fR [\fIOPTIONS\fR]
 
 .br
 .B netloom
@@ -24,36 +32,70 @@ cache update
 
 .SH DESCRIPTION
 .B netloom
-is a command-line client for HPE Aruba ClearPass Policy Manager.
+provides a shared command-line interface for plugin-backed network API clients.
 
-It discovers available API modules, services, actions, and request metadata
-dynamically from the ClearPass API documentation endpoints. Because of this,
-the exact command surface depends on the connected ClearPass server.
+The stable command surface covers plugin selection, profile switching, API cache
+management, output handling, and shared request options. The exact modules,
+services, actions, and request metadata available under
+.BR "netloom <module> <service> <action>" ,
+however, depend on the active plugin and the API documentation it discovers.
 
-This manual describes the stable, static parts of
-.BR netloom :
-authentication, global options, cache behavior, output behavior, and common
-usage. For endpoint-specific help, use the built-in dynamic help:
+This manual documents the shared CLI behavior. Plugin-specific behavior should
+live in separate manuals. The bundled ClearPass plugin is documented in
+.BR netloom-clearpass (7).
 
-.PP
-.EX
-netloom <module> <service> ?
-netloom <module> <service> <action> ?
-.EE
+.SH BUILT-IN COMMANDS
+.TP
+.B netloom load <plugin>
+Persist the active plugin selection used by later plugin-backed commands.
+
+.TP
+.B netloom load list
+Show installed or configured plugins.
+
+.TP
+.B netloom load show
+Show the currently selected plugin.
+
+.TP
+.B netloom server list
+Show configured profiles for the active plugin.
+
+.TP
+.B netloom server show
+Show the current profile and related config file locations.
+
+.TP
+.B netloom server use <profile>
+Select the active profile inside the active plugin.
+
+.TP
+.B netloom cache update
+Refresh the local API catalog for the active plugin.
+
+.TP
+.B netloom cache clear
+Remove the local API catalog cache for the active plugin.
+
+.TP
+.B netloom copy <module> <service> --from=SOURCE --to=TARGET
+Compatibility alias for the service-level
+.B copy
+action.
 
 .SH COMMAND MODEL
-The general command form is:
+The general plugin-backed command form is:
 
 .PP
 .EX
 netloom <module> <service> <action> [--key=value ...]
 .EE
 
-Supported action names commonly include:
+Common action names include:
 
 .TP
 .B list
-List collection resources. Equivalent to \fBget --all\fR for many endpoints.
+List collection resources. Often equivalent to \fBget --all\fR.
 
 .TP
 .B get
@@ -75,68 +117,31 @@ Replace an existing resource.
 .B delete
 Delete a resource.
 
-The available modules, services, and actions are determined dynamically from
-ClearPass and may vary by version and enabled API surface.
-
-.SH CACHE COMMANDS
 .TP
-.B netloom cache update
-Refresh the local API catalog from ClearPass.
+.B copy
+Copy matching resources from one profile to another when supported by the
+active plugin.
 
-.TP
-.B netloom cache clear
-Remove the local API catalog cache.
+The available modules, services, actions, and request details are discovered
+dynamically and may vary by plugin, server version, and enabled API surface.
 
-.SH AUTHENTICATION
+.SH PLUGINS
+Plugins provide vendor-specific authentication, discovery, payload handling,
+and documentation while reusing the shared
 .B netloom
-supports the following authentication methods:
+runtime.
 
-.TP
-.B OAuth client credentials
-Configured with environment variables such as:
-.RS
-.PP
-.EX
-NETLOOM_SERVER
-NETLOOM_CLIENT_ID
-NETLOOM_CLIENT_SECRET
-.EE
-.RE
-
-.TP
-.B Direct bearer token
-Configured with:
-.RS
-.PP
-.EX
-NETLOOM_API_TOKEN
-.EE
-.RE
-
-.TP
-.B Token file
-Configured with:
-.RS
-.PP
-.EX
-NETLOOM_API_TOKEN_FILE
-.EE
-.RE
-
-The token file may contain either a raw token string or JSON such as:
+At least one plugin must be selected before running plugin-backed commands:
 
 .PP
 .EX
-{"access_token":"..."}
+netloom load clearpass
 .EE
 
-Command-line token overrides may also be used:
-
-.PP
-.EX
-netloom identities endpoint list --api-token=TOKEN
-netloom identities endpoint list --token-file=./token.json
-.EE
+The bundled plugin manuals are the right place for provider-specific workflows,
+quirks, and examples. See
+.BR netloom-clearpass (7)
+for the current built-in provider guide.
 
 .SH GLOBAL OPTIONS
 .TP
@@ -161,7 +166,7 @@ Comma-separated field list for CSV output ordering.
 
 .TP
 .BI --file= FILE
-Load request payload from JSON or CSV for bulk/write actions.
+Load request payload from JSON or CSV for bulk or write actions.
 
 .TP
 .BI --api-token= TOKEN
@@ -169,7 +174,7 @@ Use an existing bearer token instead of logging in.
 
 .TP
 .BI --token-file= FILE
-Load bearer token from file.
+Load a bearer token from file.
 
 .TP
 .BI --limit= N
@@ -185,8 +190,7 @@ Set server-side sort when supported by the endpoint.
 
 .TP
 .BI --filter= JSON|FIELD:OP:VALUE
-Set server-side filter expression when supported by the endpoint. Shorthand
-examples include \fBname:equals:TEST\fR and \fBid:in:1,2,3\fR.
+Set server-side filter expression when supported by the endpoint.
 
 .TP
 .BI --calculate-count= true|false
@@ -194,7 +198,7 @@ Request total count when supported by the endpoint.
 
 .TP
 .BI --encrypt= enable|disable
-Control masking of secret values in saved/logged output.
+Control masking of secret values in saved or logged output.
 
 .TP
 .B --decrypt
@@ -235,24 +239,8 @@ server.
 
 .SH ENVIRONMENT
 .TP
-.B NETLOOM_SERVER
-ClearPass server hostname or host:port.
-
-.TP
-.B NETLOOM_CLIENT_ID
-OAuth client ID.
-
-.TP
-.B NETLOOM_CLIENT_SECRET
-OAuth client secret.
-
-.TP
-.B NETLOOM_API_TOKEN
-Direct bearer token.
-
-.TP
-.B NETLOOM_API_TOKEN_FILE
-Path to token file.
+.B NETLOOM_ACTIVE_PROFILE
+Default active profile for the selected plugin.
 
 .TP
 .B NETLOOM_VERIFY_SSL
@@ -294,7 +282,21 @@ Override response output directory.
 .B NETLOOM_APP_LOG_DIR
 Override application log directory.
 
+.TP
+.B NETLOOM_CONFIG_DIR
+Override the base configuration directory.
+
+Plugin manuals may define additional provider-specific variables.
+
 .SH FILES
+.TP
+.B ~/.config/netloom/config.env
+Stores the active plugin selection.
+
+.TP
+.B ~/.config/netloom/plugins/<plugin>/
+Plugin-specific configuration root.
+
 .TP
 .B ~/.cache/netloom/
 Default cache directory on Linux when XDG defaults are used.
@@ -312,32 +314,26 @@ Default response output directory.
 Default log directory.
 
 .SH EXAMPLES
-Refresh API discovery cache:
+Select a plugin and refresh discovery metadata:
 
 .PP
 .EX
+netloom load clearpass
 netloom cache update
 .EE
 
-List endpoints:
+Switch the active profile:
+
+.PP
+.EX
+netloom server use dev
+.EE
+
+List resources through the active plugin:
 
 .PP
 .EX
 netloom identities endpoint list --limit=10
-.EE
-
-Get one network device by id:
-
-.PP
-.EX
-netloom policyelements network-device get --id=1001
-.EE
-
-Update one network device:
-
-.PP
-.EX
-netloom policyelements network-device update --id=1001 --description="Core switch"
 .EE
 
 Use dynamic help for a discovered action:
@@ -348,10 +344,11 @@ netloom policyelements network-device add ?
 .EE
 
 .SH NOTES
-This manual is intentionally static and does not attempt to list the full
-dynamic API surface discovered from ClearPass.
+This manual intentionally stays focused on the shared CLI behavior.
 
-Use built-in help for live endpoint metadata:
+For provider-specific guidance, examples, authentication details, cache notes,
+and copy workflows, read the relevant plugin manual in addition to the built-in
+dynamic help:
 
 .PP
 .EX
@@ -370,8 +367,6 @@ Failure, invalid arguments, authentication failure, network failure, or API
 error.
 
 .SH SEE ALSO
+.BR netloom-clearpass (7),
 .BR python (1),
 .BR curl (1)
-
-ClearPass API documentation as exposed by the target server via
-.BR /api-docs .

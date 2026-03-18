@@ -8,7 +8,7 @@
 
 **Weave your network APIs into one CLI.**
 
-[![Version](https://img.shields.io/badge/version-1.7.5-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.7.6-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 
@@ -27,7 +27,7 @@ copying configuration between environments.
 > already modular, so adding more plugins does not require changing the shared
 > command surface. More vendor support is planned for the future.
 
-Version: **1.7.5**
+Version: **1.7.6**
 
 ## Highlights
 
@@ -53,11 +53,12 @@ Install directly from GitHub:
 pip install git+https://github.com/mathias-granlund/netloom
 ```
 
-Install the bundled man page:
+Install the bundled man pages:
 
 ```bash
 netloom-install-manpage
 man netloom
+man netloom-clearpass
 ```
 
 ## First run
@@ -279,7 +280,7 @@ These can be overridden with:
 Run once per session:
 
 ```bash
-source /path/to/your/repo/scripts/netloom-completion.bash
+source /path/to/scripts/netloom-completion.bash
 ```
 
 Permanent completion setup:
@@ -287,7 +288,7 @@ Permanent completion setup:
 ```bash
 mkdir -p ~/.bash_completion.d
 
-cp /path/to/your/repo/netloom-main/scripts/netloom-completion.bash ~/.bash_completion.d
+cp /path/to/netloom/scripts/netloom-completion.bash ~/.bash_completion.d
 
 cat >> ~/.bashrc <<'EOF'
 if [ -d "$HOME/.bash_completion.d" ]; then
@@ -315,7 +316,8 @@ plugin-specific folders under `netloom/plugins/`.
 |-- credentials.env.example
 |-- examples/
 |-- man/
-|   `-- netloom.1
+|   |-- netloom.1
+|   `-- netloom-clearpass.7
 |-- scripts/
 |   `-- netloom-completion.bash
 |-- tests/
@@ -345,7 +347,8 @@ plugin-specific folders under `netloom/plugins/`.
     |   `-- setup.py
     |-- data/
     |   `-- man/
-    |       `-- netloom.1
+    |       |-- netloom.1
+    |       `-- netloom-clearpass.7
     `-- plugins/
         `-- clearpass/
             |-- catalog.py

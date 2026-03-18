@@ -4,6 +4,8 @@ include CHANGELOG.md
 include profiles.env.example
 include credentials.env.example
 include man/netloom.1
+include man/netloom-clearpass.7
 include scripts/netloom-completion.bash
 recursive-include netloom/data/man *.1
+recursive-include netloom/data/man *.7
 recursive-include tests *.py
