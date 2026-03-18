@@ -1,23 +1,37 @@
-# netloom v1.7.1
+# netloom v1.7.2
 
-This release makes `copy` available as a normal service action while keeping
-the old top-level syntax as a compatibility alias.
+This release moves plugin-specific profile files into plugin-scoped config
+directories under `~/.config/netloom/plugins/<plugin>/`.
 
 ## Highlights
 
-- preferred syntax is now `netloom <module> <service> copy ...`
-- legacy alias `netloom copy <module> <service> ...` still works
-- help and completion now present `copy` beside the normal service actions
+- plugin-specific `profiles.env` now lives at
+  `~/.config/netloom/plugins/<plugin>/profiles.env`
+- plugin-specific `credentials.env` now lives at
+  `~/.config/netloom/plugins/<plugin>/credentials.env`
+- `netloom load <plugin>` now manages the global active plugin marker in
+  `~/.config/netloom/config.env`
+- `netloom server use <profile>` now updates the active profile inside the
+  selected plugin directory
 
-## Examples
+## Example layout
 
-```bash
-netloom policyelements network-device copy --from=dev --to=prod --all --dry-run
-netloom copy policyelements network-device --from=dev --to=prod --all --dry-run
+```text
+~/.config/netloom/config.env
+~/.config/netloom/plugins/clearpass/profiles.env
+~/.config/netloom/plugins/clearpass/credentials.env
 ```
 
-## Notes
+## Recommended setup
 
-The action-style form is now the recommended syntax because it lets users stay
-in the same module/service path while moving from inspection commands like
-`get`, `list`, and `?` into copy workflows.
+```bash
+netloom load clearpass
+netloom cache update
+netloom server use dev
+```
+
+Then place your profile files in:
+
+```text
+~/.config/netloom/plugins/clearpass/
+```

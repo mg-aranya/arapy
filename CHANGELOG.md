@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.7.2 - 2026-03-18
+
+### Changed
+- moved plugin-specific profile files to `~/.config/netloom/plugins/<plugin>/profiles.env` and `credentials.env`
+- `netloom load <plugin>` now owns the global `~/.config/netloom/config.env` plugin selector, while `netloom server use <profile>` updates the active profile inside the selected plugin directory
+- updated the README, examples, and help-adjacent tests to match the new plugin-scoped config layout
+
 ## 1.7.1 - 2026-03-16
 
 ### Changed

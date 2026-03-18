@@ -161,6 +161,15 @@ def test_render_help_mentions_filter_paging_behavior():
     assert "fetches every matching page, not just the first 1000 results" in text
 
 
+def test_render_help_mentions_token_and_copy_syntax():
+    text = helpmod.render_help({}, {}, version="1.7.1")
+
+    assert "netloom <module> <service> copy --from=SOURCE --to=TARGET" in text
+    assert "netloom copy <module> <service> --from=SOURCE --to=TARGET" in text
+    assert "--api-token=TOKEN" in text
+    assert "--token-file=PATH" in text
+
+
 def test_render_help_includes_ascii_banner():
     text = helpmod.render_help({}, {}, version="1.6.2")
 
