@@ -41,6 +41,14 @@ Detailed changelog documented in [CHANGELOG.md](CHANGELOG.md).
 - structured JSON, CSV, and raw output
 - shell completion and context-aware help
 
+## Planned features
+
+- add a GUI
+- version control support
+- implement `netloom <module> copy --from=X --to=Y` to copy all config from all `<services>` within a `<module>`
+- add a `netloom <module> <service> diff --from=X ---to=Y` action to compare config between `<profiles>` within a `<service>`
+- update the cache based on the api-client privileges via `netloom apioperations privileges get` so we only show the user relevant and available endpoints and actions
+
 ## Installation
 
 Standard install:
