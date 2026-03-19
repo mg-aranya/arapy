@@ -186,9 +186,6 @@ netloom identities endpoint list --token-file=./token.json
 
 When `--filter=` is used, both shorthand and full JSON syntax are available:
 
-> [!NOTE]
-> JSON filter expressions are passed as strings, so shell quoting matters.
-
 Simple shorthand for common filters:
 
 ```bash
@@ -213,6 +210,9 @@ Supported shorthand operators:
 
 Use full JSON for advanced cases such as `$and`, `$or`, `$not`, regex, or
 nested expressions.
+
+> [!IMPORTANT]
+> JSON filter expressions are passed as strings, so shell quoting matters.
 
 ```bash
   Key is equal to 'value'                  '{"key":{"$eq":"value"}}'
