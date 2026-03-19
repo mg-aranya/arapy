@@ -46,10 +46,17 @@ Detailed changelog documented in [CHANGELOG.md](CHANGELOG.md).
 The roadmap is focused on improving the core CLI first, then expanding
 automation workflows, and finally adding broader user-experience features.
 
-### Phase 1: Discovery and comparison
+ClearPass privilege-aware cache filtering is already in place and the verified
+mapping table has been expanded through live discovery in `v1.8.0` and
+`v1.8.1`. The next step is to carry that filtered view through the normal
+module/service/action experience more strictly.
+
+### Phase 1: Access-aware discovery and comparison
 
 - add a `netloom <module> <service> diff --from=X --to=Y` action to compare config between `<profiles>` within a `<service>`
-- make cache identity and metadata profile-aware so privilege-filtered caches stay isolated and easier to reason about
+- make `netloom cache update` and cache-driven help/completion show only modules, services, and actions that the active API client can actually access
+- keep an explicit opt-in way to build or inspect the full unfiltered catalog for troubleshooting, vendor doc comparison, and mapping validation
+- continue expanding the verified ClearPass privilege mapping table as Aruba adds or changes endpoints and privilege keys
 
 ### Phase 2: Safe multi-service workflows
 
