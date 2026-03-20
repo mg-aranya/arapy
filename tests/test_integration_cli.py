@@ -258,6 +258,33 @@ def test_main_complete_mode_without_plugin_still_outputs_builtins(
     assert "server" in out
 
 
+def test_main_complete_server_builtin_skips_runtime_setup(monkeypatch, capsys):
+    monkeypatch.setattr(
+        main,
+        "load_settings",
+        lambda: (_ for _ in ()).throw(AssertionError("should not load settings")),
+    )
+    monkeypatch.setattr(
+        main,
+        "configure_logging",
+        lambda *a, **k: (_ for _ in ()).throw(
+            AssertionError("should not build logger")
+        ),
+    )
+    monkeypatch.setattr(
+        main,
+        "get_plugin",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("should not load plugin")
+        ),
+    )
+
+    monkeypatch.setattr(sys, "argv", ["netloom", "--_complete", "server", "--_cur="])
+    main.main()
+    out = capsys.readouterr().out
+    assert "use" in out
+
+
 def test_main_uses_direct_api_token_without_login(monkeypatch, tmp_path):
     calls = {}
     mgr = FakeLogMgr()
@@ -379,6 +406,42 @@ def test_main_copy_invokes_copy_handler(monkeypatch, tmp_path):
     assert calls["args"]["action"] == "copy"
     assert calls["args"]["copy_module"] == "policyelements"
     assert calls["args"]["copy_service"] == "network-device"
+    assert calls["kwargs"]["settings"] == settings
+
+
+def test_main_diff_invokes_diff_handler(monkeypatch, tmp_path):
+    calls = {}
+    mgr = FakeLogMgr()
+    settings = make_settings(tmp_path)
+    plugin = _plugin_with_catalog({"modules": {}})
+    monkeypatch.setattr(main, "configure_logging", lambda settings, root_name: mgr)
+    monkeypatch.setattr(main, "load_settings", lambda: settings)
+    monkeypatch.setattr(
+        main,
+        "handle_diff_command",
+        lambda args, **kwargs: calls.update({"args": args, "kwargs": kwargs}),
+    )
+    monkeypatch.setattr(main, "get_plugin", lambda *args, **kwargs: plugin)
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "netloom",
+            "policyelements",
+            "network-device",
+            "diff",
+            "--from=dev",
+            "--to=prod",
+            "--all",
+        ],
+    )
+
+    main.main()
+
+    assert calls["args"]["module"] == "policyelements"
+    assert calls["args"]["service"] == "network-device"
+    assert calls["args"]["action"] == "diff"
     assert calls["kwargs"]["settings"] == settings
 
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
 
 from netloom.core.config import SECRET_FIELDS
@@ -7,6 +8,23 @@ from netloom.core.resolver import normalize_file_payload_for_action
 
 _SECRET_PAYLOAD_FIELDS = ("radius_secret", "tacacs_secret")
 _NETWORK_DEVICE_SNMP_FIELDS = ("snmp_read", "snmp_write")
+_DIFF_IGNORE_FIELDS = {
+    "id",
+    "_links",
+    "links",
+    "link",
+    "_embedded",
+    "created",
+    "created_at",
+    "updated",
+    "updated_at",
+    "last_updated",
+    "last_modified",
+    "modified",
+    "etag",
+    "_etag",
+    "change_of_authorization",
+}
 
 
 def restore_secret_fields(result, payload, *, mask_secrets: bool):
@@ -37,6 +55,23 @@ def normalize_copy_payload(
 ) -> dict[str, Any]:
     payload = normalize_file_payload_for_action(cp, api_catalog, args, action, item)
     return _drop_blank_secret_fields(payload)
+
+
+def normalize_diff_item(module: str, service: str, item: Any) -> Any:
+    del module, service
+
+    if isinstance(item, Mapping):
+        normalized: dict[str, Any] = {}
+        for key, value in item.items():
+            if key in _DIFF_IGNORE_FIELDS or key in SECRET_FIELDS:
+                continue
+            normalized[str(key)] = normalize_diff_item("", "", value)
+        return normalized
+
+    if isinstance(item, list):
+        return [normalize_diff_item("", "", value) for value in item]
+
+    return item
 
 
 def _network_device_credentials_present(payload: dict[str, Any]) -> bool:

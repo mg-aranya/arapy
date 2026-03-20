@@ -159,6 +159,7 @@ def test_render_help_includes_copy_as_service_action():
 
     assert "Available actions:" in text
     assert "copy" in text
+    assert "diff" in text
 
 
 def test_render_help_for_copy_action():
@@ -184,6 +185,32 @@ def test_render_help_for_copy_action():
 
     assert "usage: netloom <module> <service> copy" in text
     assert "legacy alias: netloom copy <module> <service>" in text
+
+
+def test_render_help_for_diff_action():
+    text = helpmod.render_help(
+        {
+            "modules": {
+                "policyelements": {
+                    "network-device": {
+                        "actions": {
+                            "list": {"method": "GET", "paths": ["/api/network-device"]}
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "module": "policyelements",
+            "service": "network-device",
+            "action": "diff",
+        },
+        version="1.7.1",
+    )
+
+    assert "usage: netloom <module> <service> diff" in text
+    assert "--match-by=auto|name|id" in text
+    assert "only_in_source" in text
 
 
 def test_render_help_mentions_filter_paging_behavior():

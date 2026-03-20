@@ -1,4 +1,4 @@
-.TH NETLOOM 1 "March 2026" "netloom 1.8.3" "User Commands"
+.TH NETLOOM 1 "March 2026" "netloom 1.9.0" "User Commands"
 .SH NAME
 netloom \- spec-driven network API CLI with plugin-backed providers.
 
@@ -121,6 +121,11 @@ Delete a resource.
 .B copy
 Copy matching resources from one profile to another when supported by the
 active plugin.
+
+.TP
+.B diff
+Compare matching resources between two profiles when supported by the active
+plugin.
 
 The available modules, services, actions, and request details are discovered
 dynamically and may vary by plugin, server version, and enabled API surface.

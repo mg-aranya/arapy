@@ -8,7 +8,7 @@
 
 **Weave your network APIs into one CLI.**
 
-[![Version](https://img.shields.io/badge/version-1.8.3-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.9.0-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 
@@ -27,7 +27,7 @@ copying configuration between environments.
 > already modular, so adding more plugins does not require changing the shared
 > command surface. More vendor support is planned for the future.
 
-Version: **1.8.3**
+Version: **1.9.0**
 
 Detailed changelog documented in [CHANGELOG.md](CHANGELOG.md).
 
@@ -35,7 +35,7 @@ Detailed changelog documented in [CHANGELOG.md](CHANGELOG.md).
 
 - shared modular runtime under `netloom/`
 - plugin-specific code under `netloom/plugins/<plugin>/`
-- built-in `load`, `server`, `cache`, and `copy` workflows
+- built-in `load`, `server`, `cache`, `copy`, and `diff` workflows
 - profile-aware configuration through `~/.config/netloom/plugins/<plugin>/`
 - dynamic API discovery from live vendor documentation
 - structured JSON, CSV, and raw output
@@ -46,14 +46,14 @@ Detailed changelog documented in [CHANGELOG.md](CHANGELOG.md).
 The roadmap is focused on improving the core CLI first, then expanding
 automation workflows, and finally adding broader user-experience features.
 
-ClearPass privilege-aware cache filtering and the default visible/full catalog
-split are now in place through `v1.8.3`. The next step is to keep expanding
-mapping coverage and tighten action-level visibility where that can be verified
-safely.
+ClearPass privilege-aware cache filtering, the default visible/full catalog
+split, and the first service-level comparison workflow are now in place through
+`v1.9.0`. The next step is to keep expanding mapping coverage and build on the
+new comparison foundation for safer multi-service workflows.
 
 ### Phase 1: Access-aware discovery and comparison
 
-- add a `netloom <module> <service> diff --from=X --to=Y` action to compare config between `<profiles>` within a `<service>`
+- complete the first `netloom <module> <service> diff --from=X --to=Y` workflow and keep refining report quality and normalization coverage
 - continue refining the visible catalog so action-level exposure matches the active API client as closely as verified mappings allow
 - keep the explicit opt-in full catalog view for troubleshooting, vendor doc comparison, and mapping validation
 - continue expanding the verified ClearPass privilege mapping table as Aruba adds or changes endpoints and privilege keys
@@ -61,7 +61,7 @@ safely.
 ### Phase 2: Safe multi-service workflows
 
 - implement `netloom <module> copy --from=X --to=Y` to copy all config from all `<services>` within a `<module>`
-- add structured copy and diff plans with stable JSON output for automation and review
+- extend structured copy and diff plans with broader automation and review workflows across multiple services
 - add validation and dry-run helpers to verify whether objects and payloads are safe to apply before changes are made
 
 ### Phase 3: Change tracking and UX expansion
@@ -162,6 +162,7 @@ NETLOOM_CLIENT_SECRET="your-client-secret"
   netloom cache [clear | update]
   netloom <module> <service> <action> [options] [flags]
   netloom <module> <service> copy --from=SOURCE --to=TARGET [options] [flags]
+  netloom <module> <service> diff --from=SOURCE --to=TARGET [options] [flags]
   netloom [--help | ?]
   netloom --version
 ```
@@ -176,6 +177,7 @@ netloom identities endpoint list --limit=10
 netloom identities endpoint list --filter=name:equals:TEST
 netloom policyelements network-device get --id=1337 --console
 netloom policyelements network-device update --id=1337 --description="Core switch"
+netloom policyelements network-device diff --from=dev --to=prod --name="Core switch"
 netloom policyelements network-device copy --from=dev --to=prod --filter='{"description":{"$contains":"Core switch"}}' --dry-run
 ```
 

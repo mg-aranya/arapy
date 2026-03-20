@@ -20,6 +20,7 @@ class PluginDefinition:
     restore_secret_fields: Callable[..., Any]
     preflight_error_for_payload: Callable[..., str | None]
     help_context: Callable[[], dict[str, Any]] | None = None
+    normalize_diff_item: Callable[..., Any] | None = None
 
 
 def _registry() -> dict[str, PluginDefinition]:

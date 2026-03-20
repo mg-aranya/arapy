@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.9.0 - 2026-03-20
+
+### Added
+- added a service-level `diff` action with `netloom <module> <service> diff --from=SOURCE --to=TARGET` for profile-to-profile comparison
+- added timestamped JSON diff reports with summary counts for `same`, `different`, `only_in_source`, and `only_in_target`
+- added plugin-level diff normalization hooks so providers can ignore noisy response-only fields before comparison
+
+### Changed
+- service help, completion, and dispatch now expose `diff` alongside the existing action surface
+- shared comparison validation and match-resolution helpers are now reused between `copy` and `diff`
+- ClearPass now normalizes diff inputs conservatively to reduce false positives from ids, links, timestamps, and similar response metadata
+
 ## 1.8.3 - 2026-03-20
 
 ### Changed

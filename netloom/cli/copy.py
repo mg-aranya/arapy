@@ -206,17 +206,25 @@ def _resolve_match(
     return None, None
 
 
-def _validate_copy_args(args: dict[str, Any]) -> None:
-    copy_module = args.get("copy_module")
-    copy_service = args.get("copy_service")
+def _validate_compare_args(
+    args: dict[str, Any],
+    *,
+    module_key: str,
+    service_key: str,
+    operation_name: str,
+) -> None:
+    compare_module = args.get(module_key)
+    compare_service = args.get(service_key)
     source_profile = args.get("from")
     target_profile = args.get("to")
 
-    if not copy_module or not copy_service:
-        raise ValueError("Usage: netloom copy <module> <service> --from=... --to=...")
+    if not compare_module or not compare_service:
+        raise ValueError(
+            f"Usage: netloom <module> <service> {operation_name} --from=... --to=..."
+        )
 
     if not source_profile or not target_profile:
-        raise ValueError("--from and --to are required for copy")
+        raise ValueError(f"--from and --to are required for {operation_name}")
 
     if source_profile == target_profile:
         raise ValueError("--from and --to must be different profiles")
@@ -251,13 +259,22 @@ def _validate_copy_args(args: dict[str, Any]) -> None:
     ):
         raise ValueError("--name cannot be combined with list selectors")
 
-    on_conflict = str(args.get("on_conflict", "fail"))
-    if on_conflict not in VALID_CONFLICT_MODES:
-        raise ValueError("--on-conflict must be one of: fail, skip, update, replace")
-
     match_by = str(args.get("match_by", "auto"))
     if match_by not in VALID_MATCH_MODES:
         raise ValueError("--match-by must be one of: auto, name, id")
+
+
+def _validate_copy_args(args: dict[str, Any]) -> None:
+    _validate_compare_args(
+        args,
+        module_key="copy_module",
+        service_key="copy_service",
+        operation_name="copy",
+    )
+
+    on_conflict = str(args.get("on_conflict", "fail"))
+    if on_conflict not in VALID_CONFLICT_MODES:
+        raise ValueError("--on-conflict must be one of: fail, skip, update, replace")
 
 
 def _emit_summary(report: dict[str, Any]) -> None:

@@ -1,34 +1,37 @@
-# netloom v1.8.3
+# netloom v1.9.0
 
-This release makes the default generated files from normal CLI runs unique by
-adding timestamps to their filenames. That covers the optional application log
-file under `NETLOOM_APP_LOG_DIR` and the auto-generated response and copy
-artifact files under `NETLOOM_OUT_DIR`.
+This release adds the first read-only service comparison workflow with
+`netloom <module> <service> diff --from=SOURCE --to=TARGET`. It is designed as
+the companion to `copy`: same selector model, same match behavior, but focused
+on showing what differs before any change is applied.
 
 ## Highlights
 
-- default runtime log files now use a timestamped filename, which keeps each
-  command run in its own log file by default when file logging is enabled
-- auto-generated response files now use timestamped filenames instead of fixed
-  names like `<service>_<action>.json`, so repeated commands no longer
-  overwrite the previous saved output
-- explicit `NETLOOM_LOG_FILE` overrides still win, so pinned log paths keep
-  working exactly as configured
-- the change does not alter explicit user-provided output paths
+- added a service-level `diff` action for comparing one service between two
+  named profiles
+- broad selectors like `--all` and `--filter` now produce symmetric reports
+  with `same`, `different`, `only_in_source`, and `only_in_target`
+- narrow selectors like `--id` and `--name` stay source-scoped for targeted
+  checks
+- each diff run writes a timestamped JSON report under `NETLOOM_OUT_DIR`
+  unless `--out` is set explicitly
+- providers can now normalize objects before comparison so response-only noise
+  does not create false diffs
 
 ## Examples
 
 ```bash
-netloom policyelements role list
-ls ~/.local/state/netloom/responses/
-
-export NETLOOM_LOG_TO_FILE=true
-netloom server show
-ls ~/.local/state/netloom/logs/
+netloom policyelements role diff --from=lab --to=prod --all
+netloom policyelements role diff --from=lab --to=prod --name=Guest
+netloom policyelements role diff --from=lab --to=prod --filter=name:contains:GUEST
 ```
 
 ## Notes
 
-- if you already set `NETLOOM_LOG_FILE`, nothing changes for that workflow
-- if you already set `--out`, `--save-source`, `--save-payload`, or `--save-plan`,
-  those explicit paths still win unchanged
+- `diff` is available as a service action only; there is no built-in
+  `netloom diff ...` alias
+- `copy` keeps its existing behavior and now shares selector and match helpers
+  with `diff`
+- ClearPass applies conservative diff normalization to ignore ids, links,
+  timestamps, and similar response metadata where that would otherwise create
+  false positives

@@ -9,6 +9,7 @@ from netloom import get_version
 from netloom.cli.commands import ACTIONS
 from netloom.cli.completion import print_completions
 from netloom.cli.copy import handle_copy_command
+from netloom.cli.diff import handle_diff_command
 from netloom.cli.help import render_help
 from netloom.cli.load import handle_load_command
 from netloom.cli.parser import parse_cli
@@ -35,6 +36,15 @@ def _catalog_view_from_completion_words(words: list[str]) -> str:
                 return "full"
             break
     return "visible"
+
+
+def _completion_needs_catalog(words: list[str]) -> bool:
+    positionals = [word for word in words if not word.startswith("-")]
+    if not positionals:
+        return True
+
+    module = positionals[0]
+    return module not in {"cache", "load", "server"}
 
 
 def _load_catalog_for_cli(
@@ -112,21 +122,23 @@ def print_help(
 
 
 def complete(words: list[str], settings: Settings | None = None) -> None:
-    active_settings = settings or load_settings()
-    try:
-        plugin = get_plugin(None, settings=active_settings)
-    except ValueError:
-        plugin = None
-    catalog_view = _catalog_view_from_completion_words(words)
-    catalog = (
-        _load_catalog_for_cli(
-            plugin,
-            settings=active_settings,
-            catalog_view=catalog_view,
+    catalog = None
+    if _completion_needs_catalog(words):
+        active_settings = settings or load_settings()
+        try:
+            plugin = get_plugin(None, settings=active_settings)
+        except ValueError:
+            plugin = None
+        catalog_view = _catalog_view_from_completion_words(words)
+        catalog = (
+            _load_catalog_for_cli(
+                plugin,
+                settings=active_settings,
+                catalog_view=catalog_view,
+            )
+            if plugin is not None
+            else None
         )
-        if plugin is not None
-        else None
-    )
     print_completions(words, catalog)
 
 
@@ -144,14 +156,14 @@ def settings_with_cli_overrides(settings: Settings, args: dict) -> Settings:
 
 
 def main() -> None:
+    if "--_complete" in sys.argv:
+        words = [word for word in sys.argv[1:] if word != "--_complete"]
+        complete(words)
+        return
+
     settings = load_settings()
     if not settings.verify_ssl:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-    if "--_complete" in sys.argv:
-        words = [word for word in sys.argv[1:] if word != "--_complete"]
-        complete(words, settings=settings)
-        return
 
     log_mgr = configure_logging(settings, root_name="netloom")
     log = log_mgr.get_logger(__name__)
@@ -243,6 +255,9 @@ def main() -> None:
 
     if action == "copy":
         handle_copy_command(args, settings=active_settings, plugin=plugin)
+        return
+    if action == "diff":
+        handle_diff_command(args, settings=active_settings, plugin=plugin)
         return
 
     try:

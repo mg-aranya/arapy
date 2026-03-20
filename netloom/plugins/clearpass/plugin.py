@@ -7,6 +7,7 @@ from netloom.plugins.clearpass import catalog
 from netloom.plugins.clearpass.client import ClearPassClient
 from netloom.plugins.clearpass.copy_hooks import (
     normalize_copy_payload,
+    normalize_diff_item,
     preflight_error_for_payload,
     restore_secret_fields,
 )
@@ -60,4 +61,5 @@ PLUGIN = PluginDefinition(
     restore_secret_fields=restore_secret_fields,
     preflight_error_for_payload=preflight_error_for_payload,
     help_context=build_help_context,
+    normalize_diff_item=normalize_diff_item,
 )

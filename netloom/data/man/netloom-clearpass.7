@@ -1,4 +1,4 @@
-.TH NETLOOM-CLEARPASS 7 "March 2026" "netloom 1.8.3" "Miscellaneous Information Manual"
+.TH NETLOOM-CLEARPASS 7 "March 2026" "netloom 1.9.0" "Miscellaneous Information Manual"
 .SH NAME
 netloom-clearpass \- ClearPass plugin guide for netloom.
 
@@ -188,6 +188,11 @@ Delete a resource.
 .B copy
 Copy matching resources between two ClearPass profiles.
 
+.TP
+.B diff
+Compare matching resources between two ClearPass profiles without writing to
+the target.
+
 For live endpoint metadata, use:
 
 .PP
@@ -294,6 +299,55 @@ using a generated filename.
 The plugin also normalizes payloads before replaying them so ClearPass response
 metadata and response-only fields are not sent back as write input.
 
+.SH DIFF WORKFLOW
+The ClearPass plugin also supports read-only comparison between two named
+profiles.
+
+Preferred syntax:
+
+.PP
+.EX
+netloom <module> <service> diff --from=SOURCE --to=TARGET [options]
+.EE
+
+Useful options include:
+
+.TP
+.BI --match-by= auto|name|id
+Choose how source and target objects are matched.
+
+.TP
+.B --all
+Compare the full selected collection on both profiles.
+
+.TP
+.BI --filter= JSON|FIELD:OP:VALUE
+Compare the same filtered selection on both profiles.
+
+.TP
+.BI --out= FILE
+Write the JSON diff report to an explicit file. When omitted, the diff workflow
+still saves it under
+.BR NETLOOM_OUT_DIR
+using a generated timestamped filename.
+
+Broad selectors such as
+.B --all
+and
+.B --filter
+produce symmetric reports with
+.BR same ,
+.BR different ,
+.BR only_in_source ,
+and
+.BR only_in_target
+statuses. Narrow selectors such as
+.B --id
+and
+.B --name
+stay source-scoped and only report whether the selected source object matches a
+target object.
+
 .SH EXAMPLES
 List endpoints:
 
@@ -321,6 +375,13 @@ Copy matching network devices from one profile to another:
 .PP
 .EX
 netloom policyelements network-device copy --from=dev --to=prod --all --dry-run
+.EE
+
+Compare roles between two profiles:
+
+.PP
+.EX
+netloom policyelements role diff --from=lab --to=prod --all
 .EE
 
 Use action-specific help:

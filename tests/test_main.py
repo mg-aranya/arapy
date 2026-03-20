@@ -112,6 +112,7 @@ def test_complete_outputs_actions_for_service(capsys, monkeypatch):
     monkeypatch.setattr(main, "get_plugin", lambda *args, **kwargs: plugin)
     main.complete(["identities", "endpoint"], settings=_settings())
     out = capsys.readouterr().out.strip().splitlines()
+    assert "diff" in out
     assert "list" in out
     assert "get" in out
     assert "copy" in out
@@ -133,6 +134,47 @@ def test_complete_outputs_services_for_copy_module(capsys, monkeypatch):
     main.complete(["copy", "identities"], settings=_settings())
     out = capsys.readouterr().out.strip().splitlines()
     assert "endpoint" in out
+
+
+def test_complete_load_builtin_does_not_touch_plugin_or_settings(capsys, monkeypatch):
+    monkeypatch.setattr(
+        main,
+        "load_settings",
+        lambda: (_ for _ in ()).throw(AssertionError("should not load settings")),
+    )
+    monkeypatch.setattr(
+        main,
+        "get_plugin",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("should not load plugin")
+        ),
+    )
+    monkeypatch.setattr(completion, "list_plugins", lambda: ["clearpass"])
+
+    main.complete(["load"], settings=None)
+
+    out = capsys.readouterr().out.strip().splitlines()
+    assert "clearpass" in out
+
+
+def test_complete_server_builtin_does_not_touch_plugin_or_settings(capsys, monkeypatch):
+    monkeypatch.setattr(
+        main,
+        "load_settings",
+        lambda: (_ for _ in ()).throw(AssertionError("should not load settings")),
+    )
+    monkeypatch.setattr(
+        main,
+        "get_plugin",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("should not load plugin")
+        ),
+    )
+
+    main.complete(["server"], settings=None)
+
+    out = capsys.readouterr().out.strip().splitlines()
+    assert "use" in out
 
 
 def test_parse_cli_encrypt_disable_and_separator():

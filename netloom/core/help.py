@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-CLI_ACTION_ORDER = ["list", "get", "add", "delete", "update", "replace", "copy"]
+CLI_ACTION_ORDER = ["list", "get", "diff", "add", "delete", "update", "replace", "copy"]
 NETLOOM_BANNER = r"""
  _   _      _   _
 | \ | | ___| |_| | ___   ___  _ __ ___
@@ -23,8 +23,8 @@ def service_cli_actions(service_entry: dict) -> list[str]:
     if "get" in actions:
         cli_actions.append("get")
     for action in CLI_ACTION_ORDER[2:]:
-        if action == "copy":
-            cli_actions.append("copy")
+        if action in {"copy", "diff"}:
+            cli_actions.append(action)
         elif action in actions:
             cli_actions.append(action)
     return cli_actions
@@ -54,6 +54,26 @@ def render_copy_action_help(module: str, service: str) -> str:
         "    - --save-payload=PATH "
         "(default: NETLOOM_OUT_DIR/<generated>_payload.json)\n"
         "    - --save-plan=PATH    (default: NETLOOM_OUT_DIR/<generated>_plan.json)"
+    )
+
+
+def render_diff_action_help(module: str, service: str) -> str:
+    return (
+        f"diff ({module} {service}):\n"
+        "  usage: netloom <module> <service> diff --from=SOURCE_PROFILE "
+        "--to=TARGET_PROFILE [options]\n"
+        "  selectors:\n"
+        "    - --id=VALUE\n"
+        "    - --name=VALUE\n"
+        "    - --filter=JSON\n"
+        "    - --all\n"
+        "  behavior:\n"
+        "    - --match-by=auto|name|id\n"
+        "    - broad selectors report same, different, only_in_source, and "
+        "only_in_target\n"
+        "    - narrow selectors stay source-scoped\n"
+        "  output:\n"
+        "    - --out=PATH (default: NETLOOM_OUT_DIR/<generated>_diff.json)"
     )
 
 
@@ -325,6 +345,8 @@ def render_catalog_help(
     blocks: list[str] = []
     if action == "copy":
         blocks.append(render_copy_action_help(module, service))
+    elif action == "diff":
+        blocks.append(render_diff_action_help(module, service))
     elif action == "get":
         if "list" in action_map:
             blocks.append(
