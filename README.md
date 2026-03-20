@@ -8,7 +8,7 @@
 
 **Weave your network APIs into one CLI.**
 
-[![Version](https://img.shields.io/badge/version-1.8.1-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-1.8.2-blue.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey.svg)]()
 
@@ -27,7 +27,7 @@ copying configuration between environments.
 > already modular, so adding more plugins does not require changing the shared
 > command surface. More vendor support is planned for the future.
 
-Version: **1.8.1**
+Version: **1.8.2**
 
 Detailed changelog documented in [CHANGELOG.md](CHANGELOG.md).
 
@@ -46,16 +46,16 @@ Detailed changelog documented in [CHANGELOG.md](CHANGELOG.md).
 The roadmap is focused on improving the core CLI first, then expanding
 automation workflows, and finally adding broader user-experience features.
 
-ClearPass privilege-aware cache filtering is already in place and the verified
-mapping table has been expanded through live discovery in `v1.8.0` and
-`v1.8.1`. The next step is to carry that filtered view through the normal
-module/service/action experience more strictly.
+ClearPass privilege-aware cache filtering and the default visible/full catalog
+split are now in place through `v1.8.2`. The next step is to keep expanding
+mapping coverage and tighten action-level visibility where that can be verified
+safely.
 
 ### Phase 1: Access-aware discovery and comparison
 
 - add a `netloom <module> <service> diff --from=X --to=Y` action to compare config between `<profiles>` within a `<service>`
-- make `netloom cache update` and cache-driven help/completion show only modules, services, and actions that the active API client can actually access
-- keep an explicit opt-in way to build or inspect the full unfiltered catalog for troubleshooting, vendor doc comparison, and mapping validation
+- continue refining the visible catalog so action-level exposure matches the active API client as closely as verified mappings allow
+- keep the explicit opt-in full catalog view for troubleshooting, vendor doc comparison, and mapping validation
 - continue expanding the verified ClearPass privilege mapping table as Aruba adds or changes endpoints and privilege keys
 
 ### Phase 2: Safe multi-service workflows
@@ -273,9 +273,18 @@ The generated cache stores actions as:
 module -> service -> action -> {method, paths, params, response metadata, body hints}
 ```
 
-For ClearPass, `netloom cache update` also checks `/api/oauth/privileges` and
-filters services with verified privilege mappings so the cache better matches
-what the active API client can actually use.
+For ClearPass, `netloom cache update` also checks `/api/oauth/privileges`,
+stores the full discovered catalog, and builds a stricter default visible view
+from verified privilege mappings so help, completion, and normal command
+discovery better match what the active API client can actually use.
+
+By default, the CLI uses the visible catalog view. When you need to troubleshoot
+or compare against the raw vendor docs, use the full retained catalog view:
+
+```bash
+netloom --catalog-view=full ?
+netloom --catalog-view=full <module> <service> <action> --help
+```
 
 Refresh the cache:
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import html
 import json
 import logging
@@ -27,6 +28,14 @@ OAUTH_ENDPOINTS: dict[str, str] = {
 _PLACEHOLDER_RE = re.compile(r"\{([^}]+)\}")
 _LIST_QUERY_PARAMS = ("filter", "sort", "offset", "limit", "calculate_count")
 _ACCESS_RANK = {"allowed": 1, "read-only": 2, "full": 3}
+_CATALOG_VERSION = 5
+_CATALOG_VIEW_VISIBLE = "visible"
+_CATALOG_VIEW_FULL = "full"
+_DEFAULT_VISIBLE_SERVICE_KEYS: set[tuple[str, str]] = {
+    ("apioperations", "oauth"),
+    ("apioperations", "oauth-me"),
+    ("apioperations", "oauth-privileges"),
+}
 
 
 @dataclass(frozen=True)
@@ -530,6 +539,12 @@ def _count_services(modules: dict[str, dict[str, Any]]) -> int:
     return sum(len(services or {}) for services in modules.values())
 
 
+def _normalize_catalog_view(value: str | None) -> str:
+    if isinstance(value, str) and value.strip().lower() == _CATALOG_VIEW_FULL:
+        return _CATALOG_VIEW_FULL
+    return _CATALOG_VIEW_VISIBLE
+
+
 def _best_access_level(values: list[str]) -> str | None:
     normalized = [value for value in values if value in _ACCESS_RANK]
     if not normalized:
@@ -555,6 +570,77 @@ def _filter_actions_for_access(
         for action_name, action_def in actions.items()
         if action_name in allowed_actions
     }
+
+
+def _service_visible_by_default(
+    module_name: str, service_name: str, service_entry: dict[str, Any]
+) -> bool:
+    required = service_entry.get("required_privileges") or []
+    if isinstance(required, list) and required:
+        return True
+    return (module_name, service_name) in _DEFAULT_VISIBLE_SERVICE_KEYS
+
+
+def _visible_catalog_modules(
+    filtered_modules: dict[str, dict[str, Any]], metadata: dict[str, Any]
+) -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
+    if not metadata.get("filter_applied"):
+        return dict(filtered_modules), {
+            "default_view": _CATALOG_VIEW_VISIBLE,
+            "view_applied": False,
+            "visible_service_count": _count_services(filtered_modules),
+            "hidden_service_count": 0,
+            "hidden_services": [],
+        }
+
+    visible_modules: dict[str, dict[str, Any]] = {}
+    hidden_services: list[dict[str, Any]] = []
+
+    for module_name, services in filtered_modules.items():
+        if not isinstance(services, dict):
+            continue
+        next_services: dict[str, Any] = {}
+        for service_name, service_entry in services.items():
+            if not isinstance(service_entry, dict):
+                continue
+            if not _service_visible_by_default(
+                module_name, service_name, service_entry
+            ):
+                hidden_services.append({"module": module_name, "service": service_name})
+                continue
+            next_entry = dict(service_entry)
+            next_entry["catalog_visibility"] = (
+                "verified"
+                if next_entry.get("required_privileges")
+                else "baseline"
+            )
+            next_services[service_name] = next_entry
+        if next_services:
+            visible_modules[module_name] = next_services
+
+    return visible_modules, {
+        "default_view": _CATALOG_VIEW_VISIBLE,
+        "view_applied": True,
+        "visible_service_count": _count_services(visible_modules),
+        "hidden_service_count": len(hidden_services),
+        "hidden_services": hidden_services,
+    }
+
+
+def project_catalog_view(
+    catalog: dict[str, Any] | None, *, catalog_view: str = _CATALOG_VIEW_VISIBLE
+) -> dict[str, Any] | None:
+    if not isinstance(catalog, dict):
+        return None
+
+    normalized_view = _normalize_catalog_view(catalog_view)
+    projected = dict(catalog)
+    if normalized_view == _CATALOG_VIEW_FULL:
+        full_modules = catalog.get("full_modules")
+        if isinstance(full_modules, dict):
+            projected["modules"] = copy.deepcopy(full_modules)
+    projected["catalog_view"] = normalized_view
+    return projected
 
 
 def _filter_catalog_by_effective_privileges(
@@ -620,13 +706,17 @@ def _filter_catalog_by_effective_privileges(
                 ]
                 access_level = _best_access_level(matched_levels)
             if access_level is None:
-                filtered_services.append({"module": module_name, "service": service_name})
+                filtered_services.append(
+                    {"module": module_name, "service": service_name}
+                )
                 continue
 
             actions = service_entry.get("actions") or {}
             filtered_actions = _filter_actions_for_access(actions, access_level)
             if not filtered_actions:
-                filtered_services.append({"module": module_name, "service": service_name})
+                filtered_services.append(
+                    {"module": module_name, "service": service_name}
+                )
                 continue
 
             next_entry = dict(service_entry)
@@ -702,7 +792,7 @@ class ApiEndpointCache:
 
         if (
             isinstance(data, dict)
-            and data.get("version") in {2, 3, 4}
+            and data.get("version") in {2, 3, 4, 5}
             and isinstance(data.get("modules"), dict)
         ):
             return data
@@ -1097,24 +1187,40 @@ class ApiEndpointCache:
         filtered_modules, privilege_metadata = _filter_catalog_by_effective_privileges(
             {"modules": modules}, effective_privileges
         )
+        visible_modules, visibility_metadata = _visible_catalog_modules(
+            filtered_modules, privilege_metadata
+        )
         if privilege_metadata.get("filter_applied"):
             log.info(
-                "Applied privilege filter using %d effective privileges; filtered %d mapped services.",
+                "Applied privilege filter using %d effective privileges; "
+                "filtered %d mapped services.",
                 len(effective_privileges),
                 privilege_metadata.get("filtered_service_count", 0),
             )
         else:
             log.info("Privilege filter not applied; using unfiltered catalog.")
+        if visibility_metadata.get("view_applied"):
+            log.info(
+                "Default visible catalog keeps %d verified/baseline services "
+                "and hides %d conservatively preserved services.",
+                visibility_metadata.get("visible_service_count", 0),
+                visibility_metadata.get("hidden_service_count", 0),
+            )
 
         catalog: dict[str, Any] = {
-            "version": 4,
+            "version": _CATALOG_VERSION,
             "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "server": getattr(self.cp, "server", None),
-            "modules": filtered_modules,
+            "catalog_view": _CATALOG_VIEW_VISIBLE,
+            "modules": visible_modules,
+            "full_modules": modules,
             "privilege_filter": privilege_metadata,
+            "catalog_visibility": visibility_metadata,
         }
-        log.info("Total modules in cache: %d", len(filtered_modules))
-        log.info("Total services in cache: %d", _count_services(filtered_modules))
+        log.info("Visible modules in cache: %d", len(visible_modules))
+        log.info("Visible services in cache: %d", _count_services(visible_modules))
+        log.info("Full modules retained in cache: %d", len(modules))
+        log.info("Full services retained in cache: %d", _count_services(modules))
         return catalog
 
 
@@ -1124,10 +1230,12 @@ def get_api_catalog(
     token: str,
     force_refresh: bool = False,
     settings: Settings | None = None,
+    catalog_view: str = _CATALOG_VIEW_VISIBLE,
 ) -> dict[str, Any]:
-    return ApiEndpointCache(cp_client, token=token, settings=settings).get_catalog(
+    catalog = ApiEndpointCache(cp_client, token=token, settings=settings).get_catalog(
         force_refresh=force_refresh
     )
+    return project_catalog_view(catalog, catalog_view=catalog_view) or {"modules": {}}
 
 
 def get_cache_file_path(settings: Settings | None = None) -> Path:
@@ -1137,7 +1245,11 @@ def get_cache_file_path(settings: Settings | None = None) -> Path:
     return active_settings.paths.cache_dir / cfg.cache_filename
 
 
-def load_cached_catalog(settings: Settings | None = None) -> dict[str, Any] | None:
+def load_cached_catalog(
+    settings: Settings | None = None,
+    *,
+    catalog_view: str = _CATALOG_VIEW_VISIBLE,
+) -> dict[str, Any] | None:
     path = get_cache_file_path(settings=settings)
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -1148,10 +1260,10 @@ def load_cached_catalog(settings: Settings | None = None) -> dict[str, Any] | No
 
     if (
         isinstance(data, dict)
-        and data.get("version") in {2, 3, 4}
+        and data.get("version") in {2, 3, 4, 5}
         and isinstance(data.get("modules"), dict)
     ):
-        return data
+        return project_catalog_view(data, catalog_view=catalog_view)
     return None
 
 

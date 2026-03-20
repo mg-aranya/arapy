@@ -51,7 +51,8 @@ def render_copy_action_help(module: str, service: str) -> str:
         "  artifacts:\n"
         "    - --out=PATH\n"
         "    - --save-source=PATH  (default: NETLOOM_OUT_DIR/<generated>_source.json)\n"
-        "    - --save-payload=PATH (default: NETLOOM_OUT_DIR/<generated>_payload.json)\n"
+        "    - --save-payload=PATH "
+        "(default: NETLOOM_OUT_DIR/<generated>_payload.json)\n"
         "    - --save-plan=PATH    (default: NETLOOM_OUT_DIR/<generated>_plan.json)"
     )
 

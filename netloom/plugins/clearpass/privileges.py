@@ -14,7 +14,8 @@ _ACCESS_LEVEL_SETS = [
     ["No Access", "Allow Access"],
 ]
 _ACCESS_SUFFIXES = [
-    (" ".join(levels), levels) for levels in sorted(_ACCESS_LEVEL_SETS, key=len, reverse=True)
+    (" ".join(levels), levels)
+    for levels in sorted(_ACCESS_LEVEL_SETS, key=len, reverse=True)
 ]
 _STOPWORDS = {
     "access",
@@ -255,7 +256,11 @@ def _strip_html_to_text(text: str) -> str:
     cleaned = html.unescape(text)
     cleaned = re.sub(r"(?is)<(script|style)\b[^>]*>.*?</\1>", "\n", cleaned)
     cleaned = re.sub(r"(?i)<br\s*/?>", "\n", cleaned)
-    cleaned = re.sub(r"(?i)</?(p|div|tr|li|table|thead|tbody|ul|ol|h\d)\b[^>]*>", "\n", cleaned)
+    cleaned = re.sub(
+        r"(?i)</?(p|div|tr|li|table|thead|tbody|ul|ol|h\d)\b[^>]*>",
+        "\n",
+        cleaned,
+    )
     cleaned = re.sub(r"(?i)</?(td|th)\b[^>]*>", " ", cleaned)
     cleaned = re.sub(r"(?s)<[^>]+>", "", cleaned)
     return cleaned
@@ -441,9 +446,15 @@ def _score_candidate(privilege: dict[str, Any], candidate: dict[str, Any]) -> in
         if token in path_tokens:
             score += 2
 
-        if any(service_token.startswith(token) or token.startswith(service_token) for service_token in service_tokens):
+        if any(
+            service_token.startswith(token) or token.startswith(service_token)
+            for service_token in service_tokens
+        ):
             score += 2
-        if any(module_token.startswith(token) or token.startswith(module_token) for module_token in module_tokens):
+        if any(
+            module_token.startswith(token) or token.startswith(module_token)
+            for module_token in module_tokens
+        ):
             score += 1
 
     combined_service = " ".join(candidate["service_tokens"])

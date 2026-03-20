@@ -11,7 +11,7 @@ import requests
 import urllib3
 
 from netloom.core.config import load_settings_for_profile
-from netloom.plugins.clearpass.catalog import ApiEndpointCache, OAUTH_ENDPOINTS
+from netloom.plugins.clearpass.catalog import OAUTH_ENDPOINTS, ApiEndpointCache
 from netloom.plugins.clearpass.plugin import build_client, resolve_auth_token
 from netloom.plugins.clearpass.privileges import service_privilege_rule_index
 
@@ -305,7 +305,10 @@ def _iter_target_services(
         for service_name, service_entry in sorted(module_services.items()):
             if not isinstance(service_entry, dict):
                 continue
-            if explicit_services is not None and (module_name, service_name) not in explicit_services:
+            if (
+                explicit_services is not None
+                and (module_name, service_name) not in explicit_services
+            ):
                 continue
             if not include_mapped and (module_name, service_name) in rules:
                 continue
@@ -496,9 +499,14 @@ def main(argv: list[str] | None = None) -> int:
                     break
 
             results.append(service_result)
+            verified = service_result["verified"]
+            verified_text = (
+                "+".join(verified["privileges"])
+                if verified
+                else "no verified mapping"
+            )
             print(
-                f"[{index}/{len(target_services)}] {service_key} -> "
-                f"{'+'.join(service_result['verified']['privileges']) if service_result['verified'] else 'no verified mapping'}"
+                f"[{index}/{len(target_services)}] {service_key} -> {verified_text}"
             )
     finally:
         _update_operator_profile(
@@ -508,7 +516,10 @@ def main(argv: list[str] | None = None) -> int:
     output = {
         "operator_profile_name": args.operator_profile_name,
         "modules": modules,
-        "services": sorted(f"{module}/{service}" for module, service in (explicit_services or set())),
+        "services": sorted(
+            f"{module}/{service}"
+            for module, service in (explicit_services or set())
+        ),
         "baseline_privileges": baseline_privileges,
         "baseline_effective_privileges": baseline_effective,
         "include_mapped": args.include_mapped,

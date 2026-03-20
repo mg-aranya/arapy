@@ -52,7 +52,8 @@ Select permissions for managing local operator logins.
 External Operator Logins No Access Read Only Full
 Select permissions for managing external operator logins.
 Manage Operator Logins No Access Read Only Full
-Operators with the Manage Operator Logins privilege can view, create and remove operator logins for this web application.
+Operators with the Manage Operator Logins privilege can view, create and remove
+operator logins for this web application.
 """
     )
 

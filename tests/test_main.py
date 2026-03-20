@@ -70,6 +70,35 @@ def test_complete_outputs_modules(capsys, monkeypatch):
     assert "copy" in out
 
 
+def test_complete_honors_full_catalog_view_flag(capsys, monkeypatch):
+    plugin = types.SimpleNamespace(
+        load_cached_catalog=lambda settings=None, catalog_view="visible": (
+            TEST_CATALOG
+            if catalog_view == "visible"
+            else {
+                "modules": {
+                    **TEST_CATALOG["modules"],
+                    "policyelements": {
+                        "network-device": {
+                            "actions": {
+                                "list": {
+                                    "method": "GET",
+                                    "paths": ["/api/network-device"],
+                                }
+                            }
+                        }
+                    },
+                }
+            }
+        )
+    )
+    monkeypatch.setattr(main, "get_plugin", lambda *args, **kwargs: plugin)
+    main.complete(["--catalog-view=full", "--_cur="], settings=_settings())
+    out = capsys.readouterr().out.strip().splitlines()
+    assert "identities" in out
+    assert "policyelements" in out
+
+
 def test_complete_outputs_services_for_module(capsys, monkeypatch):
     plugin = _catalog_plugin(TEST_CATALOG)
     monkeypatch.setattr(main, "get_plugin", lambda *args, **kwargs: plugin)
@@ -119,6 +148,18 @@ def test_parse_cli_encrypt_disable_and_separator():
     args = main.parse_cli(argv)
     assert args["encrypt"] == "disable"
     assert args["console"] is True
+
+
+def test_parse_cli_catalog_view_flag():
+    argv = [
+        "netloom",
+        "identities",
+        "endpoint",
+        "list",
+        "--catalog-view=full",
+    ]
+    args = main.parse_cli(argv)
+    assert args["catalog_view"] == "full"
 
 
 def test_parse_cli_decrypt_flag():

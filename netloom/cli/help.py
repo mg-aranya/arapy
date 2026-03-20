@@ -49,6 +49,15 @@ def _render_usage(plugin=None) -> str:
 
     if examples:
         usage_lines.extend(["", "Examples:", *[f"  {line}" for line in examples]])
+    usage_lines.extend(
+        [
+            "",
+            "Catalog options:",
+            "  --catalog-view=visible|full       "
+            "Use the filtered catalog or the full discovered catalog "
+            "(default: visible).",
+        ]
+    )
     if option_lines:
         usage_lines.extend(["", "Common options:", *option_lines])
     if flag_lines:

@@ -75,6 +75,7 @@ RESERVED_ARGS = {
     "api_token",
     "token_file",
     "api_token_file",
+    "catalog_view",
     "_complete",
     "_cword",
     "_cur",

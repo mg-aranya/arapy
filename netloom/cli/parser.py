@@ -21,6 +21,9 @@ def parse_cli(argv: list[str]) -> dict:
         "continue_on_error",
         "help",
     }
+    valued_flags = {
+        "catalog_view",
+    }
 
     for item in argv[1:]:
         if item == "--_complete":
@@ -40,6 +43,8 @@ def parse_cli(argv: list[str]) -> dict:
             key = _normalize_flag_name(item[2:])
             if key in boolean_flags:
                 args[key] = True
+            elif key in valued_flags and completing:
+                continue
             elif completing:
                 continue
             else:

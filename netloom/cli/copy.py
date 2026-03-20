@@ -76,13 +76,24 @@ def _is_not_found(exc: requests.HTTPError) -> bool:
     return getattr(response, "status_code", None) == 404
 
 
-def _load_catalog(plugin, cp, token: str, settings: Settings) -> dict:
+def _load_catalog(
+    plugin,
+    cp,
+    token: str,
+    settings: Settings,
+    *,
+    catalog_view: str = "visible",
+) -> dict:
     try:
         return plugin.get_api_catalog(
-            cp, token=token, force_refresh=False, settings=settings
+            cp,
+            token=token,
+            force_refresh=False,
+            settings=settings,
+            catalog_view=catalog_view,
         )
     except TypeError as exc:
-        if "force_refresh" not in str(exc):
+        if "force_refresh" not in str(exc) and "catalog_view" not in str(exc):
             raise
         return plugin.get_api_catalog(cp, token=token, settings=settings)
 
@@ -303,14 +314,29 @@ def handle_copy_command(
     target_settings = load_settings_for_profile(target_profile)
     active_settings = settings or target_settings
     mask_secrets = should_mask_secrets(args, active_settings)
+    catalog_view = str(args.get("catalog_view") or "visible").strip().lower()
+    if catalog_view not in {"visible", "full"}:
+        catalog_view = "visible"
 
     source_cp = plugin.build_client(source_settings, mask_secrets=mask_secrets)
     source_token = plugin.resolve_auth_token(source_cp, source_settings)
-    source_catalog = _load_catalog(plugin, source_cp, source_token, source_settings)
+    source_catalog = _load_catalog(
+        plugin,
+        source_cp,
+        source_token,
+        source_settings,
+        catalog_view=catalog_view,
+    )
 
     target_cp = plugin.build_client(target_settings, mask_secrets=mask_secrets)
     target_token = plugin.resolve_auth_token(target_cp, target_settings)
-    target_catalog = _load_catalog(plugin, target_cp, target_token, target_settings)
+    target_catalog = _load_catalog(
+        plugin,
+        target_cp,
+        target_token,
+        target_settings,
+        catalog_view=catalog_view,
+    )
 
     source_items = _fetch_source_items(
         source_cp, source_token, source_catalog, module, service, args
@@ -515,13 +541,15 @@ def handle_copy_command(
         mask_secrets=mask_secrets,
     )
 
-    save_payload = str(args.get("save_payload") or "").strip() or _default_artifact_path(
-        active_settings,
-        module,
-        service,
-        source_profile,
-        target_profile,
-        "payload",
+    save_payload = str(args.get("save_payload") or "").strip() or (
+        _default_artifact_path(
+            active_settings,
+            module,
+            service,
+            source_profile,
+            target_profile,
+            "payload",
+        )
     )
     write_value_to_file(
         [item["payload"] for item in plan_items if item.get("payload") is not None],

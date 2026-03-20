@@ -19,6 +19,66 @@ from netloom.io.output import should_mask_secrets
 from netloom.logging.setup import LOG_LEVELS, configure_logging
 
 
+def _catalog_view_from_args(args: dict | None) -> str:
+    value = (args or {}).get("catalog_view")
+    if isinstance(value, str) and value.strip().lower() == "full":
+        return "full"
+    return "visible"
+
+
+def _catalog_view_from_completion_words(words: list[str]) -> str:
+    for word in words:
+        if not isinstance(word, str):
+            continue
+        if word.startswith("--catalog-view="):
+            if word.split("=", 1)[1].strip().lower() == "full":
+                return "full"
+            break
+    return "visible"
+
+
+def _load_catalog_for_cli(
+    plugin,
+    *,
+    settings: Settings | None,
+    catalog_view: str,
+) -> dict | None:
+    try:
+        return plugin.load_cached_catalog(settings=settings, catalog_view=catalog_view)
+    except TypeError as exc:
+        if "catalog_view" not in str(exc):
+            raise
+        return plugin.load_cached_catalog(settings=settings)
+
+
+def _get_catalog_for_cli(
+    plugin,
+    cp,
+    *,
+    token: str,
+    settings: Settings | None,
+    force_refresh: bool = False,
+    catalog_view: str,
+) -> dict:
+    try:
+        return plugin.get_api_catalog(
+            cp,
+            token=token,
+            force_refresh=force_refresh,
+            settings=settings,
+            catalog_view=catalog_view,
+        )
+    except TypeError as exc:
+        if "catalog_view" not in str(exc):
+            raise
+        return plugin.get_api_catalog(
+            cp,
+            token=token,
+            force_refresh=force_refresh,
+            settings=settings,
+        )
+
+
 def print_help(
     args: dict | None = None,
     *,
@@ -31,8 +91,13 @@ def print_help(
             selected_plugin = get_plugin(None, settings=settings or load_settings())
         except ValueError:
             selected_plugin = None
+    catalog_view = _catalog_view_from_args(args)
     catalog = (
-        selected_plugin.load_cached_catalog(settings=settings)
+        _load_catalog_for_cli(
+            selected_plugin,
+            settings=settings,
+            catalog_view=catalog_view,
+        )
         if selected_plugin is not None
         else None
     )
@@ -52,8 +117,13 @@ def complete(words: list[str], settings: Settings | None = None) -> None:
         plugin = get_plugin(None, settings=active_settings)
     except ValueError:
         plugin = None
+    catalog_view = _catalog_view_from_completion_words(words)
     catalog = (
-        plugin.load_cached_catalog(settings=active_settings)
+        _load_catalog_for_cli(
+            plugin,
+            settings=active_settings,
+            catalog_view=catalog_view,
+        )
         if plugin is not None
         else None
     )
@@ -147,11 +217,13 @@ def main() -> None:
         if service == "update" and not args.get("action"):
             cp = plugin.build_client(active_settings)
             token = plugin.resolve_auth_token(cp, active_settings)
-            plugin.get_api_catalog(
+            _get_catalog_for_cli(
+                plugin,
                 cp,
                 token=token,
                 force_refresh=True,
                 settings=active_settings,
+                catalog_view=_catalog_view_from_args(args),
             )
             return
         print_help({"module": "cache"}, plugin=plugin, settings=active_settings)
@@ -189,5 +261,11 @@ def main() -> None:
         active_settings.verify_ssl,
     )
     token = plugin.resolve_auth_token(cp, active_settings)
-    api_catalog = plugin.get_api_catalog(cp, token=token, settings=active_settings)
+    api_catalog = _get_catalog_for_cli(
+        plugin,
+        cp,
+        token=token,
+        settings=active_settings,
+        catalog_view=_catalog_view_from_args(args),
+    )
     command(cp, token, api_catalog, args, settings=active_settings)

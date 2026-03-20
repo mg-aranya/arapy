@@ -1,34 +1,36 @@
-# netloom v1.8.1
+# netloom v1.8.2
 
-This release expands the verified ClearPass privilege mapping table and ships a
-reusable in-plugin discovery runner so the mapping can keep growing safely over
-time. With the current verified rule set, the same minimal discovery profile
-now filters 30 mapped services from the ClearPass catalog cache.
+This release turns the ClearPass privilege-aware cache work into the default
+CLI experience. The cache now retains the full discovered vendor catalog, but
+normal help, completion, and command discovery use a stricter visible view so
+the active API client only sees modules and services that are verified or kept
+as baseline-visible.
 
 ## Highlights
 
-- expanded the verified live mapping set across additional
-  `globalserverconfiguration`, `identities`, `localserverconfiguration`,
-  `logs`, and `policyelements` services
-- refined several earlier broad mappings down to more specific effective
-  runtime privilege keys such as `api_clients`, `guest_users`,
-  `cppm_licenses`, and `cppm_radius_dyn_autz_template`
-- moved the ClearPass mapping notes into the plugin folder and added the
-  reusable `python -m netloom.plugins.clearpass.privilege_discovery` workflow
-- kept a short list of accepted-but-not-yet-verified privileges documented for
-  the next mapping rounds
+- the ClearPass cache now stores both a default visible catalog and the full
+  discovered catalog in the same cache file
+- help, completion, and normal catalog-backed command discovery now use the
+  visible catalog by default
+- `--catalog-view=full` provides an explicit troubleshooting and validation
+  path when you need to inspect the retained unfiltered vendor catalog
+- the minimal `discovery` profile now validates the intended UX shift cleanly:
+  the default module list collapses to only the access-aware visible modules,
+  while the full catalog remains available on demand
 
 ## Examples
 
 ```bash
 netloom server use discovery
 netloom cache update
-python -m netloom.plugins.clearpass.privilege_discovery --limit=10
+netloom ?
+netloom --catalog-view=full ?
 ```
 
 ## Notes
 
-- only verified mappings are enforced automatically, so some unmapped services
-  are still preserved conservatively in the cache
-- the remaining unresolved services are concentrated in a much smaller set of
-  harder cases and can now be targeted with the in-plugin discovery runner
+- the full retained catalog is still important for troubleshooting, vendor doc
+  comparison, and future mapping expansion, so it remains available by opt-in
+- further `v1.8.x` work can now focus on expanding verified mappings and, where
+  appropriate, tightening action-level visibility inside already-visible
+  services

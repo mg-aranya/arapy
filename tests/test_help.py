@@ -202,6 +202,13 @@ def test_render_help_mentions_filter_paging_behavior():
     assert "fetches every matching page, not just the first 1000 results" in text
 
 
+def test_render_help_mentions_catalog_view_option():
+    text = helpmod.render_help({}, {}, version="1.8.2")
+
+    assert "Catalog options:" in text
+    assert "--catalog-view=visible|full" in text
+
+
 def test_render_help_mentions_token_and_copy_syntax():
     plugin = types.SimpleNamespace(
         help_context=lambda: {

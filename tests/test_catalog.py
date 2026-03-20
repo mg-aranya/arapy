@@ -2,6 +2,8 @@ from netloom.core.config import AppPaths, Settings
 from netloom.plugins.clearpass.catalog import (
     ApiEndpointCache,
     _filter_catalog_by_effective_privileges,
+    _visible_catalog_modules,
+    project_catalog_view,
 )
 
 
@@ -210,3 +212,59 @@ def test_filter_catalog_by_effective_privileges_supports_all_of_rules():
     )
     assert "device" in filtered_present["identities"]
     assert filtered_present["identities"]["device"]["privilege_match"] == "all"
+
+
+def test_visible_catalog_modules_hide_unmapped_services_when_filter_applied():
+    filtered_modules = {
+        "identities": {
+            "endpoint": {
+                "actions": {"list": {"method": "GET"}},
+                "required_privileges": ["cppm_endpoints"],
+            },
+            "guest": {
+                "actions": {"list": {"method": "GET"}},
+            },
+        }
+    }
+
+    visible_modules, metadata = _visible_catalog_modules(
+        filtered_modules,
+        {
+            "filter_applied": True,
+            "effective_privileges": [
+                {
+                    "name": "cppm_endpoints",
+                    "access": "full",
+                    "raw": "cppm_endpoints",
+                }
+            ],
+        },
+    )
+
+    assert "endpoint" in visible_modules["identities"]
+    assert "guest" not in visible_modules["identities"]
+    assert metadata["view_applied"] is True
+    assert metadata["hidden_service_count"] == 1
+
+
+def test_project_catalog_view_can_switch_to_full_modules():
+    catalog = {
+        "version": 5,
+        "modules": {
+            "identities": {
+                "endpoint": {"actions": {"list": {"method": "GET"}}},
+            }
+        },
+        "full_modules": {
+            "identities": {
+                "endpoint": {"actions": {"list": {"method": "GET"}}},
+                "guest": {"actions": {"list": {"method": "GET"}}},
+            }
+        },
+    }
+
+    projected = project_catalog_view(catalog, catalog_view="full")
+
+    assert projected["catalog_view"] == "full"
+    assert "endpoint" in projected["modules"]["identities"]
+    assert "guest" in projected["modules"]["identities"]

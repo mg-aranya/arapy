@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.8.2 - 2026-03-20
+
+### Added
+- added a dual-view ClearPass catalog cache that retains the full discovered catalog while exposing a stricter default visible catalog for normal CLI use
+- added `--catalog-view=visible|full` so help, completion, and command discovery can switch explicitly between the access-aware catalog and the full retained vendor catalog
+
+### Changed
+- `netloom cache update` for ClearPass now stores a default visible module/service view and keeps the full discovered catalog as retained metadata for troubleshooting
+- context-aware help, completion, and normal catalog loading now use the visible catalog by default so the active API client only sees verified/baseline-allowed modules and services
+- updated README guidance, release notes, and tests to reflect the new access-aware catalog visibility behavior
+
 ## 1.8.1 - 2026-03-19
 
 ### Added
